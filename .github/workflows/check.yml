@@ -1,6 +1,6 @@
-# Controle van de site. Deze workflow PUBLICEERT NIETS:
-# geen GitHub Pages-artifact, geen deploy-stap, alleen leesrechten.
-# De website gaat pas online na een expliciete, aparte beslissing (zie DEVELOPMENT.md).
+# Site check. This workflow PUBLISHES NOTHING:
+# no GitHub Pages artifact, no deploy step, read-only permissions.
+# The website only goes live after an explicit, separate decision (see DEVELOPMENT.md).
 name: Check
 
 on:
@@ -18,26 +18,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Site samenstellen (whitelist, alleen lokaal in de runner)
+      - name: Assemble site (whitelist, inside the runner only)
         run: |
           mkdir -p _site
           cp index.html _site/
           cp -r assets about-sequence _site/
 
-      - name: Verwijzingen controleren
+      - name: Check references
         run: |
           cd _site
           missing=0
           for ref in $(grep -ohE '(assets/(css|js|img|icons)/[A-Za-z0-9._/-]+)' index.html assets/css/*.css assets/js/*.js | sort -u); do
-            [ -f "$ref" ] || { echo "ONTBREEKT: $ref"; missing=1; }
+            [ -f "$ref" ] || { echo "MISSING: $ref"; missing=1; }
           done
           for w in 960 1200; do for i in $(seq -w 1 24); do
-            [ -f "about-sequence/$w/frame-$i.webp" ] || { echo "ONTBREEKT: about-sequence/$w/frame-$i.webp"; missing=1; }
+            [ -f "about-sequence/$w/frame-$i.webp" ] || { echo "MISSING: about-sequence/$w/frame-$i.webp"; missing=1; }
           done; done
           exit $missing
 
-      - name: Zoeken naar geheimen
+      - name: Scan for secrets
         run: |
           if grep -rInE '(api[_-]?key|secret|password|wachtwoord|bearer)\s*[:=]|re_[A-Za-z0-9]{16,}|-----BEGIN' _site; then
-            echo "Mogelijk geheim gevonden"; exit 1
+            echo "Possible secret found"; exit 1
           fi
