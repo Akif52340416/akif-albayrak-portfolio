@@ -13,6 +13,7 @@
 />
 <link rel="stylesheet" href="assets/css/site.css" />
 <link rel="stylesheet" href="assets/css/motion.css" />
+<link rel="stylesheet" href="assets/css/home-system.css" />
 <script>
   // Home's opening (a line of light opens the portrait): decided before the
   // first paint, so the full portrait never flashes up first. Once per
@@ -164,15 +165,6 @@
     <div class="stage-item is-done"><span class="stage-dot"></span><span class="stage-num">03</span>SYSTEMS</div>
     <div class="stage-item active"><span class="stage-dot"></span><span class="stage-num">04</span>IMPROVEMENT</div>
   </div>
-</div>
-
-<!-- the route's label: at the node of the chapter in view, on the pink route
-     through the photo (home-motion.js places it, home.js fills it) -->
-<div class="trail-tag" id="trailTag" aria-hidden="true">
-  <span class="tt-head"><span class="tt-num">01</span><span class="tt-name">SUPPORT</span></span>
-  <span class="a-label">HARDWARE</span>
-  <span class="a-label">TROUBLESHOOTING</span>
-  <span class="a-label">END USERS</span>
 </div>
 
 <a class="teaser" id="teaser" href="#/work">Uitgelicht werk <span aria-hidden="true">→</span></a>
@@ -1718,5 +1710,8 @@
 
 <script src="assets/js/footer.js"></script>
 <script src="assets/js/i18n.js"></script>
+<!-- Home's system window beside the four chapters: after i18n.js, so the
+     page language is known when it is built -->
+<script src="assets/js/home-system.js"></script>
 </body>
 </html>

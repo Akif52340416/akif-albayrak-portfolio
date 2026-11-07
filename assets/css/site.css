@@ -310,37 +310,8 @@
   .stage-item.is-done { color: rgba(247,243,234,0.6); }
   .stage-item.is-done .stage-dot { background: rgba(175,45,83,0.45); border-color: var(--signal); }
 
-  /* ---- the route's label: one tag at the chapter's node on the pink route
-     (home-motion.js places it there), the chapter and its three skills; a
-     thin pink rule ties it to the node. Its content changes with the story
-     (home.js). Desktop only, like the route through the photo. ---- */
-  .trail-tag {
-    position: fixed;
-    z-index: 9;
-    left: 0;
-    top: 0;
-    min-width: 150px;
-    padding: 10px 0 0 14px;
-    border-left: 1px solid rgba(175,45,83,0.9);
-    color: rgba(247,243,234,0.72);
-    font-size: 11px;
-    letter-spacing: 0.12em;
-    line-height: 1.9;
-    text-shadow: 0 1px 10px rgba(0,0,0,0.65);
-    white-space: nowrap;
-    opacity: 0;
-    pointer-events: none;
-  }
-  /* on the left of its node (where the right has no room, and at 04, where
-     it stands above the node): the rule moves to the side of the node */
-  .trail-tag.is-left { padding: 10px 14px 0 0; border-left: 0; border-right: 1px solid rgba(175,45,83,0.9); text-align: right; }
-  .trail-tag .tt-head { display: block; margin: 0 0 6px; color: var(--cream); font-weight: 500; letter-spacing: 0.16em; }
-  .trail-tag .tt-num { margin-right: 8px; color: #e0577e; font-variant-numeric: tabular-nums; }
-  .trail-tag .a-label { display: block; }
-
   @media (max-width: 780px) {
     .wordmark { right: 20px; }
-    .trail-tag { display: none; }
     .story-block { top: 22%; max-width: 26ch; }
     .story-block .reveal { font-size: 1.3rem; }
   }
@@ -583,8 +554,8 @@
     transform-origin: 0 50%;
     transform: scaleX(0);
   }
-  /* the same light as the route's moving head through the chapters
-     (motion.css .ht-head / #homeTrailHalo): a white core of r 2.4 in a
+  /* the same light as the one running through the system window beside
+     the chapters (home-system.css .sx-token): a white core of r 2.4 in a
      pink halo of r 22, the same gradient stops */
   .final-rule-head {
     position: absolute;

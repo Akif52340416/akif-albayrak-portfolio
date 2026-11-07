@@ -1,0 +1,334 @@
+/* ==========================================================
+   HOME — the system window beside the four chapters
+   One window beside the portrait that grows with the story: a service
+   desk (01), an editor with a live preview (02), a data flow between
+   systems (03) and an automation flow (04). The frame, bar and foot stay;
+   only the content changes. Driven by home.js's own eased scroll position
+   (home-system.js): no loop of its own.
+   Pink means something here: what is active, progress, an important link.
+   ========================================================== */
+
+.sx {
+  --sx-cream: #f7f3ea;
+  --sx-line: rgba(247, 243, 234, 0.1);
+  --sx-line-2: rgba(247, 243, 234, 0.16);
+  --sx-text: rgba(247, 243, 234, 0.86);
+  --sx-soft: rgba(247, 243, 234, 0.6);
+  --sx-faint: rgba(247, 243, 234, 0.4);
+  --sx-pink: #af2d53;
+  --sx-pink-hi: #e0577e;
+  --sx-pink-soft: #f2b8c9;
+  --sx-mono: ui-monospace, "Cascadia Code", Consolas, "SFMono-Regular", Menlo, monospace;
+  position: fixed;
+  z-index: 8;
+  right: calc(var(--comp-pad, 0px) + clamp(24px, 4vw, 56px));
+  top: 16vh;
+  width: clamp(360px, 32vw, 468px);
+  color: var(--sx-cream);
+  font-family: "Instrument Sans", system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+  /* short screens: the whole window stays in view (home.js leaves this alone) */
+  transform-origin: 100% 0;
+  scale: var(--sx-fit, 1);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ---- the material: warm dark glass, a light top edge, layered depth ---- */
+.sx-frame {
+  position: relative;
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(247, 243, 234, 0.045), rgba(247, 243, 234, 0) 120px),
+    linear-gradient(180deg, rgba(24, 21, 19, 0.9), rgba(12, 11, 10, 0.93));
+  box-shadow:
+    inset 0 0 0 1px var(--sx-line),
+    inset 0 1px 0 rgba(247, 243, 234, 0.1),
+    0 2px 6px rgba(0, 0, 0, 0.25),
+    0 24px 50px -24px rgba(0, 0, 0, 0.75),
+    0 60px 120px -60px rgba(0, 0, 0, 0.9);
+  -webkit-backdrop-filter: blur(12px) saturate(110%);
+  backdrop-filter: blur(12px) saturate(110%);
+  overflow: hidden;
+}
+
+/* ---- the bar: where the system is, and its state ---- */
+.sx-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 42px;
+  padding: 0 18px;
+  border-bottom: 1px solid var(--sx-line);
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--sx-faint);
+}
+.sx-path b { font-weight: 500; color: var(--sx-cream); }
+.sx-path, .sx-status span { transition: opacity 0.2s linear; }
+.sx-status { display: inline-flex; align-items: center; gap: 8px; color: var(--sx-soft); }
+.sx-status i { width: 7px; height: 7px; border-radius: 50%; background: rgba(247, 243, 234, 0.28); transition: background 0.4s ease, box-shadow 0.4s ease; }
+.sx[data-state="busy"] .sx-status i { background: var(--sx-pink-hi); }
+.sx[data-state="done"] .sx-status i { background: var(--sx-pink-hi); box-shadow: 0 0 0 3px rgba(175, 45, 83, 0.28), 0 0 12px 2px rgba(224, 87, 126, 0.5); }
+
+/* ---- the body: the four scenes lie on top of each other ---- */
+.sx-body { position: relative; height: 420px; }
+.sx-scene { position: absolute; inset: 0; opacity: 0; visibility: hidden; }
+.sx-scene.is-on { visibility: visible; }
+.sx-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 18px 20px 4px; }
+.sx-title { margin: 0; font-size: 15px; font-weight: 500; line-height: 1.3; letter-spacing: -0.005em; }
+.sx-sub { display: block; margin-top: 4px; font-family: var(--sx-mono); font-size: 11px; color: var(--sx-faint); }
+.sx-chip {
+  flex: none;
+  padding: 3px 9px;
+  border: 1px dashed rgba(247, 243, 234, 0.28);
+  border-radius: 99px;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--sx-soft);
+}
+
+/* ==== the steps (01 the ticket's activity, 04 the flow): one component ==== */
+.sx-steps { position: relative; list-style: none; margin: 0; padding: 10px 20px 0; }
+.sx-step { position: relative; display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 14px; height: 54px; }
+.sx-ico {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #15120f;
+  box-shadow: inset 0 0 0 1px var(--sx-line-2);
+  color: var(--sx-faint);
+  transition: box-shadow 0.4s ease, color 0.4s ease, background 0.4s ease;
+}
+.sx-ico svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.sx-txt b { display: block; font-size: 13px; font-weight: 500; color: var(--sx-faint); transition: color 0.4s ease; }
+.sx-txt span { display: block; margin-top: 3px; font-family: var(--sx-mono); font-size: 11px; color: rgba(247, 243, 234, 0.38); transition: color 0.4s ease; }
+.sx-kind { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(247, 243, 234, 0.3); }
+.sx-step.is-busy .sx-ico { box-shadow: inset 0 0 0 1px var(--sx-pink-hi); color: var(--sx-pink-hi); }
+.sx-step.is-busy .sx-txt b, .sx-step.is-done .sx-txt b { color: var(--sx-cream); }
+.sx-step.is-busy .sx-txt span, .sx-step.is-done .sx-txt span { color: var(--sx-soft); }
+.sx-step.is-done .sx-ico { box-shadow: inset 0 0 0 1px var(--sx-pink); background: var(--sx-pink); color: #fff; }
+.sx-wire { position: absolute; width: 1px; background: rgba(247, 243, 234, 0.12); }
+.sx-wire i { position: absolute; inset: 0; background: var(--sx-pink-hi); transform-origin: 50% 0; transform: scaleY(0); }
+/* the light of the run: the same light as the route through the chapters */
+.sx-token { position: absolute; z-index: 2; left: 0; top: 0; width: 0; height: 0; opacity: 0; }
+.sx-token::before, .sx-pulse::before { content: ''; position: absolute; left: -22px; top: -22px; width: 44px; height: 44px; border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 159, 187, 0.85), rgba(175, 45, 83, 0.4) 40%, rgba(175, 45, 83, 0)); }
+.sx-token::after, .sx-pulse::after { content: ''; position: absolute; left: -2.4px; top: -2.4px; width: 4.8px; height: 4.8px; border-radius: 50%; background: #fff; }
+.sx-end { position: relative; display: grid; grid-template-columns: 34px 1fr; align-items: center; gap: 14px; height: 42px; margin: 0 20px; }
+.sx-end-dot { justify-self: center; width: 12px; height: 12px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(247, 243, 234, 0.3); transition: all 0.4s ease; }
+.sx-end b { font-size: 13px; font-weight: 500; color: var(--sx-faint); transition: color 0.4s ease; }
+.sx-end.is-done .sx-end-dot { background: var(--sx-pink-hi); box-shadow: 0 0 0 4px rgba(175, 45, 83, 0.25); }
+.sx-end.is-done b { color: var(--sx-cream); }
+
+/* ==== 01 — the service desk ==== */
+.sx-pill {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sx-cream);
+  background: rgba(247, 243, 234, 0.08);
+  box-shadow: inset 0 0 0 1px var(--sx-line-2);
+  transition: background 0.4s ease, box-shadow 0.4s ease, color 0.4s ease;
+}
+.sx-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.7; }
+.sx-pill[data-s="progress"] { color: var(--sx-pink-soft); box-shadow: inset 0 0 0 1px rgba(224, 87, 126, 0.55); background: rgba(175, 45, 83, 0.12); }
+.sx-pill[data-s="resolved"] { color: #fff; background: var(--sx-pink); box-shadow: none; }
+.sx-ticket-meta { display: flex; gap: 16px; padding: 10px 20px 4px; font-size: 11px; color: var(--sx-faint); }
+.sx-ticket-meta b { display: block; margin-bottom: 2px; font-size: 10px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(247, 243, 234, 0.32); }
+.sx-ticket-meta span { color: var(--sx-text); }
+.sx-txt .sx-checks { display: flex; gap: 10px; margin-top: 4px; font-family: var(--sx-mono); font-size: 11px; color: var(--sx-faint); }
+.sx-checks em { font-style: normal; opacity: 0; transition: opacity 0.3s ease; }
+.sx-checks em.is-on { opacity: 1; }
+.sx-checks em.ok::before { content: '✓ '; color: var(--sx-soft); }
+.sx-checks em.bad::before { content: '✕ '; color: var(--sx-pink-hi); }
+.sx-checks em.bad { color: var(--sx-pink-soft); }
+
+/* ==== 02 — the editor and the website it builds ==== */
+.sx-tabs { display: flex; gap: 2px; height: 36px; padding: 0 14px; border-bottom: 1px solid var(--sx-line); font-family: var(--sx-mono); font-size: 11px; }
+.sx-tab { display: flex; align-items: center; gap: 7px; padding: 0 10px; color: var(--sx-faint); box-shadow: inset 0 -1px 0 transparent; transition: color 0.3s ease, box-shadow 0.3s ease; }
+.sx-tab i { width: 5px; height: 5px; border-radius: 50%; background: rgba(247, 243, 234, 0.2); transition: background 0.3s ease; }
+.sx-tab.is-done i { background: var(--sx-soft); }
+.sx-tab.is-now { color: var(--sx-cream); box-shadow: inset 0 -1px 0 var(--sx-pink-hi); }
+.sx-tab.is-now i { background: var(--sx-pink-hi); }
+.sx-editor { position: relative; height: 176px; margin-top: 10px; overflow: hidden; font-family: var(--sx-mono); font-size: 13px; line-height: 19.5px; white-space: pre; }
+.sx-editor-in { transition: transform 0.3s ease, opacity 0.25s ease; }
+.sx-ln { display: flex; }
+.sx-ln .n { flex: none; width: 40px; padding-right: 16px; text-align: right; color: rgba(247, 243, 234, 0.2); }
+.sx-ln .c { color: var(--sx-text); }
+.sx-ln.is-now .n { color: var(--sx-pink-hi); }
+/* a quiet syntax palette: one pink for markup, warm and cool greys for the rest */
+.t-tag { color: #e88aa6; }
+.t-attr { color: rgba(247, 243, 234, 0.55); }
+.t-str { color: #dccab4; }
+.t-sel { color: var(--sx-pink-soft); }
+.t-prop { color: rgba(247, 243, 234, 0.62); }
+.t-kw { color: #e88aa6; }
+.t-fn { color: var(--sx-cream); }
+.t-dim { color: rgba(247, 243, 234, 0.4); }
+/* where the typing is: a still caret, no blinking */
+.sx-caret { display: inline-block; width: 7px; height: 15px; margin-left: 1px; vertical-align: -3px; background: var(--sx-pink-hi); }
+
+.sx-preview {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
+  height: 170px;
+  border-radius: 12px;
+  background: #f4f1ea;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35), 0 18px 40px -22px rgba(0, 0, 0, 0.9);
+  overflow: hidden;
+}
+.sx-preview-bar { display: flex; align-items: center; gap: 8px; height: 26px; padding: 0 12px; border-bottom: 1px solid rgba(0, 0, 0, 0.07); font-family: var(--sx-mono); font-size: 10.5px; color: rgba(0, 0, 0, 0.5); background: #ebe7df; }
+.sx-preview-bar span:last-child { margin-left: auto; letter-spacing: 0.08em; text-transform: uppercase; }
+.sx-preview-bar span:last-child.is-live { color: var(--sx-pink); }
+.sx-stage { position: relative; display: flex; align-items: center; justify-content: center; height: 144px; }
+
+/* the component the code builds, property by property: what each finished
+   line of the code adds is what the preview gains, nothing earlier */
+.pv-card { position: relative; font-family: "Times New Roman", serif; font-size: 15px; color: #000; text-align: left; opacity: 0; transition: all 0.45s ease; }
+.pv-card h3 { margin: 0; font-size: 1.15em; font-weight: 700; }
+.pv-card p { margin: 3px 0 8px; font-size: 0.8em; }
+.pv-card .pv-link { font-size: 0.8em; color: #0000ee; text-decoration: underline; transition: all 0.45s ease; }
+.pv-card h3, .pv-card p, .pv-card .pv-link { visibility: hidden; }
+.pv-card.h-card { opacity: 1; }
+.pv-card.h-h3 h3, .pv-card.h-p p, .pv-card.h-a .pv-link { visibility: visible; }
+.pv-card.c-font { font-family: system-ui, sans-serif; }
+.pv-card.c-pad { padding: 20px; }
+.pv-card.c-rad { border-radius: 12px; }
+.pv-card.c-bg { background: #141210; }
+.pv-card.c-col { color: #f7f3ea; }
+.pv-card.c-col .pv-link { color: #f7f3ea; }
+.pv-card.b-pad .pv-link { display: inline-block; padding: 6px 14px; }
+.pv-card.b-bg .pv-link { background: #af2d53; }
+.pv-card.b-col .pv-link { color: #fff; border-radius: 99px; }
+.pv-card.is-active { transform: translateY(-3px); box-shadow: 0 0 0 1px rgba(224, 87, 126, 0.95), 0 16px 30px -14px rgba(175, 45, 83, 0.75); }
+/* the pointer that "hovers" once the script is there */
+.pv-cursor { position: absolute; right: -14px; bottom: -12px; width: 16px; height: 16px; opacity: 0; transition: opacity 0.3s ease, transform 0.45s ease; transform: translate(6px, 6px); }
+.pv-card.is-active .pv-cursor { opacity: 1; transform: none; }
+.pv-cursor svg { width: 100%; height: 100%; fill: #fff; stroke: #141210; stroke-width: 1.2; }
+
+/* ==== 03 — systems that talk to each other ==== */
+.sx-sys { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; padding: 18px 20px 0; }
+.sx-node { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+.sx-node .sx-ico { width: 46px; height: 46px; border-radius: 12px; }
+.sx-node .sx-ico svg { width: 20px; height: 20px; }
+.sx-node b { font-size: 12.5px; font-weight: 500; color: var(--sx-faint); transition: color 0.4s ease; }
+.sx-node span { margin-top: -4px; font-family: var(--sx-mono); font-size: 10.5px; color: rgba(247, 243, 234, 0.34); }
+.sx-node.is-on .sx-ico { box-shadow: inset 0 0 0 1px var(--sx-pink); background: rgba(175, 45, 83, 0.16); color: var(--sx-pink-soft); }
+.sx-node.is-now .sx-ico { box-shadow: inset 0 0 0 1px var(--sx-pink-hi), 0 0 0 4px rgba(175, 45, 83, 0.16); color: #fff; }
+.sx-node.is-on b { color: var(--sx-cream); }
+.sx-link { position: absolute; height: 1px; background: rgba(247, 243, 234, 0.12); }
+.sx-link i { position: absolute; inset: 0; background: var(--sx-pink-hi); transform-origin: 0 50%; transform: scaleX(0); }
+.sx-pulse { position: absolute; z-index: 2; left: 0; top: 0; width: 0; height: 0; opacity: 0; }
+.sx-pulse::before { left: -14px; top: -14px; width: 28px; height: 28px; }
+/* the detail under the diagram: what is happening at the system in view */
+.sx-detail { position: absolute; left: 20px; right: 20px; top: 186px; bottom: 18px; }
+.sx-dpane { position: absolute; inset: 0; opacity: 0; transition: opacity 0.3s ease; }
+.sx-dpane.is-on { opacity: 1; }
+.sx-dlabel { display: block; margin-bottom: 10px; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sx-faint); }
+.sx-dlabel em { font-style: normal; color: var(--sx-pink-hi); margin-right: 8px; }
+.sx-pre { margin: 0; padding: 14px 16px; border-radius: 10px; background: rgba(0, 0, 0, 0.28); box-shadow: inset 0 0 0 1px var(--sx-line); font-family: var(--sx-mono); font-size: 12px; line-height: 1.7; white-space: pre; color: var(--sx-text); }
+.sx-table { width: 100%; border-collapse: collapse; font-family: var(--sx-mono); font-size: 12px; }
+.sx-table th { padding: 0 0 8px; text-align: left; font-weight: 400; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sx-faint); border-bottom: 1px solid var(--sx-line-2); }
+.sx-table td { padding: 9px 0; border-bottom: 1px solid var(--sx-line); color: var(--sx-text); opacity: 0; transition: opacity 0.3s ease; }
+.sx-table tr.is-on td { opacity: 1; }
+.sx-table td:last-child, .sx-table th:last-child { text-align: right; }
+.sx-bars { list-style: none; margin: 0; padding: 0; }
+.sx-bars li { display: grid; grid-template-columns: 52px 1fr 64px; align-items: center; gap: 12px; height: 32px; font-family: var(--sx-mono); font-size: 12px; color: var(--sx-text); }
+.sx-bars li span:last-child { text-align: right; }
+.sx-bar-track { height: 6px; border-radius: 3px; background: rgba(247, 243, 234, 0.08); overflow: hidden; }
+.sx-bar-track i { display: block; height: 100%; border-radius: 3px; background: rgba(247, 243, 234, 0.55); transform-origin: 0 50%; transform: scaleX(0); transition: transform 0.6s cubic-bezier(.2,.7,.2,1); }
+.sx-bars li.is-hi .sx-bar-track i { background: var(--sx-pink-hi); }
+.sx-bars-foot { margin-top: 10px; font-family: var(--sx-mono); font-size: 11px; color: var(--sx-faint); }
+
+/* ==== 04 — the run strip ==== */
+.sx-run { position: absolute; left: 20px; right: 20px; bottom: 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 12px; border-top: 1px solid var(--sx-line); font-family: var(--sx-mono); font-size: 11px; color: var(--sx-soft); }
+.sx-run-bar { display: flex; gap: 4px; }
+.sx-run-bar i { width: 26px; height: 3px; border-radius: 2px; background: rgba(247, 243, 234, 0.14); transition: background 0.4s ease; }
+.sx-run-bar i.is-busy { background: rgba(224, 87, 126, 0.5); }
+.sx-run-bar i.is-done { background: var(--sx-pink-hi); }
+
+/* ---- the foot: the story so far (four parts, filling with the scroll) and
+   the three skills of the chapter in view (the old label's job) ---- */
+.sx-foot { display: flex; align-items: center; justify-content: space-between; gap: 14px; height: 40px; padding: 0 18px; border-top: 1px solid var(--sx-line); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sx-faint); }
+.sx-story { display: flex; align-items: center; gap: 4px; flex: none; }
+.sx-story i { position: relative; width: 22px; height: 3px; border-radius: 2px; background: rgba(247, 243, 234, 0.12); overflow: hidden; }
+.sx-story i::after { content: ''; position: absolute; inset: 0; background: var(--sx-pink-hi); transform-origin: 0 50%; transform: scaleX(var(--f, 0)); }
+.sx-story i.is-past::after { background: rgba(224, 87, 126, 0.55); }
+.sx-story b { margin-left: 8px; font-weight: 500; color: var(--sx-cream); }
+.sx-skills { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; transition: opacity 0.2s linear; }
+
+/* the narrowest desktop windows: tighter type so nothing wraps */
+@media (max-width: 1180px) and (min-width: 781px) {
+  .sx-foot { letter-spacing: 0.06em; }
+  /* the chapter is in the bar already: room for the three skills */
+  .sx-story b { display: none; }
+  .sx-step { gap: 12px; }
+  .sx-kind { display: none; }
+  .sx-step { grid-template-columns: 34px 1fr; }
+}
+
+/* ==== phones: its own compact layout under the chapter text ==== */
+@media (max-width: 780px) {
+  .sx { left: 16px; right: 16px; top: auto; bottom: 76px; width: auto; transform-origin: 50% 100%; }
+  /* far too little room between the chapter list and the bottom: the card
+     steps aside, the chapter list alone carries the route */
+  .sx.is-away { display: none; }
+  .sx-frame { border-radius: 14px; }
+  .sx-bar { height: 34px; padding: 0 14px; font-size: 10px; }
+  .sx-body { height: 176px; }
+  .sx-foot { height: 30px; padding: 0 14px; }
+  .sx-skills { display: none; }
+  .sx-head { padding: 12px 14px 2px; }
+  .sx-title { font-size: 13.5px; }
+  .sx-sub { font-size: 10.5px; }
+  /* 01 and 04: the steps lie down — four icons on one line, short names */
+  .sx-steps { display: grid; grid-template-columns: repeat(4, 1fr); padding: 12px 14px 0; }
+  .sx-step { grid-template-columns: 1fr; justify-items: center; gap: 6px; height: auto; text-align: center; }
+  .sx-txt { display: none; }
+  .sx-kind { display: block; font-size: 9.5px; letter-spacing: 0.1em; }
+  .sx-step.is-busy .sx-kind, .sx-step.is-done .sx-kind { color: var(--sx-cream); }
+  .sx-ico { width: 32px; height: 32px; }
+  .sx-wire { height: 1px !important; }
+  .sx-wire i { transform-origin: 0 50%; }
+  .sx-end, .sx-run, .sx-ticket-meta { display: none; }
+  .sx-mline { display: block !important; }
+  /* 02: three lines around the one being written, and the card */
+  .sx-tabs { height: 30px; padding: 0 8px; font-size: 10.5px; }
+  .sx-editor { height: 39px; margin-top: 6px; font-size: 11.5px; line-height: 13px; }
+  .sx-editor .sx-ln { height: 13px; }
+  .sx-ln .n { width: 30px; padding-right: 10px; }
+  .sx-preview { left: 10px; right: 10px; bottom: 10px; height: 82px; border-radius: 10px; }
+  .sx-preview-bar { display: none; }
+  .sx-stage { height: 82px; }
+  .pv-card { font-size: 12px; }
+  .pv-card.c-pad { padding: 10px 14px; }
+  .pv-card.b-pad .pv-link { padding: 3px 10px; }
+  /* 03: the four systems small, one line of detail */
+  .sx-sys { gap: 8px; padding: 14px 14px 0; }
+  .sx-node .sx-ico { width: 34px; height: 34px; border-radius: 10px; }
+  .sx-node .sx-ico svg { width: 16px; height: 16px; }
+  .sx-node b { font-size: 11px; }
+  .sx-node > span:last-child, .sx-detail { display: none; }
+}
+/* one line under the steps / systems on phones: what is happening now */
+.sx-mline { display: none; position: absolute; left: 14px; right: 14px; bottom: 12px; padding-top: 10px; border-top: 1px solid var(--sx-line); font-family: var(--sx-mono); font-size: 11px; color: var(--sx-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sx *, .sx *::before, .sx *::after { transition: none !important; }
+}

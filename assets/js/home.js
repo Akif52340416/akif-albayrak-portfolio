@@ -24,13 +24,6 @@
   var blockSystems = safeGet("blockSystems");
   var blockImprovement = safeGet("blockImprovement");
 
-  var trailTag = safeGet("trailTag");
-  var tagNum = trailTag ? trailTag.querySelector(".tt-num") : null;
-  var tagName = trailTag ? trailTag.querySelector(".tt-name") : null;
-  var tagLabels = trailTag ? trailTag.querySelectorAll(".a-label") : [];
-  var tagShown = -1;
-  var CHAPTERS = ["SUPPORT", "SOFTWARE", "SYSTEMS", "IMPROVEMENT"];
-
   var prefersReduced = false;
   try {
     if (window.matchMedia) {
@@ -40,22 +33,10 @@
     console.error("[akif-intro] matchMedia check failed:", err);
   }
 
-  // the skills of each chapter, shown in the route's label at that chapter's node
-  var annotSets = [
-    ["HARDWARE", "TROUBLESHOOTING", "END USERS"],   // 01 SUPPORT
-    ["HTML / CSS", "JAVASCRIPT", "PHP / C#"],        // 02 SOFTWARE
-    ["PYTHON", "SQL", "MACHINE DATA"],               // 03 SYSTEMS
-    ["PROCESS", "AUTOMATION", "API'S"]       // 04 IMPROVEMENT
-  ];
-
   function lerp(a, b, t) { return a + (b - a) * t; }
   function clamp01(x) { return Math.min(Math.max(x, 0), 1); }
   function easeInOutCubic(x) {
     return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
-  }
-  function bump(x, center, width) {
-    var d = Math.abs(x - center);
-    return d > width ? 0 : 1 - d / width;
   }
 
   // A clean hand-off: the outgoing content loses hierarchy quickly (short exit
@@ -201,30 +182,6 @@
     crossfade(blockSystems, w2.inEnter, w3.outExit);
     crossfade(blockImprovement, w3.inEnter, e4);
 
-    var annotIndex = 0;
-    if (e1 >= 0.5) annotIndex = 1;
-    if (e2 >= 0.5) annotIndex = 2;
-    if (e3 >= 0.5) annotIndex = 3;
-    var set = annotSets[annotIndex];
-
-    // the route's label: in with chapter 01, out together with the route
-    // (460–515vh in home-motion.js), never without it. Between two chapters
-    // it is fully gone at the hand-off (where it moves to the next node and
-    // changes text), so it is never seen jumping
-    var entranceEnvelope = clamp01((e0 - 0.55) / 0.18);
-    var handoff = (1 - bump(e1, 0.5, 0.2)) * (1 - bump(e2, 0.5, 0.2)) * (1 - bump(e3, 0.5, 0.2));
-    var annotOpacity = entranceEnvelope * handoff * (1 - clamp01((scrollVh - 460) / 55));
-
-    if (trailTag) {
-      trailTag.style.opacity = annotOpacity.toFixed(3);
-      if (annotIndex !== tagShown) {
-        tagShown = annotIndex;
-        if (tagNum) tagNum.textContent = "0" + (annotIndex + 1);
-        if (tagName) tagName.textContent = CHAPTERS[annotIndex];
-        for (var li = 0; li < tagLabels.length; li++) tagLabels[li].textContent = set[li];
-      }
-    }
-
     var teaserOpacity = (e3 > 0.85 ? (e3 - 0.85) / 0.15 : 0) * (1 - e4);
     if (teaser) teaser.style.opacity = String(teaserOpacity);
     live(teaser, teaserOpacity > 0.6);
@@ -311,9 +268,10 @@
     }
 
     // the light layer (home-motion.js) follows the same position from this
-    // same loop: the trail through the chapters, the light over the
-    // education headline and the light behind STILL BUILDING.
-    if (window.akifHomeFx) window.akifHomeFx(scrollVh, mobile, { sb: sbOpacity * (1 - eC), eB: eB, nc: eNC, n5: eN5, ch: annotIndex });
+    // same loop: the light over the education headline and the light behind
+    // STILL BUILDING; the system window beside the four chapters
+    // (home-system.js) hooks into the same call.
+    if (window.akifHomeFx) window.akifHomeFx(scrollVh, mobile, { sb: sbOpacity * (1 - eC), eB: eB, nc: eNC, n5: eN5 });
   }
 
   // smoothing: the visible state always eases toward the scroll position instead of

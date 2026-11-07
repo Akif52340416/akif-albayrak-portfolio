@@ -264,7 +264,10 @@ body.subpage.cs-held { overflow-x: clip; }
 .vdh-room, .vdh-steps { display: none; }
 #vdhView.vdh-montage .vdh-showcase { position: sticky; top: max(84px, calc(50vh - 340px)); z-index: 1; }
 #vdhView.vdh-montage .vdh-room { display: block; height: 150vh; }
-#vdhView.vdh-montage .vdh-devices { perspective: 1600px; }
+/* held, the whole showcase must fit under the header: the devices are ~0.62×
+   as tall as wide and the heading + names add ~176px, so on low screens
+   (1366×768, or 150% zoom) they scale down instead of running off the bottom */
+#vdhView.vdh-montage .vdh-devices { perspective: 1600px; max-width: min(850px, calc((100vh - 290px) * 1.6)); }
 /* the script moves the devices every frame: no transform transition here */
 #vdhView.vdh-montage .vdh-device-frame { transition: opacity 0.7s ease; }
 #vdhView.vdh-montage .vdh-device-screen { position: relative; }
@@ -367,44 +370,6 @@ html.home-intro #akifSpan { animation-delay: 1.28s; }
 html.home-intro .info { animation: hfInfo 0.7s ease 1.4s both; }
 @keyframes hfInfo { from { opacity: 0; } to { opacity: 0.88; } }
 
-/* ---- the four chapters: one light trail, a node per chapter ---- */
-.home-trail { position: fixed; z-index: 5; pointer-events: none; overflow: visible; opacity: 0; }
-body.subpage .home-trail { display: none; }
-.home-trail path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
-.ht-route { stroke: rgba(247,243,234,0.18); stroke-width: 1; stroke-dasharray: 1 7; }
-.ht-glow { stroke: var(--signal); stroke-width: 6; opacity: 0.24; }
-/* phones: the trail is a narrow strip by the edge; the head's halo carries
-   the light there, and a slow phone is spared painting the wide glow */
-@media (max-width: 780px) { .ht-glow { display: none; } }
-.ht-line { stroke: #f2b8c9; stroke-width: 1.5; }
-.ht-head { fill: #fff; }
-.ht-cursor { opacity: 0; }
-/* an unlit node is only a faint ring, so it never reads as a speck on the photo */
-.ht-dot { fill: rgba(11,10,9,0.35); stroke: rgba(247,243,234,0.5); stroke-width: 1; transition: fill 0.5s ease, stroke 0.5s ease; }
-.ht-node.is-lit .ht-dot { fill: var(--signal); stroke: #fff; }
-.ht-ring { fill: none; stroke: #e0577e; stroke-width: 1; opacity: 0; transform-box: fill-box; transform-origin: center; }
-.ht-node.is-lit .ht-ring { animation: htRing 1.2s cubic-bezier(.2,.7,.2,1) 1; }
-/* each node carries its chapter number (as in the chapter list); at the
-   node in view the route's label shows it instead */
-.ht-num { font-size: 11px; letter-spacing: 0.14em; fill: rgba(247,243,234,0.42); font-variant-numeric: tabular-nums; transition: fill 0.5s ease, opacity 0.3s ease; }
-.ht-node.is-lit .ht-num { fill: rgba(247,243,234,0.85); }
-.ht-node.is-current .ht-num { opacity: 0; }
-/* each reached node's fan: its chapter's three skills. It grows out of the
-   node once, when the node is reached (a transition, nothing moves after);
-   the chapter in view in full pink, the ones before it dimmed */
-.ht-fan { opacity: 0; transform: scale(0.4); transition: opacity 0.7s ease, transform 0.7s cubic-bezier(.2,.7,.2,1); }
-.ht-fan.is-on { opacity: 0.4; transform: none; }
-.ht-fan.is-on.is-current { opacity: 1; }
-.hf-spoke { stroke: #e0577e; stroke-width: 0.9; stroke-opacity: 0.75; }
-.hf-chord { stroke: #e0577e; stroke-width: 0.8; stroke-opacity: 0.5; }
-.hf-dot { fill: #e0577e; }
-.ht-fan.is-current .hf-spoke { stroke: #f2b8c9; }
-.ht-fan.is-current .hf-dot { fill: #f7c4d3; }
-/* the end of the route: a ring around 04, pink once the route is there */
-.ht-end { fill: none; stroke: rgba(247,243,234,0.3); stroke-width: 1; transition: stroke 0.5s ease; }
-.ht-end.is-lit { stroke: #e0577e; }
-@keyframes htRing { from { opacity: 0.9; transform: scale(1); } to { opacity: 0; transform: scale(4.5); } }
-
 /* ---- the education headline: one soft light passes over it ---- */
 #storyCurrent .story-headline.is-sheen {
   color: transparent;
@@ -442,9 +407,8 @@ body.subpage .home-finale-light { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ht-node.is-lit .ht-ring, #storyCurrent .story-headline.is-sheen { animation: none; }
+  #storyCurrent .story-headline.is-sheen { animation: none; }
   .hfl-drift { animation: none; }
-  .ht-dot, .ht-num, .ht-end, .ht-fan { transition: none; }
 }
 /* ==========================================================
    end HOME

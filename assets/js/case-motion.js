@@ -85,10 +85,17 @@
     var held = window.matchMedia('(min-width: 781px) and (min-height: 640px)');
     if (devices) {
       var lap = devices.querySelector('.vdh-laptop'), tab = devices.querySelector('.vdh-tablet'), pho = devices.querySelector('.vdh-phone');
+      // The showcase and its scroll room share their own box: the sticky
+      // showcase is held only within it, so it lets go exactly when the
+      // scene ends (p = 1) — before the text under it, never on top of it.
+      var hold = document.createElement('div');
+      hold.className = 'vdh-hold';
+      showcase.parentNode.insertBefore(hold, showcase);
+      hold.appendChild(showcase);
       var room = document.createElement('div');
       room.className = 'vdh-room';
       room.setAttribute('aria-hidden', 'true');
-      showcase.parentNode.insertBefore(room, showcase.nextSibling);
+      hold.appendChild(room);
       // the three names under the devices, the one in front lit
       var steps = document.createElement('ol');
       steps.className = 'vdh-steps';
