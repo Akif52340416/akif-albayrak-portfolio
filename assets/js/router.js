@@ -16,6 +16,12 @@
   var views = [homeView, workView, vdhView, uniteView, taliaView, aboutView, experienceView, contactView];
   var navLinks = document.querySelectorAll('.nav a[href^="#/"]');
 
+  // every page opens at its top (route() below). With the browser's own
+  // restoration, Back / Forward put the old position of that history entry
+  // back after the route had already gone to the top, so Home could land
+  // in the middle of its story. The router decides the position instead.
+  try { if ("scrollRestoration" in history) history.scrollRestoration = "manual"; } catch (e) {}
+
   function route() {
     var hash = window.location.hash || "#/";
     views.forEach(function (v) { if (v) v.hidden = true; });
@@ -61,6 +67,10 @@
     syncScrolled();
     current = hash;
     labels();
+    // the new page is in place and at the top: scripts that keep a page's
+    // state (Home's eased scroll position) can start it from here, in the
+    // same frame, before anything is painted
+    document.dispatchEvent(new CustomEvent("akif:route", { detail: { hash: hash } }));
     // a new page: focus goes to its heading, so a screen reader announces
     // it and the next Tab starts on this page. Not on the first load (the
     // browser starts at the top itself), and never with a scroll.

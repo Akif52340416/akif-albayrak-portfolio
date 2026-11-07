@@ -4,8 +4,13 @@
   // in each scene:
   //   opening        a line of light opens the portrait like a film frame
   //                  (CSS only, see motion.css; once per session)
-  //   four chapters  one light trail draws through the photo as the story
-  //                  scrolls; each chapter lights its own node
+  //   four chapters  the route: one line from node 01 (where it starts) to
+  //                  node 04 (where it ends, a ring), drawn as the story
+  //                  scrolls; each chapter lights its node, and the route's
+  //                  label stands at the node of the chapter in view. Each
+  //                  reached node grows a small fan of three points, the
+  //                  three skills of its chapter (the lines of its label).
+  //                  Desktop only: on phones the chapter list is the route
   //   education      one soft light passes over MBO 4 Software Development
   //   STILL BUILDING light streaks behind the words; with a mouse, the
   //                  letters near the pointer turn thinner and pink
@@ -61,9 +66,16 @@
   // and no SVG attribute change (that costs a layout pass on slow phones)
   var nodesG = svg.querySelector('.ht-nodes'), cursor = svg.querySelector('.ht-cursor'), cursorOn = null;
 
+  var tag = document.getElementById('trailTag');
+
   // the chapters settle at these scroll positions in home.js (vh)
   var AT = [140, 240, 340, 440];
-  var total = 0, nodeLen = [], nodes = [], table = [], mobileNow = null, lastL = -1, lastOp = -1;
+  var total = 0, nodeLen = [], nodes = [], endRing = null, table = [], mobileNow = null, lastL = -1, lastOp = -1;
+  var box = null, pts = [], tagAt = '', fans = [];
+  // the fans: always the same small shape, 26px out, 40 degrees apart, on
+  // the side of the node the route does not use (up-left at 01–03; right at
+  // 04, where the label stands above the node)
+  var FAN_AT = [-145, -145, -145, 20], FAN_R = 26, FAN_SPREAD = 40;
 
   // a smooth curve through the points (Catmull-Rom as cubic Béziers)
   function curve(pts) {
@@ -80,27 +92,31 @@
   function build() {
     var w = window.innerWidth, h = window.innerHeight, mobile = w <= 780;
     mobileNow = mobile;
+    lastL = -1; lastOp = -1; tagAt = ''; current = -1;
+    // phones: the chapter list is the route (site.css), nothing in the photo
+    if (mobile) { svg.style.display = 'none'; return; }
     // the lengths below need the trail rendered; trail() hides it again
     svg.style.display = '';
-    // desktop: up from the bottom over the water, right of the portrait and
-    // under the annotations. Phones: a calm wave along the right edge.
-    var rel = mobile
-      ? [[0.92, 0.17], [0.885, 0.27], [0.94, 0.39], [0.875, 0.51], [0.935, 0.63], [0.89, 0.75], [0.925, 0.86]]
-      : [[0.55, 1.06], [0.69, 0.86], [0.9, 0.73], [0.74, 0.6], [0.93, 0.5], [1.05, 0.4]];
-    // the svg covers only the part of the screen the trail uses: less to paint
-    var box = mobile ? { x: w * 0.8, y: h * 0.12, w: w * 0.2, h: h * 0.8 } : { x: w * 0.48, y: h * 0.32, w: w * 0.52, h: h * 0.68 };
+    // the four chapters, rising from the water into the sky right of the
+    // portrait: 01 is where the route starts, 04 where it ends — both on
+    // screen. The labels stand at these same points (placeTag)
+    var rel = [[0.70, 0.80], [0.76, 0.63], [0.84, 0.48], [0.90, 0.33]];
+    // the svg covers only the part of the screen the route uses: less to paint
+    box = { x: w * 0.6, y: h * 0.2, w: w * 0.4, h: h * 0.72 };
     svg.style.left = box.x + 'px'; svg.style.top = box.y + 'px';
     svg.style.width = box.w + 'px'; svg.style.height = box.h + 'px';
     svg.setAttribute('viewBox', '0 0 ' + box.w.toFixed(1) + ' ' + box.h.toFixed(1));
-    var pts = rel.map(function (p) { return [p[0] * w - box.x, p[1] * h - box.y]; });
+    pts = rel.map(function (p) { return [p[0] * w - box.x, p[1] * h - box.y]; });
     var d = curve(pts);
     [route, glow, line].forEach(function (p) { p.setAttribute('d', d); });
     total = line.getTotalLength();
     // a table of points along the trail, so the head never needs a lookup per frame
     table = [];
     for (var s = 0; s <= 240; s++) { var q = line.getPointAtLength(total * s / 240); table.push([q.x, q.y]); }
-    // where on the trail each chapter's point lies
-    nodeLen = [1, 2, 3, 4].map(function (k) {
+    // where on the route each chapter's node lies (01 at the start, 04 at the end)
+    nodeLen = [0, 1, 2, 3].map(function (k) {
+      if (k === 0) return 0;
+      if (k === 3) return total;
       var best = 0, dist = Infinity;
       for (var s = 0; s <= 240; s++) {
         var dx = table[s][0] - pts[k][0], dy = table[s][1] - pts[k][1], dd = dx * dx + dy * dy;
@@ -109,30 +125,88 @@
       return best;
     });
     nodesG.innerHTML = '';
-    nodes = nodeLen.map(function (L) {
-      var q = at(L), g = document.createElementNS(NS, 'g');
+    // the fans first, so the nodes are drawn over their spokes: three short
+    // spokes from the node, two short chords between the three points
+    fans = pts.map(function (q, i) {
+      var f = document.createElementNS(NS, 'g'), s = [-1, 0, 1].map(function (k) {
+        var a = (FAN_AT[i] + k * FAN_SPREAD) * Math.PI / 180;
+        return [(q[0] + Math.cos(a) * FAN_R).toFixed(1), (q[1] + Math.sin(a) * FAN_R).toFixed(1)];
+      }), x = q[0].toFixed(1), y = q[1].toFixed(1), html = '';
+      s.forEach(function (p) { html += '<line class="hf-spoke" x1="' + x + '" y1="' + y + '" x2="' + p[0] + '" y2="' + p[1] + '"/>'; });
+      html += '<line class="hf-chord" x1="' + s[0][0] + '" y1="' + s[0][1] + '" x2="' + s[1][0] + '" y2="' + s[1][1] + '"/>';
+      html += '<line class="hf-chord" x1="' + s[1][0] + '" y1="' + s[1][1] + '" x2="' + s[2][0] + '" y2="' + s[2][1] + '"/>';
+      s.forEach(function (p) { html += '<circle class="hf-dot" cx="' + p[0] + '" cy="' + p[1] + '" r="2"/>'; });
+      f.setAttribute('class', 'ht-fan');
+      // it grows out of its own node
+      f.style.transformOrigin = x + 'px ' + y + 'px';
+      f.innerHTML = html;
+      nodesG.appendChild(f);
+      return f;
+    });
+    nodes = pts.map(function (q, i) {
+      var g = document.createElementNS(NS, 'g'), x = q[0].toFixed(1), y = q[1].toFixed(1);
       g.setAttribute('class', 'ht-node');
-      g.innerHTML = '<circle class="ht-ring" cx="' + q[0].toFixed(1) + '" cy="' + q[1].toFixed(1) + '" r="5"/><circle class="ht-dot" cx="' + q[0].toFixed(1) + '" cy="' + q[1].toFixed(1) + '" r="4"/>';
+      g.innerHTML = '<circle class="ht-ring" cx="' + x + '" cy="' + y + '" r="5"/><circle class="ht-dot" cx="' + x + '" cy="' + y + '" r="4"/>' +
+        '<text class="ht-num" x="' + (q[0] + 13).toFixed(1) + '" y="' + (q[1] + 4).toFixed(1) + '">0' + (i + 1) + '</text>';
       nodesG.appendChild(g);
       return g;
     });
+    // the end of the route: a ring around 04
+    endRing = document.createElementNS(NS, 'circle');
+    endRing.setAttribute('class', 'ht-end');
+    endRing.setAttribute('cx', pts[3][0].toFixed(1)); endRing.setAttribute('cy', pts[3][1].toFixed(1)); endRing.setAttribute('r', '9');
+    nodesG.appendChild(endRing);
     glow.style.strokeDasharray = line.style.strokeDasharray = total + ' ' + total;
-    lastL = -1; lastOp = -1;
     svg.style.opacity = '0';
   }
+
+  // the area a fan takes on screen (its node and three points, a little room)
+  function fanBox(i) {
+    var x = box.x + pts[i][0], y = box.y + pts[i][1], xs = [x], ys = [y];
+    [-1, 0, 1].forEach(function (k) { var a = (FAN_AT[i] + k * FAN_SPREAD) * Math.PI / 180; xs.push(x + Math.cos(a) * FAN_R); ys.push(y + Math.sin(a) * FAN_R); });
+    return { l: Math.min.apply(null, xs) - 6, r: Math.max.apply(null, xs) + 6, t: Math.min.apply(null, ys) - 6, b: Math.max.apply(null, ys) + 6 };
+  }
+  // the route's label at the node of the chapter in view: above it at 04
+  // (the route comes up from 03 below); otherwise the first of right-below,
+  // left-below and left-above that fits on screen and touches none of the
+  // fans already grown. Only when the chapter or the size changes
+  function placeTag(ch) {
+    if (!tag || !box) return;
+    var key = ch + '|' + window.innerWidth + 'x' + window.innerHeight + '|' + tag.textContent.length;
+    if (key === tagAt) return;
+    tagAt = key;
+    var x = box.x + pts[ch][0], y = box.y + pts[ch][1], tw = tag.offsetWidth, th = tag.offsetHeight, w = window.innerWidth;
+    // 30px from the node: clear of the moving light's halo (r 22); below
+    // the node its top sits just under it, above it 34px up, clear of the fan
+    var spots = ch === 3 ? [[x - tw + 0.5, y - th - 26, true]] : [[x + 30, y + 10, false], [x - 30 - tw, y + 10, true], [x - tw + 0.5, y - th - 34, true]];
+    var grown = [];
+    for (var i = 0; i <= ch; i++) grown.push(fanBox(i));
+    var pick = spots[spots.length - 1];
+    for (var s = 0; s < spots.length; s++) {
+      var l = spots[s][0], t = spots[s][1], r = l + tw, b = t + th;
+      if (l < 24 || r > w - 24 || t < 90) continue;
+      if (grown.some(function (f) { return !(r < f.l || l > f.r || b < f.t || t > f.b); })) continue;
+      pick = spots[s]; break;
+    }
+    tag.classList.toggle('is-left', pick[2]);
+    tag.style.transform = 'translate(' + Math.round(pick[0]) + 'px,' + Math.round(pick[1]) + 'px)';
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { tagAt = ''; });
   function at(L) {
     var f = clamp01(L / (total || 1)) * 240, i = Math.floor(f), k = f - i, a = table[i], b = table[Math.min(240, i + 1)];
     return [lerp(a[0], b[0], k), lerp(a[1], b[1], k)];
   }
-  // scroll (vh) → drawn length: the head reaches node i as chapter i settles
+  // scroll (vh) → drawn length: from node 01 as chapter 01 settles, the head
+  // reaches node i as chapter i settles, and stops at 04
   function lengthAt(vh) {
-    var kp = [100].concat(AT, [500]), kl = [0].concat(nodeLen, [total]);
-    if (vh <= kp[0]) return 0;
-    for (var i = 0; i < kp.length - 1; i++) if (vh <= kp[i + 1]) return lerp(kl[i], kl[i + 1], map(vh, kp[i], kp[i + 1]));
+    if (vh <= AT[0]) return 0;
+    for (var i = 0; i < AT.length - 1; i++) if (vh <= AT[i + 1]) return lerp(nodeLen[i], nodeLen[i + 1], map(vh, AT[i], AT[i + 1]));
     return total;
   }
-  function trail(vh) {
+  var current = -1;
+  function trail(vh, ch) {
     if (mobileNow === null || (window.innerWidth <= 780) !== mobileNow) build();
+    if (mobileNow) return;
     // in once the story starts, out before the chapter break (gone before
     // the education headline, which starts rising at 490vh, can be read)
     var op = map(vh, 95, 130) * (1 - map(vh, 460, 515));
@@ -141,18 +215,36 @@
       svg.style.display = op > 0 ? '' : 'none';
       lastOp = op; svg.style.opacity = op.toFixed(3);
     }
-    if (op <= 0) return;
+    // while it is out of view (display: none) the state below is still kept
+    // up to date: no transition runs on it there, so when the route comes
+    // back (also after a visit to another page) every node and fan already
+    // stands where the story is, and nothing is seen fading out
+    var hidden = op <= 0;
+    // the node of the chapter in view: its number is in the label instead,
+    // and its fan is the one in full pink (the others stay dimmed)
+    if (ch !== current) {
+      current = ch;
+      nodes.forEach(function (g, i) { g.classList.toggle('is-current', i === ch); });
+      fans.forEach(function (f, i) { f.classList.toggle('is-current', i === ch); });
+    }
+    if (!hidden) placeTag(ch);
     // reduced motion: no growing line, the route simply stands up to the chapter in view
     var L = reduceMotion ? nodeLen[Math.max(0, AT.filter(function (a) { return vh >= a - 50; }).length - 1)] : lengthAt(vh);
     if (Math.abs(L - lastL) < 0.4) return;
     lastL = L;
     line.style.strokeDashoffset = (total - L).toFixed(1);
-    // phones show no wide glow under the line (see motion.css): don't move it either
-    if (!mobileNow) glow.style.strokeDashoffset = line.style.strokeDashoffset;
-    var q = at(L), show = L > 1 && L < total - 1 && !reduceMotion;
+    glow.style.strokeDashoffset = line.style.strokeDashoffset;
+    // the moving light: where the story is now, from 01 to 04
+    var q = at(L), show = !reduceMotion;
     if (show !== cursorOn) { cursorOn = show; cursor.style.opacity = show ? 1 : 0; }
     if (show) cursor.style.transform = 'translate(' + q[0].toFixed(1) + 'px,' + q[1].toFixed(1) + 'px)';
-    nodes.forEach(function (g, i) { var lit = L >= nodeLen[i] - 0.5; if (lit !== g.classList.contains('is-lit')) g.classList.toggle('is-lit', lit); });
+    // a node reached: it lights and its fan grows (once, by CSS transition)
+    nodes.forEach(function (g, i) {
+      var lit = L >= nodeLen[i] - 0.5;
+      if (lit !== g.classList.contains('is-lit')) { g.classList.toggle('is-lit', lit); fans[i].classList.toggle('is-on', lit); }
+    });
+    var end = L >= total - 0.5;
+    if (endRing && end !== endRing.classList.contains('is-lit')) endRing.classList.toggle('is-lit', end);
   }
   build();
   window.addEventListener('resize', function () { mobileNow = null; });
@@ -358,7 +450,7 @@
 
   // ---------- called by home.js on every frame it draws ----------
   window.akifHomeFx = function (vh, mobile, s) {
-    trail(vh);
+    trail(vh, s.ch || 0);
     education(s.nc, s.n5);
     // the light: with the statement, calmer once the gallery is in
     var f = clamp01(s.sb) * (1 - 0.75 * clamp01(s.eB));

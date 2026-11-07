@@ -18,10 +18,14 @@
 
   html, body {
     margin: 0;
-    overflow-x: hidden;
     font-family: "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
     background: rgb(var(--dusk));
   }
+  /* only the viewport scrolls: html's hidden goes to the viewport, while body
+     uses clip, so it never becomes a scroll box of its own (hidden there means
+     overflow-y: auto: a second scrollbar, and no position: sticky) */
+  html { overflow-x: hidden; }
+  body { overflow-x: clip; }
 
   .scene {
     position: fixed;
@@ -258,6 +262,8 @@
     gap: 14px;
   }
 
+  /* the connector is the route so far: pink up to the chapter in view
+     (--p, set per chapter in the markup), the faint line after it */
   .stage-list::before {
     content: '';
     position: absolute;
@@ -265,7 +271,7 @@
     top: 8px;
     bottom: 8px;
     width: 1px;
-    background: rgba(255,255,255,0.2);
+    background: linear-gradient(to bottom, var(--signal) 0 var(--p, 0%), rgba(255,255,255,0.2) var(--p, 0%));
   }
 
   .stage-item {
@@ -300,44 +306,41 @@
 
   .stage-item.active { color: var(--cream); }
   .stage-item.active .stage-dot { background: var(--signal); border-color: var(--signal); }
+  /* chapters already passed: on the route, quieter than the one in view */
+  .stage-item.is-done { color: rgba(247,243,234,0.6); }
+  .stage-item.is-done .stage-dot { background: rgba(175,45,83,0.45); border-color: var(--signal); }
 
-  /* ---- annotations: three persistent anchor points, their content changes as the story develops ---- */
-  .annotation {
+  /* ---- the route's label: one tag at the chapter's node on the pink route
+     (home-motion.js places it there), the chapter and its three skills; a
+     thin pink rule ties it to the node. Its content changes with the story
+     (home.js). Desktop only, like the route through the photo. ---- */
+  .trail-tag {
     position: fixed;
     z-index: 9;
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    font-size: 12px;
+    left: 0;
+    top: 0;
+    min-width: 150px;
+    padding: 10px 0 0 14px;
+    border-left: 1px solid rgba(175,45,83,0.9);
+    color: rgba(247,243,234,0.72);
+    font-size: 11px;
     letter-spacing: 0.12em;
-    color: rgba(255,255,255,0.85);
+    line-height: 1.9;
     text-shadow: 0 1px 10px rgba(0,0,0,0.65);
+    white-space: nowrap;
     opacity: 0;
     pointer-events: none;
-    white-space: nowrap;
   }
-
-  .annotation .a-dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: var(--signal);
-    flex: none;
-    transition: border-radius 0.3s;
-  }
-
-  /* from SOFTWARE onward the mark turns from an organic dot into a small structured square —
-     the only visual cue that the interface itself is maturing, no new color, no new lines */
-  .annotation.structured .a-dot { border-radius: 2px; }
-
-  /* positioned over the part of the photo that stays clear of the dark left zone */
-  #annotHardware { top: 21%; left: 57%; }
-  #annotTrouble  { top: 47%; left: 60%; }
-  #annotEndUsers { top: 30%; right: 12%; }
+  /* on the left of its node (where the right has no room, and at 04, where
+     it stands above the node): the rule moves to the side of the node */
+  .trail-tag.is-left { padding: 10px 14px 0 0; border-left: 0; border-right: 1px solid rgba(175,45,83,0.9); text-align: right; }
+  .trail-tag .tt-head { display: block; margin: 0 0 6px; color: var(--cream); font-weight: 500; letter-spacing: 0.16em; }
+  .trail-tag .tt-num { margin-right: 8px; color: #e0577e; font-variant-numeric: tabular-nums; }
+  .trail-tag .a-label { display: block; }
 
   @media (max-width: 780px) {
     .wordmark { right: 20px; }
-    .annotation { display: none; }
+    .trail-tag { display: none; }
     .story-block { top: 22%; max-width: 26ch; }
     .story-block .reveal { font-size: 1.3rem; }
   }
@@ -520,61 +523,146 @@
     opacity: 0;
   }
 
-  /* ---- final navigation: two large CTAs, left-anchored within the responsive
-     composition (not dead-center) so they read as a deliberate closing move ---- */
+  /* ---- the closing scene: the name that opened Home (vertical, in the
+     portrait) returns across the page as one large line, AKIF in cream and
+     ALBAYRAK softer, like the titles of the case studies. Under it a pink
+     line draws with its light point, the same light as the trail through
+     the chapters, and the two ways on sit on that line. One composition,
+     centred in the height (the `translate` property, so home.js can keep
+     its own transform for the rise); the footer row stays at the bottom.
+     All motion is set by home.js from the scroll position. ---- */
   .final-nav {
     position: fixed;
     z-index: 9;
     left: calc(var(--comp-pad) + clamp(20px, 4vw, 56px));
     right: calc(var(--comp-pad) + clamp(20px, 4vw, 56px));
-    bottom: 24%;
+    top: 46%;
+    translate: 0 -50%;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 18px;
     opacity: 0;
     pointer-events: none;
   }
 
   .final-nav.is-live { pointer-events: auto; }
 
+  .final-name {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 0.22em;
+    margin: 0;
+    /* one line across the composition at every desktop width (13rem: the
+       composition stops growing at --comp-max), and never taller than a
+       quarter of the screen on short ones */
+    font-size: min(12vw, 25vh, 13rem);
+    font-weight: 700;
+    line-height: 0.86;
+    letter-spacing: -0.045em;
+    white-space: nowrap;
+  }
+  /* each word rises out of its own line; the mask leaves room for the
+     letters' tops and the last letter's edge */
+  .final-name-mask { display: block; padding: 0.06em 0.04em 0.02em 0; margin-left: -0.02em; clip-path: inset(-0.1em -0.2em 0 0); }
+  .final-name-a, .final-name-b { display: block; will-change: transform; }
+  .final-name-a { color: var(--cream); }
+  .final-name-b { color: rgba(247,243,234,0.3); }
+
+  /* the line: drawn from the left as the scene settles; its light point
+     travels at the end of the pink part and rests there */
+  .final-rule {
+    position: relative;
+    display: block;
+    height: 1px;
+    margin: clamp(22px, 4vh, 44px) 0 0;
+    background: rgba(255,255,255,0.12);
+  }
+  .final-rule-fill {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(175,45,83,0.6), #d9466f);
+    transform-origin: 0 50%;
+    transform: scaleX(0);
+  }
+  /* the same light as the route's moving head through the chapters
+     (motion.css .ht-head / #homeTrailHalo): a white core of r 2.4 in a
+     pink halo of r 22, the same gradient stops */
+  .final-rule-head {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 4.8px;
+    height: 4.8px;
+    margin: -2.4px 0 0 -2.4px;
+    border-radius: 50%;
+    background: #fff;
+    /* with a mouse it leans a few pixels towards the pointer (home.js);
+       the transition does the easing, so no loop of its own */
+    transition: transform 0.7s cubic-bezier(.2,.7,.2,1);
+    opacity: 0;
+  }
+  .final-rule-head::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: -1;
+    width: 44px;
+    height: 44px;
+    margin: -22px 0 0 -22px;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(255,159,187,0.85), rgba(175,45,83,0.4) 40%, rgba(175,45,83,0));
+  }
+
+  /* the two ways on, side by side on the line */
+  .final-links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(20px, 3vw, 48px);
+    margin-top: clamp(18px, 3.2vh, 34px);
+  }
   .final-nav a {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 24px;
-    width: min(50vw, 340px);
+    align-items: baseline;
+    gap: 16px;
     color: var(--cream);
-    font-size: clamp(1.3rem, 3.2vw, 1.9rem);
+    font-size: clamp(1.2rem, 2.3vw, 1.9rem);
     font-weight: 500;
     letter-spacing: -0.005em;
     text-decoration: none;
-    border-bottom: 1px solid rgba(255,255,255,0.24);
-    padding-bottom: 8px;
-    transition: border-color 0.25s, transform 0.25s;
   }
-
-  .final-nav a span {
-    color: var(--signal);
-    transition: transform 0.25s;
+  .final-num {
     flex-shrink: 0;
+    color: var(--signal);
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    font-variant-numeric: tabular-nums;
   }
+  /* the pink underline grows under the label on hover / keyboard focus */
+  .final-label {
+    padding-bottom: 6px;
+    background: linear-gradient(var(--signal), var(--signal)) 0 100% / 0 1px no-repeat;
+    transition: background-size 0.45s cubic-bezier(.2,.7,.2,1);
+  }
+  .final-arrow { color: var(--signal); transition: transform 0.25s; }
+  .final-nav a:hover .final-label, .final-nav a:focus-visible .final-label { background-size: 100% 1px; }
+  .final-nav a:hover .final-arrow, .final-nav a:focus-visible .final-arrow { transform: translateX(4px); }
+  .final-nav a:focus { outline: none; }
+  .final-nav a:focus-visible { outline: 1px solid var(--signal); outline-offset: 8px; }
 
-  .final-nav a:hover { border-color: rgba(255,255,255,0.7); transform: translateX(2px); }
-  .final-nav a:hover span { transform: translateX(3px); }
-
-  /* ---- compact footer: socials right-aligned, one clean baseline row.
-     Uses the same left/right responsive insets as final-nav so the two
-     read as one deliberate closing composition rather than separate blocks. ---- */
+  /* one quiet row under a hairline: the profiles left, the copyright right
+     (the name itself is the scene above, so it is not repeated here) */
   .final-footer {
     position: fixed;
     z-index: 9;
     left: calc(var(--comp-pad) + clamp(20px, 4vw, 56px));
     right: calc(var(--comp-pad) + clamp(20px, 4vw, 56px));
-    bottom: 7%;
+    bottom: 6%;
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
     gap: 14px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.1);
     opacity: 0;
     pointer-events: none;
   }
@@ -583,8 +671,7 @@
 
   .final-socials {
     display: flex;
-    justify-content: flex-end;
-    gap: 20px;
+    gap: 24px;
   }
 
   .final-footer a {
@@ -597,32 +684,22 @@
 
   .final-footer a:hover { color: rgba(255,255,255,0.85); }
 
-  .final-baseline {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 14px;
-    border-top: 1px solid rgba(255,255,255,0.1);
-  }
-
   .final-baseline span {
     color: rgba(255,255,255,0.32);
     font-size: 12px;
-    
     letter-spacing: 0.14em;
     text-transform: uppercase;
   }
 
   @media (max-width: 780px) {
-    /* phones and tablets: the two actions and the footer form one block
-       around the middle of the screen, instead of sitting low with the top
-       two thirds empty. The actions end just above the centre line, the
-       footer starts just below it. */
-    .final-nav { left: 20px; right: 20px; align-items: center; bottom: calc(50% + 6px); gap: 14px; }
-    .final-nav a { width: min(80vw, 320px); font-size: clamp(1.15rem, 5vw, 1.4rem); }
-    .final-footer { left: 20px; right: 20px; top: calc(50% + 34px); bottom: auto; gap: 12px; }
-    .final-socials { justify-content: center; }
-    .final-baseline { flex-direction: column; gap: 6px; text-align: center; border-top: none; padding-top: 2px; }
+    /* phones and small tablets: the name in two lines, the two ways on
+       stacked as full-width rows on the line, the scene in the middle of
+       the screen and the footer row at the bottom */
+    .final-nav { left: 20px; right: 20px; top: 49%; }
+    .final-name { flex-direction: column; font-size: min(17.5vw, 13vh, 7rem); line-height: 0.88; }
+    .final-links { grid-template-columns: minmax(0, 1fr); gap: 0; margin-top: 8px; }
+    .final-nav a { min-height: 54px; align-items: center; font-size: clamp(1.1rem, 5vw, 1.35rem); border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .final-footer { left: 20px; right: 20px; bottom: max(5vh, 24px); flex-wrap: wrap; row-gap: 10px; }
   }
 
   /* ---- three-project gallery: STILL BUILDING's evidence. One composition,
@@ -919,7 +996,7 @@
   }
 
   body.subpage {
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   .page-view.subpage {
@@ -2486,6 +2563,24 @@
     .t-hero-meta { justify-content: flex-start; }
     .t-result-lead, .t-result-body { grid-column: 1 / -1; }
   }
+
+  /* ---- technical build (Unite, Talia): the statement left, the three
+     languages as a short facts list right ---- */
+  .cs-tech .cs-label { grid-column: 1 / -1; }
+  .cs-tech .cs-lead { grid-column: 1 / span 6; }
+  .cs-tech .cs-tech-list { grid-column: 8 / span 5; margin-top: 0; }
+  /* ---- Talia, role and approach: under the offset text the real
+     call-to-actions, then the reading order as the calm rows ---- */
+  .t-approach .t-cta-crop { grid-column: 4 / span 5; margin: clamp(36px, 4vw, 56px) 0 0; }
+  .t-approach .t-rows { grid-column: 1 / -1; width: 100%; margin-top: clamp(48px, 5vw, 72px); }
+  @media (max-width: 1100px) {
+    .cs-tech .cs-lead { grid-column: 1 / span 11; }
+    .cs-tech .cs-tech-list { grid-column: 1 / span 10; margin-top: 28px; }
+    .t-approach .t-cta-crop { grid-column: 1 / span 8; }
+  }
+  @media (max-width: 680px) {
+    .cs-tech .cs-tech-list, .t-approach .t-cta-crop { grid-column: 1 / -1; }
+  }
   /* ==========================================================
      end UNITE + TALIA
      ========================================================== */
@@ -2520,9 +2615,9 @@
     --ab-gap: clamp(16px, 2.4vw, 40px);
   }
 
-  /* only while /about is shown: `clip` instead of `hidden` on body, so the
-     route chapter can use position: sticky (hidden turns body into a scroll
-     container and silently disables sticky). The viewport still clips x. */
+  /* /about relies on body using `clip`, not `hidden`, so the route chapter
+     can use position: sticky (body now clips x this way on every page; kept
+     here as an explicit guard). The viewport still clips x. */
   body.is-about { overflow-x: clip; }
 
   /* the fixed navigation has no background of its own. On every subpage

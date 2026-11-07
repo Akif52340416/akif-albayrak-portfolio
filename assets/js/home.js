@@ -24,9 +24,12 @@
   var blockSystems = safeGet("blockSystems");
   var blockImprovement = safeGet("blockImprovement");
 
-  var annotHardware = safeGet("annotHardware");
-  var annotTrouble = safeGet("annotTrouble");
-  var annotEndUsers = safeGet("annotEndUsers");
+  var trailTag = safeGet("trailTag");
+  var tagNum = trailTag ? trailTag.querySelector(".tt-num") : null;
+  var tagName = trailTag ? trailTag.querySelector(".tt-name") : null;
+  var tagLabels = trailTag ? trailTag.querySelectorAll(".a-label") : [];
+  var tagShown = -1;
+  var CHAPTERS = ["SUPPORT", "SOFTWARE", "SYSTEMS", "IMPROVEMENT"];
 
   var prefersReduced = false;
   try {
@@ -37,12 +40,12 @@
     console.error("[akif-intro] matchMedia check failed:", err);
   }
 
-  // three persistent anchor points; only their label text changes as the story develops
+  // the skills of each chapter, shown in the route's label at that chapter's node
   var annotSets = [
     ["HARDWARE", "TROUBLESHOOTING", "END USERS"],   // 01 SUPPORT
     ["HTML / CSS", "JAVASCRIPT", "PHP / C#"],        // 02 SOFTWARE
     ["PYTHON", "SQL", "MACHINE DATA"],               // 03 SYSTEMS
-    ["PROCESS", "AUTOMATION", "IT / SOFTWARE"]       // 04 IMPROVEMENT
+    ["PROCESS", "AUTOMATION", "API'S"]       // 04 IMPROVEMENT
   ];
 
   function lerp(a, b, t) { return a + (b - a) * t; }
@@ -125,6 +128,12 @@
   var galleryItems = galleryProjects ? Array.prototype.slice.call(galleryProjects.querySelectorAll(".gallery-item")) : [];
   var finalNav = document.getElementById("finalNav");
   var finalFooter = document.getElementById("finalFooter");
+  var finalNameA = document.getElementById("finalNameA");
+  var finalNameB = document.getElementById("finalNameB");
+  var finalRule = document.getElementById("finalRule");
+  var finalRuleFill = finalRule ? finalRule.querySelector(".final-rule-fill") : null;
+  var finalRuleHead = finalRule ? finalRule.querySelector(".final-rule-head") : null;
+  var ruleNow = 0, headLeaning = false;
 
   // a layer that can't be seen can't be reached either: no clicks, no Tab
   // stop, not read out. All Home layers are in the page from the start
@@ -198,18 +207,23 @@
     if (e3 >= 0.5) annotIndex = 3;
     var set = annotSets[annotIndex];
 
+    // the route's label: in with chapter 01, out together with the route
+    // (460–515vh in home-motion.js), never without it. Between two chapters
+    // it is fully gone at the hand-off (where it moves to the next node and
+    // changes text), so it is never seen jumping
     var entranceEnvelope = clamp01((e0 - 0.55) / 0.18);
-    var dip = 1 - 0.4 * (bump(e1, 0.5, 0.1) + bump(e2, 0.5, 0.1) + bump(e3, 0.5, 0.1));
-    var annotOpacity = entranceEnvelope * dip * (1 - e4);
-    var structured = annotIndex >= 1;
+    var handoff = (1 - bump(e1, 0.5, 0.2)) * (1 - bump(e2, 0.5, 0.2)) * (1 - bump(e3, 0.5, 0.2));
+    var annotOpacity = entranceEnvelope * handoff * (1 - clamp01((scrollVh - 460) / 55));
 
-    [annotHardware, annotTrouble, annotEndUsers].forEach(function (el, i) {
-      if (!el) return;
-      el.style.opacity = String(annotOpacity);
-      var label = el.querySelector(".a-label");
-      if (label) label.textContent = set[i];
-      el.classList.toggle("structured", structured);
-    });
+    if (trailTag) {
+      trailTag.style.opacity = annotOpacity.toFixed(3);
+      if (annotIndex !== tagShown) {
+        tagShown = annotIndex;
+        if (tagNum) tagNum.textContent = "0" + (annotIndex + 1);
+        if (tagName) tagName.textContent = CHAPTERS[annotIndex];
+        for (var li = 0; li < tagLabels.length; li++) tagLabels[li].textContent = set[li];
+      }
+    }
 
     var teaserOpacity = (e3 > 0.85 ? (e3 - 0.85) / 0.15 : 0) * (1 - e4);
     if (teaser) teaser.style.opacity = String(teaserOpacity);
@@ -267,12 +281,27 @@
     // into it on narrow screens.
     if (infoLabel) infoLabel.style.opacity = String(0.88 * (1 - clamp01(eD / 0.6)) * (mobile ? (1 - clamp01(eB)) * (1 - teaserOpacity) : 1));
 
-    // final actions: About me / Let's talk, then the minimal footer joins
+    // the closing scene: the name returns (AKIF first, ALBAYRAK just after,
+    // each rising out of its own line), the pink line draws under it with
+    // its light point at the end, then About me / Let's talk and the footer
+    // settle on it
     var navOpacity = clamp01(eD);
     if (finalNav) {
       finalNav.style.opacity = String(navOpacity);
       finalNav.style.transform = "translateY(" + lerp(14, 0, navOpacity) + "px)";
       live(finalNav, navOpacity > 0.6);
+    }
+    var riseA = easeInOutCubic(clamp01(eD * 1.3));
+    var riseB = easeInOutCubic(clamp01(eD * 1.3 - 0.25));
+    if (finalNameA) finalNameA.style.transform = "translateY(" + lerp(105, 0, riseA).toFixed(2) + "%)";
+    if (finalNameB) finalNameB.style.transform = "translateY(" + lerp(105, 0, riseB).toFixed(2) + "%)";
+    ruleNow = easeInOutCubic(clamp01((scrollVh - (F0 + S5) / 2) / (S6 - (F0 + S5) / 2)));
+    if (finalRuleFill) finalRuleFill.style.transform = "scaleX(" + ruleNow.toFixed(4) + ")";
+    if (finalRuleHead) {
+      finalRuleHead.style.left = (ruleNow * 100).toFixed(2) + "%";
+      finalRuleHead.style.opacity = String(clamp01(ruleNow * 10));
+      // the scene is leaving: the light point lets go of the pointer
+      if (headLeaning && navOpacity <= 0.6) { headLeaning = false; finalRuleHead.style.transform = ""; }
     }
 
     var footerOpacity = clamp01(eE);
@@ -284,7 +313,7 @@
     // the light layer (home-motion.js) follows the same position from this
     // same loop: the trail through the chapters, the light over the
     // education headline and the light behind STILL BUILDING.
-    if (window.akifHomeFx) window.akifHomeFx(scrollVh, mobile, { sb: sbOpacity * (1 - eC), eB: eB, nc: eNC, n5: eN5 });
+    if (window.akifHomeFx) window.akifHomeFx(scrollVh, mobile, { sb: sbOpacity * (1 - eC), eB: eB, nc: eNC, n5: eN5, ch: annotIndex });
   }
 
   // smoothing: the visible state always eases toward the scroll position instead of
@@ -325,7 +354,22 @@
     else running = false;
   }
 
+  // the closing scene's light point leans a few pixels towards a mouse
+  // pointer nearby (more the closer it is); its CSS transition does the
+  // easing, so this is one write per move and no loop of its own
+  function leanHead(e) {
+    if (!finalRuleHead || !finalRule || e.pointerType !== "mouse") return;
+    if (!finalNav.classList.contains("is-live")) return;
+    var r = finalRule.getBoundingClientRect();
+    var dx = e.clientX - (r.left + r.width * ruleNow), dy = e.clientY - r.top;
+    var dist = Math.sqrt(dx * dx + dy * dy) || 1;
+    var k = Math.max(0, 1 - dist / 380);
+    finalRuleHead.style.transform = "translate(" + (dx / dist * 8 * k).toFixed(1) + "px," + (dy / dist * 5 * k).toFixed(1) + "px)";
+    headLeaning = true;
+  }
+
   function onPointerMove(e) {
+    leanHead(e);
     // apply() sets the photo's own transform on its next frame, as it always
     // did while the loop never stopped: keep that by running one more frame
     wake();
@@ -346,9 +390,21 @@
 
   window.addEventListener("scroll", readTarget, { passive: true });
   window.addEventListener("resize", readTarget);
-  // back on Home: router.js loads after this script, so its hashchange
-  // handler (which removes .subpage) runs after this one; wait one tick
-  window.addEventListener("hashchange", function () { setTimeout(readTarget, 0); });
+  // back on Home: the router has shown Home and put it at the top. The eased
+  // position still holds wherever Home was left (the loop stops on other
+  // pages), so easing from there would play every scene backwards. Arriving
+  // on a page is not a scroll: start at the real position, drawn right away,
+  // in the same frame (the router sends this before anything is painted).
+  document.addEventListener("akif:route", function () {
+    if (document.body.classList.contains("subpage")) return;
+    targetVh = (window.scrollY / window.innerHeight) * 100;
+    currentVh = targetVh;
+    try {
+      apply(currentVh);
+    } catch (err) {
+      console.error("[akif-intro] apply() on arrival failed:", err);
+    }
+  });
   wake();
 
   if (!prefersReduced) {

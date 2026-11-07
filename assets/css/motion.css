@@ -54,12 +54,14 @@
 
 /* the channel: a light at the end of the pink part, while it is growing.
    A full-height layer moved with transform (as tall as the line, so 100%
-   is the line's length), the light sits at its top: no layout work and no
-   layout shift while scrolling */
+   is the line's length), the light sits at its bottom edge: no layout work
+   and no layout shift while scrolling. The layer comes in from above the
+   line instead of sliding out below it, so it never adds page length below
+   the footer */
 .oc-channel-head {
   position: absolute;
   inset: 0;
-  transform: translateY(calc(var(--c, 1) * 100%));
+  transform: translateY(calc((var(--c, 1) - 1) * 100%));
   opacity: 0;
   transition: opacity 0.4s ease;
   pointer-events: none;
@@ -68,7 +70,7 @@
   content: '';
   position: absolute;
   left: -4px;
-  top: -4px;
+  bottom: -5px;
   width: 9px;
   height: 9px;
   border-radius: 50%;
@@ -382,6 +384,25 @@ body.subpage .home-trail { display: none; }
 .ht-node.is-lit .ht-dot { fill: var(--signal); stroke: #fff; }
 .ht-ring { fill: none; stroke: #e0577e; stroke-width: 1; opacity: 0; transform-box: fill-box; transform-origin: center; }
 .ht-node.is-lit .ht-ring { animation: htRing 1.2s cubic-bezier(.2,.7,.2,1) 1; }
+/* each node carries its chapter number (as in the chapter list); at the
+   node in view the route's label shows it instead */
+.ht-num { font-size: 11px; letter-spacing: 0.14em; fill: rgba(247,243,234,0.42); font-variant-numeric: tabular-nums; transition: fill 0.5s ease, opacity 0.3s ease; }
+.ht-node.is-lit .ht-num { fill: rgba(247,243,234,0.85); }
+.ht-node.is-current .ht-num { opacity: 0; }
+/* each reached node's fan: its chapter's three skills. It grows out of the
+   node once, when the node is reached (a transition, nothing moves after);
+   the chapter in view in full pink, the ones before it dimmed */
+.ht-fan { opacity: 0; transform: scale(0.4); transition: opacity 0.7s ease, transform 0.7s cubic-bezier(.2,.7,.2,1); }
+.ht-fan.is-on { opacity: 0.4; transform: none; }
+.ht-fan.is-on.is-current { opacity: 1; }
+.hf-spoke { stroke: #e0577e; stroke-width: 0.9; stroke-opacity: 0.75; }
+.hf-chord { stroke: #e0577e; stroke-width: 0.8; stroke-opacity: 0.5; }
+.hf-dot { fill: #e0577e; }
+.ht-fan.is-current .hf-spoke { stroke: #f2b8c9; }
+.ht-fan.is-current .hf-dot { fill: #f7c4d3; }
+/* the end of the route: a ring around 04, pink once the route is there */
+.ht-end { fill: none; stroke: rgba(247,243,234,0.3); stroke-width: 1; transition: stroke 0.5s ease; }
+.ht-end.is-lit { stroke: #e0577e; }
 @keyframes htRing { from { opacity: 0.9; transform: scale(1); } to { opacity: 0; transform: scale(4.5); } }
 
 /* ---- the education headline: one soft light passes over it ---- */
@@ -423,7 +444,7 @@ body.subpage .home-finale-light { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .ht-node.is-lit .ht-ring, #storyCurrent .story-headline.is-sheen { animation: none; }
   .hfl-drift { animation: none; }
-  .ht-dot { transition: none; }
+  .ht-dot, .ht-num, .ht-end, .ht-fan { transition: none; }
 }
 /* ==========================================================
    end HOME

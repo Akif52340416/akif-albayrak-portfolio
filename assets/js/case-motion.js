@@ -103,9 +103,9 @@
 
       var on = function () {
         view.classList.toggle('vdh-montage', held.matches);
-        // body.subpage has overflow-x: hidden, which turns the body into a
-        // scroll box and stops position: sticky; clip does the same job
-        // without that (as on /about). Only while this case is open.
+        // body already clips x with overflow-x: clip (hidden would turn it
+        // into a scroll box and stop position: sticky); the class stays as
+        // the hook for this case's held scene. Only while this case is open.
         document.body.classList.toggle('cs-held', held.matches && current() === 'vdhView');
         if (!held.matches) [lap, tab, pho].forEach(function (el) { el.style.transform = ''; el.style.opacity = ''; el.style.removeProperty('--dim'); });
         wake();
