@@ -2943,31 +2943,6 @@
   .ab-tl-copy p + p { margin-top: 1em; }
   .ab-tl-close { color: var(--cream); font-weight: 500; }
 
-  /* the directions still to explore, ending in an open question */
-  .ab-tl-dirs { padding: 16px 0; border-top: 1px solid rgba(255,255,255,0.12); border-bottom: 1px solid rgba(255,255,255,0.12); }
-  .ab-tl-dirs-label {
-    display: block;
-    margin-bottom: 10px;
-    font-size: 11px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.45);
-  }
-  .ab-tl-dirs-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px 0;
-    font-size: clamp(0.9rem, 1.1vw, 1rem);
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: rgba(247,243,234,0.5);
-  }
-  .ab-tl-step:nth-child(odd) .ab-tl-dirs-list { justify-content: flex-end; }
-  .ab-tl-dirs-list > span:not(:last-child)::after { content: '→'; margin: 0 0.6em; font-weight: 400; color: rgba(255,255,255,0.25); }
-  .ab-tl-dirs-hi { color: var(--cream); }
-  .ab-tl-dirs-hi span { color: var(--signal); }
-
   /* ---------- 04 — outside IT: one composed spread ----------
      A 12-column stage with three rows (1fr / auto / 1fr). The photo spans
      all three rows as a compact 4:5 portrait (cols 4–8). VOETBAL sits in
@@ -3333,8 +3308,7 @@
       padding: 0 0 0 34px;
       text-align: left;
     }
-    .ab-tl-step:nth-child(odd) .ab-tl-meta,
-    .ab-tl-step:nth-child(odd) .ab-tl-dirs-list { justify-content: flex-start; }
+    .ab-tl-step:nth-child(odd) .ab-tl-meta { justify-content: flex-start; }
     .ab-tl-step:nth-child(odd) .ab-tl-copy { margin-left: 0; }
     .ab-tl-word { font-size: clamp(2.1rem, 10.5vw, 3.6rem); }
     .ab-tl-maybe { font-size: 0.6em; }
@@ -3436,25 +3410,40 @@
   }
 
   /* ==========================================================
-     EXPERIENCE PAGE — practice & skills. Same identity as /about
-     (numbered labels, big uppercase type, ruled rows, one accent);
-     its own device is the internship overview: a list on the left,
-     the selected internship large on the right (an accordion on
-     phones). All CSS defaults are the finished states:
-     the script only arms the motion (.ex-armed) when it's allowed.
+     EXPERIENCE PAGE — THE EXPERIENCE ARCHIVE: the internships as five
+     files, each its own chapter with its own composition. Hero (three
+     lines + the archive rule), the index (companies as large type lines,
+     a preview beside them), five files (01 ledger, 02 ticket flow, 03
+     editor, 04 data stream, 05 processes ⇄ API ⇄ systems), the toolkit
+     as a compact appendix, a large link on to Work.
+     The archive transition is scroll-linked, never scroll-jacking: the
+     script writes --p (a file's card entering: its name slides together),
+     --e (a file leaving: its content steps back) and --q (its end rule
+     drawing) on each file, and moves the fixed archive indicator. Every
+     CSS default is the finished state (the vars default to done), so
+     without JS or with reduced motion everything simply stands.
      ========================================================== */
   #experienceView.page-view.subpage {
     padding-top: clamp(112px, 13vh, 150px);
     padding-bottom: clamp(40px, 5vw, 72px);
-    --ex-gap: clamp(16px, 2.4vw, 40px);
-    --ex-line: rgba(255,255,255,0.12);
+    --xa-gap: clamp(16px, 2.4vw, 40px);
+    --xa-line: rgba(255,255,255,0.12);
+    --xa-soft: rgba(247,243,234,0.34);
+    --xa-gutter: clamp(20px, 6vw, 90px);
+    --xa-ease: cubic-bezier(.2,.7,.2,1);
+    --xa-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
   }
-  .ex-shell { max-width: var(--comp-max); margin: 0 auto; }
+  .xa-shell { max-width: var(--comp-max); margin: 0 auto; }
+  /* large screens: the same fluid content width as /about and /contact */
+  @media (min-width: 1600px) {
+    .xa-shell { max-width: min(calc(100vw - 2 * var(--xa-gutter)), calc(31.25vw + 900px), calc(11.36vw + 1409px)); }
+  }
 
-  .ex-label {
+  .xa-tag {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 14px;
+    gap: 8px 14px;
     margin: 0;
     font-size: 12px;
     font-weight: 600;
@@ -3462,587 +3451,11 @@
     text-transform: uppercase;
     color: rgba(255,255,255,0.55);
   }
-  .ex-label-num {
-    display: inline-flex;
-    align-items: center;
-    gap: 14px;
-    color: var(--signal);
-    font-variant-numeric: tabular-nums;
-  }
-  .ex-label-num::after { content: ''; width: 28px; height: 1px; background: rgba(255,255,255,0.28); }
-
-  .ex-sub {
-    display: block;
-    margin: 0 0 14px;
-    font-size: 11px;
-    font-weight: 400;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.45);
-  }
-
-  .ex-reveal {
-    transition: opacity 0.85s ease, transform 0.85s cubic-bezier(.2,.7,.2,1);
-    transition-delay: var(--d, 0s);
-  }
-  #experienceView.ex-armed .ex-reveal:not(.is-in) { opacity: 0; transform: translateY(22px); }
-
-  /* ---------- 00 — intro: LEARNING / BY DOING. ---------- */
-  .ex-intro {
-    display: flex;
-    flex-direction: column;
-    min-height: clamp(560px, calc(100vh - 150px), 980px);
-  }
-  .ex-title {
-    margin: auto 0 0;
-    padding-top: clamp(48px, 8vh, 96px);
-    font-size: clamp(3.4rem, 12.5vw, 15rem);
-    font-weight: 800;
-    line-height: 0.86;
-    letter-spacing: -0.045em;
-    text-transform: uppercase;
-    color: var(--cream);
-  }
-  .ex-title-line { display: block; white-space: nowrap; }
-  .ex-title-line--2 { padding-left: 1.1em; }
-  .ex-title .ex-dot { color: var(--signal); }
-
-  /* each word rises out of its own line (clipped at the bottom only) */
-  .ex-word-mask {
-    display: inline-block;
-    vertical-align: top;
-    clip-path: inset(-0.3em -0.4em 0 -0.4em);
-  }
-  .ex-word {
-    display: inline-block;
-    transition: transform 1.1s cubic-bezier(.2,.75,.15,1);
-    transition-delay: var(--d, 0s);
-  }
-  .ex-armed .ex-intro:not(.is-in) .ex-word { transform: translateY(108%); }
-
-  .ex-intro-fade {
-    transition: opacity 0.9s ease, transform 0.9s cubic-bezier(.2,.7,.2,1);
-    transition-delay: var(--d, 0s);
-  }
-  .ex-armed .ex-intro:not(.is-in) .ex-intro-fade { opacity: 0; transform: translateY(18px); }
-
-  .ex-intro-foot {
-    display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    column-gap: var(--ex-gap);
-    align-items: end;
-    margin-top: clamp(36px, 5vw, 72px);
-    padding-top: 22px;
-    border-top: 1px solid var(--ex-line);
-  }
-  .ex-intro-copy { grid-column: 7 / -1; grid-row: 1; max-width: 46ch; }
-  .ex-intro-copy p {
-    margin: 0;
-    font-size: clamp(1.02rem, 1.25vw, 1.15rem);
-    line-height: 1.62;
-    color: rgba(255,255,255,0.8);
-  }
-  .ex-intro-copy p + p { margin-top: 1em; color: rgba(255,255,255,0.6); }
-
-  .ex-jump { grid-column: 1 / span 5; grid-row: 1; }
-  .ex-jump-list { list-style: none; margin: 0; padding: 0; }
-  .ex-jump-list button {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 14px;
-    padding: 5px 0;
-    border: 0;
-    background: none;
-    color: rgba(247,243,234,0.7);
-    font: 500 15px/1.4 "Instrument Sans", sans-serif;
-    cursor: pointer;
-    transition: color 0.25s;
-  }
-  .ex-jump-num { font-size: 11px; letter-spacing: 0.14em; color: rgba(255,255,255,0.4); font-variant-numeric: tabular-nums; transition: color 0.25s; }
-  .ex-jump-track { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.36); white-space: nowrap; }
-  .ex-jump-arrow { color: var(--signal); opacity: 0; transform: translateY(-3px); transition: opacity 0.25s, transform 0.25s; }
-  .ex-jump-list button:hover,
-  .ex-jump-list button:focus-visible { color: var(--cream); }
-  .ex-jump-list button:hover .ex-jump-num,
-  .ex-jump-list button:focus-visible .ex-jump-num { color: var(--signal); }
-  .ex-jump-list button:hover .ex-jump-arrow,
-  .ex-jump-list button:focus-visible .ex-jump-arrow { opacity: 1; transform: translateY(0); }
-  .ex-jump-list button:focus-visible { outline: 1px solid var(--signal); outline-offset: 4px; }
-
-  /* ---------- shared section head ---------- */
-  .ex-section { margin-top: clamp(120px, 13vw, 200px); }
-  .ex-head {
-    display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    column-gap: var(--ex-gap);
-    align-items: end;
-    margin-bottom: clamp(56px, 7vw, 110px);
-  }
-  .ex-head .ex-label { grid-column: 1 / -1; margin-bottom: clamp(28px, 3.4vw, 48px); }
-  .ex-h2 {
-    grid-column: 1 / span 7;
-    margin: 0;
-    font-size: clamp(2.4rem, 6.2vw, 6rem);
-    font-weight: 700;
-    line-height: 0.95;
-    letter-spacing: -0.03em;
-    text-transform: uppercase;
-    color: var(--cream);
-  }
-  .ex-head-note {
-    grid-column: 8 / -1;
-    max-width: 42ch;
-    margin: 0;
-    padding-bottom: 0.4em;
-    font-size: clamp(1rem, 1.2vw, 1.1rem);
-    line-height: 1.65;
-    color: rgba(255,255,255,0.66);
-  }
-
-  /* ---------- 01 — the internships: list + detail ----------
-     Desktop: the five buttons fill the left column; all panels share the
-     right column (one grid area), so the block keeps the height of the
-     longest panel and nothing below jumps when switching. Only the open
-     panel is visible; it rises in with a short stagger. The last, flexible
-     row takes any extra height, so the list itself stays compact.
-     Phones (see below): the same markup reads as an accordion. */
-  .ex-x {
-    display: grid;
-    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-    grid-template-rows: repeat(5, auto) 1fr;
-    column-gap: clamp(40px, 6vw, 120px);
-    align-items: start;
-  }
-  .ex-x-head { grid-column: 1; margin: 0; font: inherit; }
-  /* in case anything scrolls these into view: stay clear of the fixed nav + its backdrop */
-  .ex-x, .ex-x-btn { scroll-margin-top: 150px; }
-
-  .ex-x-btn {
-    position: relative;
-    display: grid;
-    grid-template-columns: 3.2em minmax(0, 1fr) auto;
-    align-items: baseline;
-    row-gap: 10px;
-    width: 100%;
-    padding: clamp(18px, 2vw, 28px) 0;
-    border: 0;
-    border-top: 1px solid var(--ex-line);
-    background: none;
-    color: inherit;
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-  }
-  .ex-x-head:last-of-type .ex-x-btn { border-bottom: 1px solid var(--ex-line); }
-  /* the open item's top rule is drawn in the accent, left to right */
-  .ex-x-btn::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: -1px;
-    height: 1px;
-    background: var(--signal);
-    transform: scaleX(0);
-    transform-origin: 0 50%;
-    transition: transform 0.7s cubic-bezier(.65,0,.25,1);
-  }
-  .ex-x-btn[aria-expanded="true"]::before { transform: scaleX(1); }
-  .ex-x-btn:focus { outline: none; }
-  .ex-x-btn:focus-visible { outline: 1px solid var(--signal); outline-offset: 4px; }
-
-  .ex-x-num {
-    grid-column: 1;
-    font-size: 12px;
-    letter-spacing: 0.14em;
-    color: rgba(255,255,255,0.4);
-    font-variant-numeric: tabular-nums;
-    transition: color 0.35s ease;
-  }
-  .ex-x-name {
-    grid-column: 2;
-    font-size: clamp(1.5rem, 2.5vw, 2.6rem);
-    font-weight: 800;
-    line-height: 0.95;
-    letter-spacing: -0.03em;
-    text-transform: uppercase;
-    color: rgba(247,243,234,0.34);
-    overflow-wrap: break-word;
-    transition: color 0.35s ease, transform 0.5s cubic-bezier(.2,.7,.2,1);
-  }
-  .ex-x-info {
-    grid-column: 2;
-    grid-row: 2;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px 16px;
-    font-size: 11px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.45);
-    font-variant-numeric: tabular-nums;
-    transition: transform 0.5s cubic-bezier(.2,.7,.2,1);
-  }
-  .ex-x-now { display: inline-flex; align-items: center; gap: 8px; color: var(--cream); }
-  .ex-x-now::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--signal); }
-  /* desktop: an arrow points at the open panel */
-  .ex-x-icon {
-    grid-column: 3;
-    grid-row: 1 / span 2;
-    align-self: center;
-    position: relative;
-    width: 18px;
-    height: 18px;
-    color: var(--signal);
-    opacity: 0;
-    transform: translateX(-8px);
-    transition: opacity 0.35s ease, transform 0.5s cubic-bezier(.2,.7,.2,1);
-  }
-  .ex-x-icon::before { content: '→'; position: absolute; inset: 0; font-size: 18px; line-height: 18px; }
-
-  .ex-x-btn:hover .ex-x-name { color: rgba(247,243,234,0.7); }
-  .ex-x-btn:hover .ex-x-num { color: rgba(255,255,255,0.7); }
-  .ex-x-btn[aria-expanded="true"] .ex-x-num { color: var(--signal); }
-  .ex-x-btn[aria-expanded="true"] .ex-x-name { color: var(--cream); transform: translateX(10px); }
-  .ex-x-btn[aria-expanded="true"] .ex-x-info { transform: translateX(10px); }
-  .ex-x-btn[aria-expanded="true"] .ex-x-icon { opacity: 1; transform: translateX(0); }
-
-  .ex-x-panel {
-    grid-column: 2;
-    grid-row: 1 / -1;
-    min-width: 0;
-    visibility: hidden;
-    opacity: 0;
-  }
-  .ex-x-panel.is-open { visibility: visible; opacity: 1; }
-  .ex-x-panel.is-open > * { animation: exPanelIn 0.7s cubic-bezier(.2,.7,.2,1) both; }
-  .ex-x-panel.is-open > :nth-child(2) { animation-delay: 0.06s; }
-  .ex-x-panel.is-open > :nth-child(3) { animation-delay: 0.12s; }
-  .ex-x-panel.is-open > :nth-child(4) { animation-delay: 0.18s; }
-  @keyframes exPanelIn {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .ex-x-title {
-    margin: 0;
-    font-size: clamp(2.6rem, 5vw, 6rem);
-    font-weight: 800;
-    line-height: 0.9;
-    letter-spacing: -0.035em;
-    text-transform: uppercase;
-    color: var(--cream);
-    overflow-wrap: break-word;
-  }
-  .ex-x-title span { display: block; }
-  .ex-x-title .ex-x-soft { color: rgba(247,243,234,0.32); }
-
-  .ex-x-facts {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-end;
-    gap: 18px clamp(28px, 3vw, 48px);
-    margin: clamp(28px, 3vw, 40px) 0 0;
-    padding-top: 18px;
-    border-top: 1px solid var(--ex-line);
-  }
-  .ex-x-facts .ex-sub { margin-bottom: 8px; }
-  .ex-x-facts dd {
-    margin: 0;
-    font-size: 15px;
-    font-weight: 500;
-    color: rgba(255,255,255,0.86);
-  }
-  .ex-x-facts time { white-space: nowrap; }
-  .ex-x-facts-status { margin-left: auto; }
-
-  .ex-x-desc { margin-top: clamp(28px, 3vw, 40px); }
-  .ex-x-cols {
-    display: grid;
-    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-    column-gap: clamp(28px, 3.4vw, 56px);
-    row-gap: 32px;
-    margin-top: clamp(32px, 3.4vw, 48px);
-  }
-
-  .ex-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 5px 11px;
-    border: 1px solid rgba(175,45,83,0.6);
-    border-radius: 999px;
-    font-size: 10.5px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--cream);
-  }
-  .ex-status::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--signal); }
-
-  .ex-desc p {
-    max-width: 52ch;
-    margin: 0;
-    font-size: clamp(1rem, 1.2vw, 1.1rem);
-    line-height: 1.65;
-    color: rgba(255,255,255,0.76);
-  }
-  .ex-desc p + p { margin-top: 1em; }
-
-  .ex-tasks { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--ex-line); }
-  .ex-tasks li {
-    position: relative;
-    padding: 11px 0 11px 22px;
-    border-bottom: 1px solid rgba(255,255,255,0.07);
-    font-size: 14.5px;
-    line-height: 1.5;
-    color: rgba(255,255,255,0.72);
-  }
-  .ex-tasks li::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 22px;
-    width: 10px;
-    border-top: 1px solid var(--signal);
-  }
-
-  .ex-tag-list { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0; }
-  .ex-tag-list li {
-    padding: 6px 12px;
-    border: 1px solid rgba(255,255,255,0.16);
-    border-radius: 999px;
-    font-size: 11.5px;
-    letter-spacing: 0.08em;
-    color: rgba(255,255,255,0.72);
-  }
-
-  /* ---------- 02 — skills: one ruled row per level ----------
-     The level is the large heading (with its mark), a short line says what
-     it means; on the right the skills, split into the same three areas.
-     Regular skills are set brighter and heavier than the other two levels. */
-  .ex-mark { flex: none; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--signal); }
-  .ex-mark--basic { background: transparent; border: 1px solid rgba(247,243,234,0.65); }
-  .ex-mark--intern { border-radius: 1px; background: transparent; border: 1px solid var(--signal); transform: rotate(45deg); }
-
-  .ex-cats { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--ex-line); }
-  .ex-cat {
-    display: grid;
-    grid-template-columns: 3.2em minmax(0, 5fr) minmax(0, 7fr);
-    column-gap: var(--ex-gap);
-    align-items: start;
-    padding: clamp(24px, 2.6vw, 40px) 0;
-    border-bottom: 1px solid var(--ex-line);
-  }
-  /* number, heading and the first row of skills share one top line:
-     the level's mark sits above the heading (9px + 14px) */
-  .ex-cat-num {
-    padding-top: 26px;
-    font-size: 12px;
-    letter-spacing: 0.14em;
-    color: var(--signal);
-    font-variant-numeric: tabular-nums;
-  }
-  .ex-cat-name {
-    position: relative;
-    margin: 0;
-    font-size: clamp(1.9rem, 3.6vw, 4rem);
-    font-weight: 800;
-    line-height: 0.92;
-    letter-spacing: -0.035em;
-    text-transform: uppercase;
-    color: rgba(247,243,234,0.9);
-    overflow-wrap: break-word;
-    hyphens: manual;
-    transition: color 0.35s ease, transform 0.5s cubic-bezier(.2,.7,.2,1);
-  }
-  /* the level's mark above its heading, so the three levels differ in shape too */
-  .ex-cat-name .ex-mark { display: block; width: 9px; height: 9px; margin: 0 0 14px 1px; box-sizing: border-box; }
-  .ex-cat-name .ex-mark--intern { width: 8px; height: 8px; margin: 0 0 15px 2px; }
-  .ex-tier-note {
-    max-width: 30ch;
-    margin: clamp(12px, 1.2vw, 16px) 0 0;
-    font-size: 14.5px;
-    line-height: 1.55;
-    color: rgba(255,255,255,0.55);
-  }
-
-  .ex-skills .ex-head { margin-bottom: clamp(40px, 5vw, 76px); }
-  .ex-tier-groups { min-width: 0; padding-top: 23px; }
-  .ex-tier-group {
-    display: grid;
-    grid-template-columns: minmax(9.5em, 2fr) minmax(0, 5fr);
-    column-gap: var(--ex-gap);
-    align-items: baseline;
-    padding: 11px 0;
-    border-top: 1px solid rgba(255,255,255,0.07);
-  }
-  .ex-tier-group:first-child { padding-top: 0; border-top: 0; }
-  .ex-tier-group .ex-sub { margin: 0; }
-
-  .ex-skill-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px 26px;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-  .ex-skill {
-    font-size: clamp(1.05rem, 1.45vw, 1.35rem);
-    font-weight: 500;
-    color: rgba(247,243,234,0.62);
-    transition: opacity 0.6s ease, transform 0.6s cubic-bezier(.2,.7,.2,1);
-    transition-delay: calc(var(--i, 0) * 55ms + 0.15s);
-  }
-  .ex-tier--core .ex-skill { font-weight: 600; color: var(--cream); }
-  .ex-tier--basic .ex-cat-name,
-  .ex-tier--intern .ex-cat-name { color: rgba(247,243,234,0.6); }
-  .ex-armed .ex-cat:not(.is-in) .ex-skill { opacity: 0; transform: translateY(12px); }
-
-  @media (hover: hover) {
-    .ex-cats:hover .ex-cat:not(:hover) .ex-cat-name { color: rgba(247,243,234,0.32); }
-    .ex-cat:hover .ex-cat-name { color: var(--cream); transform: translateX(10px); }
-  }
-
-  /* ---------- laptop / tablet ---------- */
-  @media (max-width: 1100px) {
-    .ex-x { grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); }
-    .ex-x-cols { grid-template-columns: minmax(0, 1fr); }
-    .ex-x-facts-status { margin-left: 0; }
-    .ex-tier-group { grid-template-columns: minmax(0, 1fr); row-gap: 10px; }
-  }
-  @media (max-width: 980px) {
-    .ex-intro { min-height: 0; }
-    .ex-intro-copy { grid-column: 1 / -1; grid-row: 1; }
-    .ex-jump { grid-column: 1 / -1; grid-row: 2; margin-top: 32px; }
-    .ex-h2, .ex-head-note { grid-column: 1 / -1; }
-    .ex-head-note { margin-top: 24px; }
-    .ex-cat { grid-template-columns: 2.4em minmax(0, 1fr); row-gap: 26px; }
-    .ex-tier-groups { grid-column: 2; padding-top: 0; }
-    .ex-tier-note { max-width: 46ch; }
-  }
-
-  /* ---------- phone: the list becomes an accordion; each panel opens
-     right under its own button, the large repeated name is left out ---------- */
-  @media (max-width: 780px) {
-    .ex-title { font-size: min(16vw, 5.4rem); }
-    .ex-title-line--2 { padding-left: 0.55em; }
-
-    .ex-x { display: block; border-bottom: 1px solid var(--ex-line); }
-    .ex-x-head:last-of-type .ex-x-btn { border-bottom: 0; }
-    .ex-x-btn { grid-template-columns: 2.6em minmax(0, 1fr) 24px; padding: 20px 0; min-height: 64px; }
-    .ex-x-name { font-size: clamp(1.45rem, 6.4vw, 2.1rem); }
-    .ex-x-btn[aria-expanded="true"] .ex-x-name,
-    .ex-x-btn[aria-expanded="true"] .ex-x-info { transform: none; }
-    /* plus that turns into a minus */
-    .ex-x-icon,
-    .ex-x-btn[aria-expanded="true"] .ex-x-icon { opacity: 1; transform: none; color: rgba(247,243,234,0.7); }
-    .ex-x-icon::before,
-    .ex-x-icon::after {
-      content: '';
-      position: absolute;
-      left: 3px;
-      right: 3px;
-      top: 50%;
-      height: 1px;
-      background: currentColor;
-      font-size: 0;
-    }
-    .ex-x-icon::after { transform: rotate(90deg); transition: transform 0.35s ease; }
-    .ex-x-btn[aria-expanded="true"] .ex-x-icon { color: var(--signal); }
-    .ex-x-btn[aria-expanded="true"] .ex-x-icon::after { transform: rotate(0deg); }
-
-    .ex-x-panel { display: none; visibility: visible; opacity: 1; padding: 0 0 44px 2.6em; }
-    .ex-x-panel.is-open { display: block; }
-    .ex-x-title { display: none; }
-    .ex-x-facts { margin-top: 0; }
-  }
-  @media (max-width: 680px) {
-    .ex-cat { grid-template-columns: minmax(0, 1fr); }
-    .ex-cat-num { padding-top: 0; }
-    .ex-cat-name { font-size: 10.5vw; }
-    .ex-tier-groups { grid-column: 1; }
-    .ex-skill-list { gap: 10px 22px; }
-  }
-  @media (max-width: 480px) {
-    .ex-x-panel { padding-left: 0; }
-    .ex-x-facts { gap: 16px 28px; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .ex-reveal, .ex-word, .ex-intro-fade, .ex-skill, .ex-cat-name,
-    .ex-x-btn::before, .ex-x-num, .ex-x-name, .ex-x-info, .ex-x-icon, .ex-x-icon::after { transition: none; }
-    .ex-x-panel.is-open > * { animation: none; }
-  }
-  /* ==========================================================
-     end EXPERIENCE PAGE
-     ========================================================== */
-
-  /* ==========================================================
-     CONTACT PAGE — same identity as /about: the chapter label, big
-     uppercase type, thin rules, one pink accent. A two-line title with the
-     second line indented, the intro low on the right; below it direct
-     contact on the left and an editorial form on the right (transparent
-     fields on hairlines, a pink line that draws on focus). Uses the same
-     fluid content width as /about on large screens. All CSS defaults are
-     the finished state; the script only arms the reveals.
-     ========================================================== */
-  #contactView.page-view.subpage {
-    padding-top: clamp(112px, 13vh, 150px);
-    padding-bottom: clamp(24px, 3vw, 40px);
-    --ab-gutter: clamp(20px, 6vw, 90px);
-    --ab-w: min(calc(100vw - 2 * var(--ab-gutter)), calc(31.25vw + 900px), calc(11.36vw + 1409px));
-    --ct-gap: clamp(16px, 2.4vw, 40px);
-  }
-  .ct-shell { max-width: var(--comp-max); margin: 0 auto; }
-  @media (min-width: 1600px) { .ct-shell { max-width: var(--ab-w); } }
-
-  /* hero */
-  .ct-hero {
-    display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    column-gap: var(--ct-gap);
-    align-items: end;
-  }
-  .ct-hero .ab-chapter { grid-column: 1 / -1; }
-  .ct-title {
-    grid-column: 1 / -1;
-    margin: clamp(24px, 4vw, 64px) 0 0;
-    font-size: clamp(2.7rem, 8.2vw, 11rem);
-    font-weight: 800;
-    line-height: 0.9;
-    letter-spacing: -0.045em;
-    text-transform: uppercase;
-    color: var(--cream);
-  }
-  .ct-line { display: block; }
-  .ct-line--2 { padding-left: 12%; }
-  .ct-dot { color: var(--signal); }
-  .ct-mask { display: inline-block; vertical-align: top; padding: 0.04em 0.06em 0.02em 0; clip-path: inset(-0.3em -0.4em 0 -0.4em); }
-  .ct-rise { display: inline-block; transition: transform 1.15s cubic-bezier(.2,.75,.15,1); }
-  .ct-line--2 .ct-rise { transition-delay: 0.14s; }
-  .ct-intro {
-    grid-column: 8 / -1;
-    max-width: 34ch;
-    margin: clamp(28px, 3.4vw, 48px) 0 0;
-    font-size: clamp(1.02rem, 1.3vw, 1.2rem);
-    line-height: 1.6;
-    color: rgba(255,255,255,0.74);
-  }
-
-  /* body: direct contact left, form right */
-  .ct-body {
-    display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    column-gap: var(--ct-gap);
-    align-items: start;
-    margin-top: clamp(80px, 10vw, 160px);
-    padding-top: 22px;
-    border-top: 1px solid rgba(255,255,255,0.12);
-  }
-  .ct-sub {
-    margin: 0 0 clamp(28px, 3vw, 44px);
+  .xa-tag-num { display: inline-flex; align-items: center; gap: 14px; color: var(--signal); }
+  .xa-tag-num::after { content: ''; width: 28px; height: 1px; background: rgba(255,255,255,0.28); }
+  .xa-pink { color: var(--signal); }
+  .xa-sub {
+    margin: 0 0 16px;
     font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.16em;
@@ -4050,96 +3463,1217 @@
     color: rgba(255,255,255,0.5);
   }
 
-  .ct-direct { grid-column: 1 / span 4; }
-  .ct-links { list-style: none; margin: 0; padding: 0; }
-  .ct-links li {
+  .xa-reveal, .xa-fade {
+    transition: opacity 0.85s ease, transform 0.85s var(--xa-ease);
+    transition-delay: var(--d, 0s);
+  }
+  #experienceView.xa-armed .xa-reveal:not(.is-in) { opacity: 0; transform: translateY(22px); }
+  .xa-armed .xa-hero:not(.is-in) .xa-fade { opacity: 0; transform: translateY(16px); }
+
+  /* ================= hero ================= */
+  .xa-hero {
+    container-type: inline-size;
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    padding: 16px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+    min-height: clamp(560px, calc(100vh - 150px), 1100px);
   }
-  .ct-links li:first-child { padding-top: 0; }
-  .ct-link-label {
-    font-size: 11px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.42);
-  }
-  .ct-link, .ct-place {
-    font-size: clamp(1rem, 1.2vw, 1.15rem);
-    color: rgba(247,243,234,0.88);
-    text-decoration: none;
-    overflow-wrap: anywhere;
-  }
-  .ct-link { align-self: flex-start; background: linear-gradient(var(--signal), var(--signal)) 0 100% / 0 1px no-repeat; transition: color 0.25s ease, background-size 0.4s cubic-bezier(.65,0,.25,1); }
-  .ct-link:hover, .ct-link:focus-visible { color: var(--cream); background-size: 100% 1px; }
-  .ct-link:focus-visible { outline: 1px solid var(--signal); outline-offset: 4px; }
-  .ct-ext { margin-left: 6px; color: var(--signal); }
-
-  /* the form */
-  .ct-form { grid-column: 6 / -1; }
-  .ct-field {
-    position: relative;
-    padding: 18px 0 0;
-    margin-bottom: clamp(26px, 2.8vw, 40px);
-  }
-  .ct-label {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.6);
-  }
-  .ct-num { display: inline-flex; align-items: center; gap: 12px; color: var(--signal); font-variant-numeric: tabular-nums; }
-  .ct-num::after { content: ''; width: 22px; height: 1px; background: rgba(255,255,255,0.28); }
-  .ct-input {
-    display: block;
-    width: 100%;
-    margin-top: 10px;
-    padding: 12px 0 14px;
-    border: 0;
-    border-bottom: 1px solid rgba(255,255,255,0.18);
-    border-radius: 0;
-    background: transparent;
-    color: var(--cream);
-    font: 500 clamp(1.2rem, 1.9vw, 1.9rem)/1.3 "Instrument Sans", sans-serif;
-    letter-spacing: -0.01em;
-    outline: none;
-    box-shadow: none;
-    -webkit-appearance: none;
-    appearance: none;
-    /* the focus line: a pink 1px line that draws over the hairline */
-    background: linear-gradient(var(--signal), var(--signal)) 0 100% / 0 1px no-repeat;
-    transition: border-color 0.3s ease, background-size 0.6s cubic-bezier(.65,0,.25,1);
-  }
-  .ct-input::placeholder { color: rgba(247,243,234,0.26); }
-  .ct-textarea { min-height: 9.5em; resize: vertical; line-height: 1.45; }
-  .ct-input:focus { background-size: 100% 1px; border-bottom-color: rgba(255,255,255,0.08); }
-  .ct-field:focus-within .ct-label { color: var(--cream); }
-  /* invalid (after a submit attempt only) */
-  .ct-field.is-invalid .ct-input { border-bottom-color: var(--signal); }
-  .ct-field.is-invalid .ct-label { color: var(--cream); }
-  .ct-error {
-    margin: 10px 0 0;
-    font-size: 14px;
-    line-height: 1.45;
-    color: #e66b8d;
-  }
-  .ct-error::before { content: '— '; }
-
-  .ct-actions {
+  .xa-hero-top {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 18px 32px;
-    margin-top: clamp(8px, 1vw, 16px);
+    gap: 12px 32px;
   }
-  .ct-submit {
+  .xa-hero-meta {
+    display: flex;
+    gap: 10px;
+    margin: 0;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+    font-variant-numeric: tabular-nums;
+  }
+  .xa-title {
+    margin: auto 0 0;
+    padding-top: clamp(36px, 6vh, 80px);
+    font-weight: 800;
+    line-height: 0.84;
+    letter-spacing: -0.05em;
+    text-transform: uppercase;
+    color: var(--cream);
+  }
+  .xa-line { display: block; white-space: nowrap; }
+  .xa-line--1, .xa-line--3 { font-size: 12.4cqi; }
+  /* the middle line: small, right, after a pink rule that draws in */
+  .xa-line--2 {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.45em;
+    margin: 0.3em 0 0.12em;
+    font-size: 4.4cqi;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--xa-soft);
+  }
+  .xa-line--2::before {
+    content: '';
+    flex: 0 1 20cqi;
+    height: 2px;
+    background: var(--signal);
+    transform-origin: 100% 50%;
+    transition: transform 1s cubic-bezier(.65,0,.25,1) 0.55s;
+  }
+  .xa-line--3 { padding-left: 8cqi; }
+  .xa-dot { color: var(--signal); }
+  .xa-mask { display: inline-block; vertical-align: top; clip-path: inset(-0.3em -0.4em 0 -0.4em); }
+  .xa-rise { display: inline-block; transition: transform 1.2s cubic-bezier(.2,.75,.15,1); }
+  .xa-line--1 .xa-rise { transition-delay: 0.12s; }
+  .xa-line--2 .xa-rise { transition-delay: 0.42s; }
+  .xa-line--3 .xa-rise { transition-delay: 0.3s; }
+  .xa-armed .xa-hero:not(.is-in) .xa-rise { transform: translateY(108%); }
+  .xa-armed .xa-hero:not(.is-in) .xa-line--2::before { transform: scaleX(0); }
+
+  /* the archive rule: the line draws, then the five numbers tick in */
+  .xa-rule { position: relative; margin-top: clamp(28px, 4.4vh, 56px); }
+  .xa-rule-line {
+    display: block;
+    height: 1px;
+    background: rgba(255,255,255,0.22);
+    transform-origin: 0 50%;
+    transition: transform 1.3s cubic-bezier(.65,0,.25,1) 0.7s;
+  }
+  .xa-rule-ticks {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .xa-rule-ticks li {
+    position: relative;
+    padding: 12px 0 0 10px;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: rgba(255,255,255,0.42);
+    font-variant-numeric: tabular-nums;
+    transition: opacity 0.5s ease;
+    transition-delay: calc(1.15s + var(--i) * 0.09s);
+  }
+  .xa-rule-ticks li::before { content: ''; position: absolute; left: 0; top: 0; width: 1px; height: 9px; background: rgba(255,255,255,0.4); }
+  .xa-rule-ticks li:last-child { color: var(--signal); }
+  .xa-armed .xa-hero:not(.is-in) .xa-rule-line { transform: scaleX(0); }
+  .xa-armed .xa-hero:not(.is-in) .xa-rule-ticks li { opacity: 0; }
+
+  .xa-hero-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px 40px;
+    margin-top: clamp(24px, 3.6vh, 48px);
+  }
+  .xa-hero-copy { max-width: 52ch; }
+  .xa-hero-copy p { margin: 0; font-size: clamp(1rem, 1.15vw, 1.1rem); line-height: 1.62; color: rgba(255,255,255,0.76); }
+  .xa-hero-copy p + p { margin-top: 0.8em; color: rgba(255,255,255,0.56); }
+
+  /* small text buttons: "to the index", "the tasks in file 01" */
+  .xa-jump, .xa-link {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 4px 0 8px;
+    border: 0;
+    border-bottom: 1px solid rgba(255,255,255,0.3);
+    background: none;
+    color: var(--cream);
+    font: 600 12px/1.4 "Instrument Sans", sans-serif;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+  }
+  .xa-jump-arrow { color: var(--signal); transition: transform 0.45s var(--xa-ease); }
+  .xa-jump:hover, .xa-jump:focus-visible, .xa-link:hover, .xa-link:focus-visible { border-bottom-color: var(--signal); }
+  .xa-jump:hover .xa-jump-arrow, .xa-jump:focus-visible .xa-jump-arrow { transform: translateY(4px); }
+  .xa-jump:focus-visible, .xa-link:focus-visible { outline: 1px solid var(--signal); outline-offset: 5px; }
+
+  /* ================= the archive index ================= */
+  .xa-index { margin-top: clamp(110px, 13vw, 220px); scroll-margin-top: 110px; }
+  .xa-index:focus { outline: none; }
+  .xa-index-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px 32px;
+    margin-bottom: clamp(24px, 3vw, 44px);
+  }
+  .xa-index-hint { margin: 0; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.4); }
+  .xa-index-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(220px, 23%, 360px);
+    column-gap: var(--xa-gap);
+    align-items: start;
+  }
+  .xa-rows { container-type: inline-size; margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--xa-line); }
+  .xa-row {
+    position: relative;
+    display: grid;
+    grid-template-columns: 3.4rem minmax(0, 1fr) auto;
+    align-items: baseline;
+    column-gap: clamp(12px, 1.6vw, 28px);
+    width: 100%;
+    padding: clamp(14px, 1.7vw, 28px) 0;
+    border: 0;
+    border-bottom: 1px solid var(--xa-line);
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  /* the row in focus: a pink line draws along its rule */
+  .xa-row::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 1px;
+    background: var(--signal);
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+    transition: transform 0.7s cubic-bezier(.65,0,.25,1);
+  }
+  .xa-row-num { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; color: var(--signal); font-variant-numeric: tabular-nums; }
+  .xa-row-name {
+    font-size: clamp(1.7rem, 6.6cqi, 6.6rem);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.045em;
+    text-transform: uppercase;
+    color: var(--cream);
+    overflow-wrap: break-word;
+    transition: color 0.4s ease, transform 0.6s var(--xa-ease);
+  }
+  .xa-row-side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    text-align: right;
+    white-space: nowrap;
+  }
+  .xa-row-period { font-size: 13px; font-weight: 500; color: rgba(247,243,234,0.8); font-variant-numeric: tabular-nums; }
+  .xa-row-theme { font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.42); }
+  .xa-row-desc { display: none; }
+  .xa-row--now .xa-row-num { display: inline-flex; align-items: center; gap: 9px; }
+  .xa-row--now .xa-row-num::after,
+  .xa-status::before {
+    content: '';
+    flex: none;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--signal);
+    animation: xaPulse 2.8s var(--xa-ease) infinite;
+  }
+  @keyframes xaPulse {
+    from { box-shadow: 0 0 0 0 rgba(175,45,83,0.65); }
+    to { box-shadow: 0 0 0 9px rgba(175,45,83,0); }
+  }
+  .xa-rows.is-focused .xa-row:not(.is-on) .xa-row-name { color: rgba(247,243,234,0.2); }
+  .xa-row.is-on .xa-row-name { transform: translateX(0.16em); }
+  .xa-row.is-on::after { transform: scaleX(1); }
+  .xa-row:focus { outline: none; }
+  .xa-row:focus-visible { outline: 1px solid var(--signal); outline-offset: 4px; }
+
+  /* the preview: follows the row in focus (the script sets --y) */
+  .xa-preview {
+    padding-top: 18px;
+    opacity: 0;
+    transform: translateY(var(--y, 0px));
+    transition: opacity 0.35s ease, transform 0.6s var(--xa-ease);
+  }
+  .xa-preview.is-shown { opacity: 1; }
+  .xa-preview p { margin: 0; }
+  .xa-preview-num { font-size: clamp(2.6rem, 4vw, 4.4rem); font-weight: 800; line-height: 0.9; letter-spacing: -0.05em; color: var(--signal); font-variant-numeric: tabular-nums; }
+  .xa-preview-theme { margin-top: 12px !important; font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--cream); }
+  .xa-preview-desc { margin-top: 14px !important; font-size: 15px; line-height: 1.55; color: rgba(255,255,255,0.72); }
+  .xa-preview-open { margin-top: 18px !important; font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(247,243,234,0.8); }
+
+  /* ================= a file (chapter) ================= */
+  .xa-ch { margin-top: clamp(90px, 11vw, 180px); scroll-margin-top: 90px; }
+  .xa-ch:focus { outline: none; }
+  /* the card: the file opens. --p: 0 (entering) → 1 (open) */
+  .xa-card {
+    container-type: inline-size;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 40px;
+    min-height: clamp(360px, 70vh, 860px);
+    padding: 20px 0 clamp(28px, 4vh, 56px);
+    border-top: 1px solid var(--xa-line);
+    overflow: hidden;
+  }
+  .xa-card-meta {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 28px;
+    margin: 0;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    font-variant-numeric: tabular-nums;
+    opacity: calc(0.25 + 0.75 * var(--p, 1));
+  }
+  .xa-card-theme { color: var(--cream); }
+  .xa-name {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    font-size: 14.5cqi;
+    font-weight: 800;
+    line-height: 0.86;
+    letter-spacing: -0.05em;
+    text-transform: uppercase;
+    color: var(--cream);
+    opacity: calc(0.12 + 0.88 * var(--p, 1));
+  }
+  .xa-name > span { display: block; }
+  .xa-name-a { transform: translateX(calc((1 - var(--p, 1)) * var(--xa-from-a, -12cqi))); }
+  .xa-name-b { color: var(--xa-soft); transform: translateX(calc((1 - var(--p, 1)) * var(--xa-from-b, 12cqi))); }
+  /* the file number, outlined, large behind the name */
+  .xa-card-num {
+    position: absolute;
+    right: -0.03em;
+    bottom: -0.1em;
+    z-index: 0;
+    font-size: 36cqi;
+    font-weight: 800;
+    line-height: 0.8;
+    letter-spacing: -0.06em;
+    color: rgba(247,243,234,0.05);
+    pointer-events: none;
+    transform: translateY(calc((1 - var(--p, 1)) * 22%));
+  }
+  @supports (-webkit-text-stroke: 1px white) {
+    .xa-card-num { color: transparent; -webkit-text-stroke: 1px rgba(247,243,234,0.13); }
+  }
+
+  /* the body: the file's content. --e: 0 (open) → 1 (left behind) */
+  .xa-body {
+    padding-top: clamp(36px, 4.4vw, 72px);
+    opacity: calc(1 - 0.55 * var(--e, 0));
+    transform: translateY(calc(var(--e, 0) * -18px));
+  }
+  /* the file closes: its end rule draws (--q) */
+  .xa-end {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin: clamp(64px, 8vw, 128px) 0 0;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+  }
+  .xa-end-rule { flex: 1; height: 1px; background: var(--signal); transform: scaleX(var(--q, 1)); transform-origin: 0 50%; }
+  .xa-end-label { opacity: var(--q, 1); }
+
+  /* ---- shared parts of a file ---- */
+  .xa-facts { margin: 0; border-top: 1px solid var(--xa-line); }
+  .xa-facts > div { display: grid; grid-template-columns: minmax(0, 7.5em) minmax(0, 1fr); gap: 16px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.07); }
+  .xa-facts dt { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.45); padding-top: 3px; }
+  .xa-facts dd { margin: 0; font-size: 15px; font-weight: 500; color: rgba(255,255,255,0.88); }
+  .xa-facts time { white-space: nowrap; }
+  /* a row of facts (label over value) */
+  .xa-facts--row { display: flex; flex-wrap: wrap; gap: 18px clamp(28px, 3vw, 48px); padding-top: 16px; }
+  .xa-facts--row > div { display: block; padding: 0; border: 0; }
+  .xa-facts--row dt { margin-bottom: 8px; padding: 0; }
+
+  .xa-lead {
+    max-width: 36ch;
+    margin: 0;
+    font-size: clamp(1.2rem, 1.9vw, 1.9rem);
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: -0.012em;
+    color: rgba(247,243,234,0.88);
+  }
+  .xa-desc p { max-width: 54ch; margin: 0; font-size: clamp(1rem, 1.2vw, 1.1rem); line-height: 1.65; color: rgba(255,255,255,0.74); }
+  .xa-desc p + p { margin-top: 1em; }
+  .xa-desc--big p:first-child { font-size: clamp(1.1rem, 1.5vw, 1.4rem); line-height: 1.5; color: rgba(247,243,234,0.88); }
+  .xa-col { min-width: 0; display: flex; flex-direction: column; gap: clamp(24px, 3vw, 40px); align-items: flex-start; }
+  .xa-col > * { max-width: 100%; }
+  .xa-col .xa-facts { align-self: stretch; }
+
+  .xa-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--xa-line); }
+  .xa-list li {
+    position: relative;
+    padding: 11px 0 11px 22px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    font-size: 14.5px;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.74);
+  }
+  .xa-list li::before { content: ''; position: absolute; left: 0; top: 22px; width: 10px; border-top: 1px solid var(--signal); }
+
+  /* the skills of a file: one line, closing it */
+  .xa-tech {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 10px 22px;
+    margin-top: clamp(36px, 4.4vw, 64px);
+    padding-top: 14px;
+    border-top: 1px solid var(--xa-line);
+  }
+  .xa-col .xa-tech { margin-top: 0; align-self: stretch; }
+  .xa-tech-label { margin: 0; font-size: 10.5px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.45); }
+  .xa-tech-list { display: flex; flex-wrap: wrap; gap: 6px 0; margin: 0; padding: 0; list-style: none; font-size: 15px; font-weight: 600; color: var(--cream); }
+  .xa-tech-list li:not(:last-child)::after { content: '/'; margin: 0 0.6em; font-weight: 400; color: var(--signal); }
+
+  .xa-fig { margin: 0; min-width: 0; }
+  .xa-cap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    margin-top: 16px;
+    font-size: 11px;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.42);
+  }
+  .xa-cap > span:first-child { color: var(--signal); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
+  .xa-cell-num { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; color: var(--signal); font-variant-numeric: tabular-nums; }
+
+  /* ---- 01 Ceva — the foundation: a calm, ruled ledger ---- */
+  .xa-ledger {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    gap: 32px var(--xa-gap);
+    align-items: start;
+    margin-bottom: clamp(56px, 7vw, 110px);
+  }
+  .xa-ledger .xa-lead { justify-self: end; }
+  .xa-cells {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--xa-line);
+    border-left: 1px solid var(--xa-line);
+  }
+  .xa-cells li {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 40px;
+    min-height: clamp(150px, 15vw, 230px);
+    padding: clamp(16px, 1.8vw, 26px);
+    border-right: 1px solid var(--xa-line);
+    border-bottom: 1px solid var(--xa-line);
+    font-size: clamp(1rem, 1.3vw, 1.25rem);
+    font-weight: 500;
+    line-height: 1.35;
+    color: var(--cream);
+  }
+
+  /* ---- 02 Hydro — systems: the ticket flow beside a compact column ---- */
+  .xa-ch--2 .xa-name { text-align: right; padding-right: 0.04em; }
+  .xa-ch--2 .xa-card-num { right: auto; left: -0.03em; }
+  .xa-ch--2 .xa-card-meta { justify-content: flex-end; }
+  .xa-ch--2 { --xa-from-a: 12cqi; --xa-from-b: -12cqi; }
+  .xa-ch--2 .xa-body {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 48px var(--xa-gap);
+    align-items: start;
+  }
+  .xa-flow-steps {
+    position: relative;
+    margin: 0;
+    padding: 0 0 0 28px;
+    list-style: none;
+  }
+  /* the line the steps hang on, with one pink pulse travelling down */
+  .xa-flow-steps::before { content: ''; position: absolute; left: 5px; top: 10px; bottom: 10px; width: 1px; background: rgba(255,255,255,0.18); }
+  .xa-flow-steps::after {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 10px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--signal);
+    animation: xaFlow 4.8s cubic-bezier(.65,0,.25,1) infinite;
+  }
+  @keyframes xaFlow {
+    0% { top: 10px; opacity: 0; }
+    8% { opacity: 1; }
+    85% { opacity: 1; }
+    100% { top: calc(100% - 17px); opacity: 0; }
+  }
+  .xa-flow-steps li {
+    position: relative;
+    display: flex;
+    align-items: baseline;
+    gap: 18px;
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    font-size: clamp(1.25rem, 2.2vw, 2.1rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    color: rgba(247,243,234,0.82);
+  }
+  .xa-flow-steps li::before { content: ''; position: absolute; left: -27px; top: 50%; width: 9px; height: 9px; margin-top: -4.5px; border: 1px solid rgba(247,243,234,0.5); border-radius: 50%; background: var(--ink); }
+  .xa-flow-steps li:last-child { color: var(--cream); }
+  .xa-flow-steps li:last-child::before { background: var(--signal); border-color: var(--signal); }
+  .xa-flow-k { font: 500 12px/1 var(--xa-mono); letter-spacing: 0; color: rgba(255,255,255,0.4); }
+
+  /* ---- 03 Infotech — development: the tasks as lines in an editor ---- */
+  .xa-ch--3 .xa-name > span { display: inline-block; }
+  .xa-ch--3 { --xa-from-a: -8cqi; --xa-from-b: 24cqi; }
+  .xa-ch--3 .xa-name-b { color: var(--signal); }
+  .xa-ch--3 .xa-body {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 48px var(--xa-gap);
+    align-items: start;
+  }
+  .xa-ch--3 .xa-tech { grid-column: 2; margin-top: 0; }
+  .xa-editor {
+    position: relative;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    background: rgba(255,255,255,0.025);
+    overflow: hidden;
+    font-family: var(--xa-mono);
+  }
+  .xa-editor-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    font-size: 12px;
+    color: rgba(255,255,255,0.55);
+  }
+  .xa-editor-dots { display: inline-flex; gap: 6px; }
+  .xa-editor-dots i { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,0.14); }
+  .xa-editor-dots i:first-child { background: var(--signal); }
+  .xa-editor-tab { padding: 3px 10px; border-radius: 4px; background: rgba(255,255,255,0.06); color: var(--cream); }
+  .xa-editor-note { margin-left: auto; font-family: "Instrument Sans", sans-serif; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.35); }
+  .xa-editor-title { margin: 18px 0 6px; padding: 0 18px 0 62px; font: 500 13px/1.5 var(--xa-mono); color: rgba(255,255,255,0.45); }
+  .xa-editor-title::before { content: '/** '; }
+  .xa-editor-title::after { content: ' */'; }
+  .xa-editor-lines { margin: 0; padding: 0 0 6px; list-style: none; counter-reset: xaLine; }
+  .xa-editor-lines li {
+    counter-increment: xaLine;
+    position: relative;
+    padding: 7px 18px 7px 86px;
+    font-size: clamp(13px, 1.1vw, 15px);
+    line-height: 1.55;
+    color: rgba(247,243,234,0.9);
+  }
+  /* the line number, then the comment mark */
+  .xa-editor-lines li::before {
+    content: counter(xaLine, decimal-leading-zero);
+    position: absolute;
+    left: 18px;
+    width: 28px;
+    text-align: right;
+    color: rgba(255,255,255,0.28);
+  }
+  .xa-editor-lines li::after { content: '//'; position: absolute; left: 62px; color: var(--signal); }
+  .xa-editor-lines li:hover { background: rgba(255,255,255,0.04); }
+  .xa-editor-caret {
+    display: block;
+    width: 9px;
+    height: 18px;
+    margin: 4px 0 18px 62px;
+    background: var(--signal);
+    animation: xaCaret 1.1s steps(1, end) infinite;
+  }
+  @keyframes xaCaret { 50% { opacity: 0; } }
+
+  /* ---- 04 ADC — automation: a data stream across the full width ---- */
+  .xa-ch--4 .xa-name-a { font-size: 2em; line-height: 0.8; }
+  .xa-ch--4 .xa-name-b { font-size: 0.42em; letter-spacing: -0.03em; padding-left: 0.08em; }
+  .xa-ch--4 { --xa-from-a: 0cqi; --xa-from-b: 30cqi; }
+  .xa-ch--4 .xa-name { font-size: 12cqi; }
+  .xa-lead--wide { max-width: 44ch; margin-bottom: clamp(48px, 6vw, 96px); }
+  .xa-stream { position: relative; margin-bottom: clamp(56px, 7vw, 110px); }
+  .xa-stream-nodes {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--xa-gap);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .xa-stream-nodes li {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 18px;
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 8px;
+    background: var(--ink);
+    font-size: clamp(1rem, 1.5vw, 1.45rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    color: var(--cream);
+    hyphens: manual;
+  }
+  .xa-stream-nodes li:last-child { border-color: rgba(175,45,83,0.7); }
+  .xa-stream-k { font: 500 11px/1 var(--xa-mono); color: var(--signal); }
+  /* the line behind the nodes, with data travelling along it */
+  .xa-stream-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+    margin-top: -14px;
+    background: rgba(255,255,255,0.16);
+    overflow: hidden;
+  }
+  .xa-stream-line i {
+    position: absolute;
+    top: -1px;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--signal));
+    animation: xaStream 3.6s linear infinite;
+  }
+  .xa-stream-line i:nth-child(2) { animation-delay: 1.2s; }
+  .xa-stream-line i:nth-child(3) { animation-delay: 2.4s; }
+  @keyframes xaStream { from { transform: translateX(-40px); } to { transform: translateX(calc(100vw)); } }
+  .xa-trio {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 5fr) minmax(0, 3fr);
+    gap: 40px var(--xa-gap);
+    align-items: start;
+  }
+  .xa-trio .xa-tech { margin-top: 28px; }
+
+  /* ---- 05 Baril — integration, now: the hub, then the tasks as rows ---- */
+  .xa-ch--5 .xa-name-a { font-size: 1.45em; line-height: 0.82; }
+  .xa-ch--5 .xa-name-b { padding-left: 0.6em; }
+  .xa-ch--5 { --xa-from-a: -16cqi; --xa-from-b: 16cqi; }
+  .xa-ch--5 .xa-card { border-top-color: var(--signal); }
+  .xa-ch--5 .xa-name { font-size: 12cqi; }
+  .xa-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 4px 11px;
+    border: 1px solid rgba(175,45,83,0.6);
+    border-radius: 999px;
+    color: var(--cream);
+  }
+  .xa-ch--5 .xa-body {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 48px var(--xa-gap);
+    align-items: center;
+  }
+  .xa-ch--5 .xa-body > .xa-sub,
+  .xa-ch--5 .xa-rowlist,
+  .xa-ch--5 .xa-body > .xa-tech { grid-column: 1 / -1; }
+  .xa-ch--5 .xa-body > .xa-sub { margin: clamp(40px, 5vw, 80px) 0 0; }
+  .xa-hub { position: relative; width: min(100%, 440px); aspect-ratio: 1 / 1; }
+  .xa-hub-lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .xa-hub-lines line {
+    stroke: rgba(247,243,234,0.28);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+    stroke-dasharray: 4 6;
+    animation: xaDash 1.6s linear infinite;
+  }
+  @keyframes xaDash { to { stroke-dashoffset: -20; } }
+  .xa-hub-node, .xa-hub-core {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    padding: 9px 14px;
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 999px;
+    background: var(--ink);
+    font-size: clamp(11px, 1vw, 13px);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--cream);
+  }
+  .xa-hub-node--a { left: 50%; top: 14%; }
+  .xa-hub-node--b { left: 25%; top: 84%; }
+  .xa-hub-node--c { left: 75%; top: 84%; }
+  .xa-hub-core {
+    left: 50%;
+    top: 50%;
+    padding: 14px 20px;
+    border-color: var(--signal);
+    box-shadow: 0 0 0 6px rgba(175,45,83,0.1);
+  }
+  .xa-rowlist { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--xa-line); }
+  .xa-rowlist li {
+    display: grid;
+    grid-template-columns: 3.4rem minmax(0, 1fr);
+    align-items: baseline;
+    gap: clamp(12px, 1.6vw, 28px);
+    padding: clamp(14px, 1.6vw, 22px) 0;
+    border-bottom: 1px solid var(--xa-line);
+    font-size: clamp(1.1rem, 1.9vw, 1.8rem);
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    color: var(--cream);
+  }
+
+  /* ================= appendix: the toolkit ================= */
+  .xa-appendix { margin-top: clamp(130px, 15vw, 240px); }
+  .xa-app-head {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    gap: 20px var(--xa-gap);
+    align-items: start;
+    margin-bottom: clamp(28px, 3.4vw, 52px);
+  }
+  .xa-app-lead { max-width: 56ch; margin: 0; font-size: clamp(1rem, 1.2vw, 1.1rem); line-height: 1.62; color: rgba(255,255,255,0.66); }
+  .xa-tiers { margin: 0; border-top: 1px solid var(--xa-line); }
+  .xa-tier {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    gap: 16px var(--xa-gap);
+    align-items: baseline;
+    padding: clamp(18px, 2vw, 30px) 0;
+    border-bottom: 1px solid var(--xa-line);
+  }
+  .xa-tier dt { display: grid; grid-template-columns: 16px minmax(0, 1fr); column-gap: 10px; align-items: baseline; }
+  .xa-tier-name { font-size: 12px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--cream); }
+  .xa-tier-note { grid-column: 2; margin-top: 6px; font-size: 13.5px; line-height: 1.5; color: rgba(255,255,255,0.5); }
+  .xa-tier dd { margin: 0; }
+  .xa-mark { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--signal); box-sizing: border-box; }
+  .xa-mark--basic { background: transparent; border: 1px solid rgba(247,243,234,0.65); }
+  .xa-mark--intern { border-radius: 1px; background: transparent; border: 1px solid var(--signal); transform: rotate(45deg); }
+  .xa-tools { display: flex; flex-wrap: wrap; gap: 8px 0; margin: 0; padding: 0; list-style: none; font-size: clamp(1.05rem, 1.5vw, 1.45rem); font-weight: 600; letter-spacing: -0.01em; color: var(--cream); }
+  .xa-tools li:not(:last-child)::after { content: '·'; margin: 0 0.5em; font-weight: 400; color: rgba(247,243,234,0.3); }
+  .xa-tier--basic .xa-tools, .xa-tier--intern .xa-tools { font-weight: 500; color: rgba(247,243,234,0.62); }
+
+  /* ================= outro: on to Work ================= */
+  .xa-outro {
+    container-type: inline-size;
+    margin-top: clamp(140px, 16vw, 260px);
+    padding-top: 22px;
+    border-top: 1px solid var(--signal);
+  }
+  .xa-outro-lead { margin: 0; font-size: clamp(1.05rem, 1.4vw, 1.3rem); color: rgba(255,255,255,0.66); }
+  .xa-outro-title { margin: clamp(28px, 3.4vw, 52px) 0 0; font-size: 9cqi; font-weight: 800; line-height: 0.9; letter-spacing: -0.05em; text-transform: uppercase; }
+  .xa-outro-link { display: inline-block; color: var(--cream); text-decoration: none; }
+  .xa-outro-l1 { display: block; color: var(--xa-soft); transition: color 0.4s ease; }
+  .xa-outro-l2 { position: relative; display: inline-flex; align-items: baseline; gap: 0.2em; transition: transform 0.6s var(--xa-ease); }
+  .xa-outro-l2::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -0.06em;
+    height: 0.05em;
+    background: var(--signal);
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+    transition: transform 0.7s cubic-bezier(.65,0,.25,1);
+  }
+  .xa-outro-arrow { font-weight: 400; color: var(--signal); transition: transform 0.6s var(--xa-ease); }
+  .xa-outro-link:hover .xa-outro-l1, .xa-outro-link:focus-visible .xa-outro-l1 { color: rgba(247,243,234,0.6); }
+  .xa-outro-link:hover .xa-outro-l2, .xa-outro-link:focus-visible .xa-outro-l2 { transform: translateX(0.06em); }
+  .xa-outro-link:hover .xa-outro-l2::after, .xa-outro-link:focus-visible .xa-outro-l2::after { transform: scaleX(1); }
+  .xa-outro-link:hover .xa-outro-arrow, .xa-outro-link:focus-visible .xa-outro-arrow { transform: translateX(0.18em); }
+  .xa-outro-link:focus { outline: none; }
+  .xa-outro-link:focus-visible { outline: 1px solid var(--signal); outline-offset: 10px; }
+
+  /* ================= the archive indicator (fixed) =================
+     Wide screens: a vertical strip in the right margin, where no content
+     ever runs (the shell keeps a gutter of at least 6vw). Narrow screens:
+     a compact pill bottom left, number and progress only. */
+  .xa-ind {
+    position: fixed;
+    right: clamp(10px, 1.7vw, 40px);
+    top: 50%;
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(10px, -50%);
+    transition: opacity 0.45s ease, transform 0.6s var(--xa-ease);
+  }
+  .xa-ind.is-on { opacity: 1; transform: translate(0, -50%); }
+  .xa-ind-label, .xa-ind-name { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; }
+  .xa-ind-name { max-height: 22ch; overflow: hidden; text-overflow: ellipsis; color: var(--cream); }
+  .xa-ind-num { display: block; height: 1.2em; overflow: hidden; font-size: 13px; line-height: 1.2; letter-spacing: 0.02em; color: var(--signal); font-variant-numeric: tabular-nums; }
+  .xa-ind-strip { display: block; transform: translateY(calc(var(--n, 0) * -1.2em)); transition: transform 0.75s cubic-bezier(.65,0,.25,1); }
+  .xa-ind-strip span { display: block; height: 1.2em; }
+  .xa-ind-total { margin-top: -10px; letter-spacing: 0.02em; }
+  .xa-ind-bar { display: inline-flex; flex-direction: column; gap: 3px; }
+  .xa-ind-bar i { width: 2px; height: 12px; background: rgba(255,255,255,0.18); transition: background-color 0.5s ease; }
+  .xa-ind-bar i.is-done { background: var(--signal); }
+  /* narrow screens: no margin to spare — the indicator sits top left in
+     the navigation band, level with "AKIF ALBAYRAK" on the right */
+  @media (max-width: 980px) {
+    .xa-ind {
+      right: auto;
+      top: 68px;
+      left: clamp(20px, 4vw, 48px);
+      flex-direction: row;
+      gap: 10px;
+      transform: translateY(-6px);
+    }
+    .xa-ind.is-on { transform: none; }
+    .xa-ind-label, .xa-ind-name { display: none; }
+    .xa-ind-total { margin: 0 0 0 -6px; }
+    .xa-ind-bar { flex-direction: row; }
+    .xa-ind-bar i { width: 10px; height: 2px; }
+  }
+
+  /* ================= responsive ================= */
+  @media (max-width: 1100px) {
+    .xa-trio { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .xa-trio > :first-child { grid-column: 1 / -1; }
+    .xa-cells { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 980px) {
+    .xa-hero { min-height: 0; }
+    .xa-index-grid { grid-template-columns: minmax(0, 1fr); }
+    .xa-preview { display: none; }
+    /* the index without hover: every row carries its own line; the row in
+       the middle of the screen lights up (script) */
+    .xa-row { grid-template-columns: 2.6rem minmax(0, 1fr); row-gap: 8px; }
+    .xa-row-side { grid-column: 2; flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; text-align: left; }
+    .xa-row-desc {
+      display: block;
+      grid-column: 2;
+      max-width: 52ch;
+      font-size: 14.5px;
+      line-height: 1.5;
+      color: rgba(255,255,255,0.7);
+      opacity: 0.5;
+      transition: opacity 0.4s ease;
+    }
+    .xa-row-role { color: var(--cream); font-weight: 600; }
+    .xa-row.is-on .xa-row-desc { opacity: 1; }
+    .xa-row-name { font-size: clamp(1.7rem, 8.4cqi, 4.2rem); }
+    .xa-ledger,
+    .xa-ch--2 .xa-body,
+    .xa-ch--3 .xa-body,
+    .xa-ch--5 .xa-body,
+    .xa-app-head,
+    .xa-tier { grid-template-columns: minmax(0, 1fr); }
+    .xa-ledger .xa-lead { justify-self: start; }
+    .xa-ch--3 .xa-tech { grid-column: 1; }
+    .xa-card { min-height: clamp(300px, 52vh, 560px); }
+    .xa-hub { margin: 0 auto; }
+  }
+  @media (max-width: 680px) {
+    .xa-line--1, .xa-line--3 { font-size: 13.4cqi; }
+    .xa-line--2 { font-size: 6cqi; }
+    .xa-line--3 { padding-left: 4cqi; }
+    .xa-hero-foot { flex-direction: column-reverse; align-items: flex-start; }
+    .xa-cells, .xa-trio { grid-template-columns: minmax(0, 1fr); }
+    .xa-cells li { min-height: 0; gap: 18px; }
+    .xa-editor-lines li { padding-left: 74px; }
+    .xa-editor-lines li::after { left: 54px; }
+    .xa-editor-lines li::before { left: 12px; }
+    .xa-editor-title { padding-left: 54px; }
+    .xa-editor-caret { margin-left: 54px; }
+    /* the stream runs down instead of across */
+    .xa-stream-nodes { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+    .xa-stream-line { left: 22px; right: auto; top: 0; bottom: 0; width: 1px; height: auto; margin: 0; }
+    .xa-stream-line i { width: 3px; height: 40px; left: -1px; top: 0; background: linear-gradient(180deg, transparent, var(--signal)); animation-name: xaStreamV; }
+    @keyframes xaStreamV { from { transform: translateY(-40px); } to { transform: translateY(560px); } }
+    .xa-stream-nodes li { flex-direction: row; align-items: baseline; padding: 14px 16px; }
+    .xa-rowlist li, .xa-row { grid-template-columns: 2.6rem minmax(0, 1fr); }
+    .xa-outro-title { font-size: 12cqi; }
+    /* the files: larger names in a lower card */
+    .xa-card { min-height: clamp(260px, 44vh, 420px); }
+    .xa-name { font-size: 17cqi; }
+    .xa-ch--4 .xa-name { font-size: 14cqi; }
+    .xa-ch--5 .xa-name { font-size: 13cqi; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .xa-reveal, .xa-fade, .xa-rise, .xa-line--2::before, .xa-rule-line, .xa-rule-ticks li, .xa-row::after,
+    .xa-row-name, .xa-row-desc, .xa-preview, .xa-ind, .xa-ind-strip, .xa-ind-bar i, .xa-outro-l1,
+    .xa-outro-l2, .xa-outro-l2::after, .xa-outro-arrow, .xa-jump-arrow { transition: none; }
+    .xa-row--now .xa-row-num::after, .xa-status::before, .xa-flow-steps::after, .xa-stream-line i,
+    .xa-hub-lines line, .xa-editor-caret { animation: none; }
+    .xa-flow-steps::after, .xa-stream-line i { display: none; }
+  }
+  /* ==========================================================
+     end EXPERIENCE PAGE
+     ========================================================== */
+
+  /* ==========================================================
+     CONTACT PAGE — OPEN CHANNEL: starting a conversation. A two-line
+     title, a status line whose pink dot is where the channel starts, the
+     direct ways in beside it. The channel — a thin line — runs down from
+     that dot along the three questions as their rail and fills while
+     scrolling (--c, set by the script). Beside the questions the MESSAGE
+     COMPOSITION builds the message as a letter while typing; it is held in
+     view beside them on wide screens (script), compact above the button
+     on phones. All CSS defaults are the finished state; the script only
+     arms the motion (.oc-armed).
+     ========================================================== */
+  #contactView.page-view.subpage {
+    padding-top: clamp(112px, 13vh, 150px);
+    padding-bottom: clamp(24px, 3vw, 40px);
+    --oc-gap: clamp(16px, 2.4vw, 40px);
+    --oc-line: rgba(255,255,255,0.12);
+    --oc-soft: rgba(247,243,234,0.34);
+    --oc-gutter: clamp(20px, 6vw, 90px);
+    --oc-rail: clamp(28px, 3.4vw, 56px);
+    --oc-ease: cubic-bezier(.2,.7,.2,1);
+  }
+  .oc-shell { max-width: var(--comp-max); margin: 0 auto; }
+  /* large screens: the same fluid content width as /about and /experience */
+  @media (min-width: 1600px) {
+    .oc-shell { max-width: min(calc(100vw - 2 * var(--oc-gutter)), calc(31.25vw + 900px), calc(11.36vw + 1409px)); }
+  }
+
+  .oc-tag {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.55);
+  }
+  .oc-tag-num { display: inline-flex; align-items: center; gap: 14px; color: var(--signal); }
+  .oc-tag-num::after { content: ''; width: 28px; height: 1px; background: rgba(255,255,255,0.28); }
+
+  .oc-fade { transition: opacity 0.85s ease, transform 0.85s var(--oc-ease); transition-delay: var(--d, 0s); }
+  .oc-armed .oc-hero:not(.is-in) .oc-fade { opacity: 0; transform: translateY(18px); }
+
+  /* ================= hero ================= */
+  .oc-hero { container-type: inline-size; display: flex; flex-direction: column; min-height: clamp(520px, calc(100vh - 150px), 980px); }
+  .oc-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 32px; }
+  .oc-clock { margin: 0; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.45); font-variant-numeric: tabular-nums; }
+  .oc-clock time { color: rgba(247,243,234,0.8); }
+
+  .oc-title {
+    margin: auto 0 0;
+    padding-top: clamp(40px, 7vh, 96px);
+    font-size: 13.4cqi;
+    font-weight: 800;
+    line-height: 0.86;
+    letter-spacing: -0.05em;
+    text-transform: uppercase;
+    color: var(--cream);
+  }
+  .oc-line { display: block; white-space: nowrap; }
+  .oc-line--2 { padding-left: 12cqi; }
+  .oc-dot { color: var(--signal); }
+  .oc-mask { display: inline-block; vertical-align: top; clip-path: inset(-0.3em -0.4em 0 -0.4em); }
+  .oc-rise { display: inline-block; transition: transform 1.2s cubic-bezier(.2,.75,.15,1); }
+  .oc-line--2 .oc-rise { transition-delay: 0.14s; }
+  .oc-armed .oc-hero:not(.is-in) .oc-rise { transform: translateY(108%); }
+
+  .oc-hero-foot {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 32px var(--oc-gap);
+    align-items: end;
+    margin-top: clamp(36px, 5vh, 64px);
+  }
+  /* the status: a graphic detail. Its dot is where the channel starts */
+  .oc-status {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 14px;
+    margin: 0;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .oc-status-dot {
+    position: relative;
+    flex: none;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--signal);
+  }
+  .oc-status-dot::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border: 1px solid var(--signal);
+    border-radius: 50%;
+    animation: ocRing 2.8s var(--oc-ease) infinite;
+  }
+  @keyframes ocRing { from { transform: scale(1); opacity: 0.8; } to { transform: scale(3.2); opacity: 0; } }
+  .oc-status-a { color: var(--cream); }
+  .oc-status-b { color: rgba(255,255,255,0.45); }
+
+  .oc-hero-side { display: grid; gap: clamp(24px, 3vw, 40px); }
+  .oc-intro { max-width: 40ch; margin: 0; font-size: clamp(1.05rem, 1.4vw, 1.3rem); line-height: 1.55; color: rgba(255,255,255,0.78); }
+
+  /* the direct ways in: always visible, plain links */
+  .oc-direct-title { margin: 0 0 10px; font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.45); }
+  .oc-direct-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--oc-line); }
+  .oc-direct-row {
+    position: relative;
+    display: grid;
+    grid-template-columns: 6.5em minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 14px;
+    min-height: 52px;
+    border-bottom: 1px solid var(--oc-line);
+  }
+  /* hover / focus: a pink line sweeps along the row */
+  .oc-direct-row::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 1px;
+    background: var(--signal);
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+    transition: transform 0.7s cubic-bezier(.65,0,.25,1);
+  }
+  .oc-direct-row:hover::after, .oc-direct-row:focus-within::after { transform: scaleX(1); }
+  .oc-direct-k { font-size: 10.5px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.45); }
+  .oc-direct-link {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.35em;
+    min-width: 0;
+    padding: 12px 0;
+    font-size: clamp(1rem, 1.3vw, 1.2rem);
+    font-weight: 600;
+    color: var(--cream);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+    transition: transform 0.5s var(--oc-ease);
+  }
+  .oc-ext { flex: none; font-size: 0.8em; color: var(--signal); transition: transform 0.45s var(--oc-ease); }
+  .oc-direct-link:hover, .oc-direct-link:focus-visible { transform: translateX(6px); }
+  .oc-direct-link:hover .oc-ext, .oc-direct-link:focus-visible .oc-ext { transform: translate(2px, -2px); }
+  .oc-direct-link:focus { outline: none; }
+  .oc-direct-link:focus-visible { outline: 1px solid var(--signal); outline-offset: 4px; }
+  .oc-copy {
+    padding: 6px 12px;
+    border: 1px solid rgba(255,255,255,0.22);
+    border-radius: 999px;
+    background: none;
+    color: rgba(247,243,234,0.85);
+    font: 600 10.5px/1.2 "Instrument Sans", sans-serif;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: border-color 0.3s ease, color 0.3s ease, background-color 0.3s ease;
+  }
+  .oc-copy:hover, .oc-copy:focus-visible { border-color: var(--signal); color: var(--cream); }
+  .oc-copy.is-copied { background: var(--signal); border-color: var(--signal); color: var(--cream); }
+  .oc-copy:focus-visible { outline: 1px solid var(--signal); outline-offset: 3px; }
+
+  /* ================= the conversation ================= */
+  .oc-convo {
+    position: relative;
+    margin-top: clamp(110px, 13vw, 210px);
+    padding-left: var(--oc-rail);
+  }
+  /* the channel: starts at the status dot (the script sets its top), runs
+     down to the end dot; the pink part follows the scroll (--c) */
+  .oc-channel {
+    position: absolute;
+    left: 5px;
+    top: var(--oc-channel-top, 0px);
+    bottom: 5px;
+    width: 1px;
+    background: var(--oc-line);
+    pointer-events: none;
+  }
+  .oc-channel-fill { position: absolute; inset: 0; background: var(--signal); transform-origin: 50% 0; transform: scaleY(var(--c, 1)); }
+
+  .oc-form {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    column-gap: clamp(32px, 5vw, 96px);
+    align-items: start;
+  }
+  .oc-step, .oc-actions { grid-column: 1; }
+  .oc-comp { grid-column: 2; grid-row: 1 / span 4; align-self: stretch; }
+
+  .oc-step {
+    display: grid;
+    grid-template-columns: clamp(4.2rem, 8vw, 9.5rem) minmax(0, 1fr);
+    column-gap: clamp(14px, 1.8vw, 32px);
+    align-items: start;
+    padding: clamp(26px, 3vw, 44px) 0;
+    border-top: 1px solid var(--oc-line);
+  }
+  .oc-step:first-child { border-top: 0; padding-top: 0; }
+  /* the large number: outlined while open, pink while you're in it,
+     filled once its answer is right */
+  .oc-num {
+    font-size: clamp(3.2rem, 6.4vw, 7.6rem);
+    font-weight: 800;
+    line-height: 0.82;
+    letter-spacing: -0.06em;
+    color: rgba(247,243,234,0.14);
+    font-variant-numeric: tabular-nums;
+    transition: color 0.45s ease, -webkit-text-stroke-color 0.45s ease;
+  }
+  @supports (-webkit-text-stroke: 1px white) {
+    .oc-num { color: transparent; -webkit-text-stroke: 1px rgba(247,243,234,0.28); }
+    .oc-step.is-active .oc-num { -webkit-text-stroke-color: var(--signal); }
+    .oc-step.is-done .oc-num { color: var(--signal); -webkit-text-stroke-color: var(--signal); }
+  }
+  .oc-step.is-done .oc-num { color: var(--signal); }
+  .oc-step-body { min-width: 0; padding-top: 0.3em; }
+  .oc-q {
+    display: block;
+    font-size: clamp(1.35rem, 2.5vw, 2.9rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.035em;
+    text-transform: uppercase;
+    color: rgba(247,243,234,0.55);
+    cursor: text;
+    transition: color 0.4s ease, transform 0.6s var(--oc-ease);
+  }
+  .oc-step.is-active .oc-q, .oc-step.is-done .oc-q { color: var(--cream); }
+  .oc-step.is-active .oc-q { transform: translateX(0.12em); }
+
+  .oc-input, .oc-textarea {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    margin: clamp(16px, 1.8vw, 26px) 0 0;
+    padding: 0 0 8px;
+    border: 0;
+    border-bottom: 1px solid rgba(255,255,255,0.28);
+    border-radius: 0;
+    color: var(--cream);
+    outline: none;
+    box-shadow: none;
+    caret-color: var(--signal);
+    -webkit-appearance: none;
+    appearance: none;
+    /* the focus line: pink, drawn over the hairline */
+    background: linear-gradient(var(--signal), var(--signal)) 0 100% / 0 2px no-repeat;
+    transition: border-color 0.3s ease, background-size 0.6s cubic-bezier(.65,0,.25,1);
+  }
+  .oc-input { font: 500 clamp(1.25rem, 2vw, 2rem)/1.3 "Instrument Sans", sans-serif; letter-spacing: -0.01em; }
+  .oc-input::placeholder, .oc-textarea::placeholder { color: rgba(247,243,234,0.24); }
+  .oc-input:focus, .oc-textarea:focus { background-size: 100% 2px; border-bottom-color: transparent; }
+  .oc-textarea {
+    --oc-lh: 1.6em;
+    min-height: calc(5 * var(--oc-lh) + 8px);
+    font: 500 clamp(1.05rem, 1.4vw, 1.35rem)/var(--oc-lh) "Instrument Sans", sans-serif;
+    resize: vertical;
+    background:
+      linear-gradient(var(--signal), var(--signal)) 0 100% / 0 2px no-repeat,
+      repeating-linear-gradient(to bottom, transparent 0, transparent calc(var(--oc-lh) - 1px), rgba(255,255,255,0.07) calc(var(--oc-lh) - 1px), rgba(255,255,255,0.07) var(--oc-lh));
+    background-attachment: local, local;
+  }
+  .oc-textarea:focus { background-size: 100% 2px, auto; }
+  .oc-step.is-invalid .oc-input, .oc-step.is-invalid .oc-textarea { border-bottom-color: var(--signal); }
+  .oc-count { margin: 10px 0 0; font-size: 11px; letter-spacing: 0.12em; color: rgba(255,255,255,0.38); text-align: right; font-variant-numeric: tabular-nums; }
+  .oc-error { margin: 12px 0 0; font-size: 14px; line-height: 1.45; color: #e66b8d; }
+  .oc-error::before { content: '— '; }
+
+  /* ---- the message composition ---- */
+  .oc-comp-in {
+    padding: clamp(22px, 2.2vw, 34px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    background: rgba(255,255,255,0.025);
+    will-change: transform;
+  }
+  .oc-comp-head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 10px 16px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--oc-line);
+  }
+  .oc-comp-step { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; color: rgba(255,255,255,0.45); font-variant-numeric: tabular-nums; }
+  .oc-comp-step span { color: var(--signal); }
+  .oc-comp-bar { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+  .oc-comp-bar i { height: 2px; background: rgba(255,255,255,0.14); transition: background-color 0.5s ease; }
+  .oc-comp-bar i.is-active { background: rgba(247,243,234,0.6); }
+  .oc-comp-bar i.is-done { background: var(--signal); }
+  .oc-comp-label { grid-column: 1 / -1; font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--cream); }
+  .oc-comp-meta { margin: 0; }
+  .oc-comp-meta > div { display: grid; grid-template-columns: 8.5em minmax(0, 1fr); gap: 12px; padding: 11px 0; border-bottom: 1px solid rgba(255,255,255,0.07); }
+  .oc-comp-meta dt { font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.42); padding-top: 2px; }
+  .oc-comp-meta dd { margin: 0; font-size: 14.5px; font-weight: 600; color: var(--cream); overflow-wrap: anywhere; }
+  .oc-comp .is-empty { color: rgba(247,243,234,0.28); font-weight: 500; }
+  .oc-comp-letter { padding: clamp(20px, 2vw, 30px) 0 6px; }
+  .oc-comp-hi { margin: 0 0 14px; font-size: clamp(1.15rem, 1.5vw, 1.45rem); font-weight: 700; letter-spacing: -0.015em; color: var(--cream); }
+  .oc-comp-body {
+    max-height: 15.5em;
+    margin: 0;
+    overflow: hidden;
+    font-size: clamp(1rem, 1.15vw, 1.1rem);
+    line-height: 1.6;
+    color: rgba(247,243,234,0.86);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    -webkit-mask-image: linear-gradient(to bottom, #000 80%, transparent);
+    mask-image: linear-gradient(to bottom, #000 80%, transparent);
+  }
+  .oc-comp-body.is-empty { -webkit-mask-image: none; mask-image: none; }
+  .oc-comp-sign { margin: 22px 0 0; font-size: 15px; line-height: 1.5; color: rgba(255,255,255,0.6); }
+  .oc-comp-sign span:last-child { font-size: clamp(1.15rem, 1.5vw, 1.45rem); font-weight: 700; color: var(--cream); }
+  .oc-comp-foot { display: flex; justify-content: space-between; gap: 12px; margin: 20px 0 0; padding-top: 14px; border-top: 1px solid var(--oc-line); }
+  .oc-comp-draft { display: inline-flex; align-items: center; gap: 8px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.45); }
+  .oc-comp-draft::before { content: ''; width: 6px; height: 6px; border-radius: 50%; border: 1px solid var(--signal); }
+  /* a new letter in the composition: a short settle */
+  .oc-comp .is-fresh { animation: ocSettle 0.5s var(--oc-ease); }
+  @keyframes ocSettle { from { opacity: 0.4; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+
+  /* ---- send ---- */
+  .oc-actions { padding-top: clamp(26px, 3vw, 44px); border-top: 1px solid var(--oc-line); }
+  .oc-send {
     display: inline-flex;
     align-items: baseline;
     gap: 18px;
@@ -4148,65 +4682,86 @@
     border-bottom: 1px solid rgba(255,255,255,0.4);
     background: none;
     color: var(--cream);
-    font: 600 clamp(1.15rem, 1.7vw, 1.6rem)/1.2 "Instrument Sans", sans-serif;
-    letter-spacing: 0.02em;
+    font: 700 clamp(1.3rem, 2.2vw, 2.2rem)/1.1 "Instrument Sans", sans-serif;
+    letter-spacing: -0.02em;
     text-transform: uppercase;
     cursor: pointer;
     transition: border-color 0.3s ease;
   }
-  .ct-arrow { color: var(--signal); transition: transform 0.45s cubic-bezier(.2,.7,.2,1); }
-  .ct-submit:hover, .ct-submit:focus-visible { border-bottom-color: var(--signal); }
-  .ct-submit:hover .ct-arrow, .ct-submit:focus-visible .ct-arrow { transform: translateX(8px); }
-  .ct-submit:focus-visible { outline: 1px solid var(--signal); outline-offset: 6px; }
-  .ct-pending {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-    max-width: 38ch;
-    margin: 0;
-    font-size: 13px;
-    line-height: 1.5;
-    color: rgba(255,255,255,0.5);
-  }
-  .ct-pending-dot { flex: none; width: 6px; height: 6px; border-radius: 50%; border: 1px solid var(--signal); transform: translateY(-1px); }
-
-  /* what a valid submit shows: honest, not a success message */
-  .ct-status {
-    margin-top: clamp(28px, 3vw, 40px);
-    padding: 18px 0 0 18px;
+  .oc-send-arrow { color: var(--signal); transition: transform 0.45s var(--oc-ease); }
+  .oc-send:hover, .oc-send:focus-visible { border-bottom-color: var(--signal); }
+  .oc-send:hover .oc-send-arrow, .oc-send:focus-visible .oc-send-arrow { transform: translateX(8px); }
+  .oc-send:focus-visible { outline: 1px solid var(--signal); outline-offset: 6px; }
+  .oc-pending { display: flex; align-items: baseline; gap: 10px; max-width: 46ch; margin: 18px 0 0; font-size: 13.5px; line-height: 1.5; color: rgba(255,255,255,0.52); }
+  .oc-pending-dot { flex: none; width: 6px; height: 6px; border-radius: 50%; border: 1px solid var(--signal); transform: translateY(-1px); }
+  /* what a valid submit shows: an honest reply, not a success message */
+  .oc-status-msg {
+    max-width: 60ch;
+    margin-top: 24px;
+    padding: 4px 0 4px 18px;
     border-left: 1px solid var(--signal);
     font-size: clamp(1rem, 1.15vw, 1.08rem);
     line-height: 1.6;
-    color: rgba(255,255,255,0.82);
+    color: rgba(255,255,255,0.84);
   }
-  .ct-status:focus { outline: none; }
-  .ct-status strong { color: var(--cream); font-weight: 600; }
-  .ct-status a { color: var(--cream); text-decoration-color: var(--signal); text-underline-offset: 4px; overflow-wrap: anywhere; }
+  .oc-status-msg:focus { outline: none; }
+  .oc-status-msg strong { color: var(--cream); font-weight: 600; }
+  .oc-status-msg a { color: var(--cream); text-decoration-color: var(--signal); text-underline-offset: 4px; overflow-wrap: anywhere; }
 
-  /* reveals, armed by the script */
-  #contactView.ct-armed .ct-hero:not(.is-in) .ct-rise { transform: translateY(106%); }
-  .ct-fade { transition: opacity 0.85s ease, transform 0.85s cubic-bezier(.2,.7,.2,1); transition-delay: var(--d, 0s); }
-  #contactView.ct-armed .ct-fade:not(.is-in) { opacity: 0; transform: translateY(20px); }
+  /* the channel ends here: one dot, just above the footer */
+  .oc-end {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: clamp(90px, 10vw, 160px) 0 0 calc(-1 * var(--oc-rail));
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+  }
+  .oc-end-dot { flex: none; width: 11px; height: 11px; border-radius: 50%; background: var(--signal); }
 
+  /* ================= responsive ================= */
+  @media (max-width: 1100px) {
+    .oc-form { grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr); }
+  }
   @media (max-width: 980px) {
-    .ct-intro { grid-column: 1 / -1; max-width: 46ch; }
-    .ct-direct { grid-column: 1 / -1; order: 2; margin-top: clamp(56px, 8vw, 80px); }
-    .ct-form { grid-column: 1 / -1; order: 1; }
-    .ct-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--ct-gap); }
-    .ct-links li:first-child { padding-top: 16px; }
+    .oc-hero { min-height: 0; }
+    .oc-hero-foot { grid-template-columns: minmax(0, 1fr); align-items: start; }
+    /* the status comes last, right above the conversation, so the channel
+       never runs through the intro or the direct links */
+    .oc-status { order: 2; margin-top: 12px; }
+    .oc-status-b { flex-basis: 100%; padding-left: 25px; }
+    /* one column: the questions, the composition (compact), the button */
+    .oc-form { grid-template-columns: minmax(0, 1fr); }
+    .oc-comp { grid-column: 1; grid-row: auto; margin: 8px 0 clamp(28px, 4vw, 40px); }
+    .oc-comp-in { transform: none !important; }
+    .oc-comp-body { max-height: 8em; }
   }
   @media (max-width: 680px) {
-    /* sized so the indented second line ("Moois maken." / the longer
-       "Something new.") stays on one line: two lines, never three */
-    .ct-title { font-size: clamp(2rem, 10vw, 4rem); }
-    html[lang="en"] .ct-title { font-size: clamp(1.75rem, 8.8vw, 3.5rem); }
-    .ct-line--2 { padding-left: 8%; }
-    .ct-links { grid-template-columns: minmax(0, 1fr); }
-    .ct-actions { flex-direction: column; align-items: flex-start; }
+    .oc-title { font-size: 15cqi; }
+    .oc-line--2 { padding-left: 6cqi; }
+    .oc-step { grid-template-columns: 3.4rem minmax(0, 1fr); }
+    .oc-num { font-size: 2.9rem; }
+    .oc-direct-row { grid-template-columns: minmax(0, 1fr) auto; row-gap: 0; padding-top: 10px; }
+    .oc-direct-k { grid-column: 1 / -1; }
+    .oc-direct-link { padding: 4px 0 12px; }
+    /* the composition, compact: the progress and the letter itself */
+    .oc-comp-meta, .oc-comp-sign { display: none; }
+    .oc-comp-in { padding: 20px; }
   }
+
   @media (prefers-reduced-motion: reduce) {
-    .ct-rise, .ct-fade, .ct-arrow, .ct-link, .ct-input, .ct-submit { transition: none; }
+    .oc-fade, .oc-rise, .oc-direct-row::after, .oc-direct-link, .oc-ext, .oc-copy, .oc-num, .oc-q,
+    .oc-input, .oc-textarea, .oc-comp-bar i, .oc-send, .oc-send-arrow { transition: none; }
+    .oc-status-dot::after { animation: none; opacity: 0; }
+    .oc-comp .is-fresh { animation: none; }
   }
+  /* ==========================================================
+     end CONTACT PAGE
+     ========================================================== */
 
   /* ==========================================================
      SITE FOOTER — the last chapter of every subpage.
@@ -4505,19 +5060,12 @@
   <p class="story-sub">Koning Willem I College</p>
 </div>
 
-<div class="story-stage" id="storyNext">
-  <div class="story-eyebrow">HIERNA</div>
-  <h2 class="story-headline">HBO<br /><span class="dim">ICT</span></h2>
-  <p class="story-sub">Verder leren en ontdekken welke richting binnen IT het beste bij mij past.</p>
-</div>
-
 <div class="story-stage" id="keepExploring"><h2 class="story-giant">Waar ik meer over wil leren</h2></div>
 
 <div class="keep-words" id="keepWords">
   <span class="keep-word">SOFTWARE</span>
   <span class="keep-word">SYSTEMEN</span>
   <span class="keep-word">AUTOMATISERING</span>
-  <span class="keep-word">CYBERSECURITY</span>
 </div>
 
 <div class="final-statement" id="stillBuilding">
@@ -4592,7 +5140,7 @@
 </div>
 
 <!-- scroll room: phase 1+2 (opening -> introduction) + phase 3 (introduction -> story continues: next chapter -> current -> next -> keep exploring) + close (canvas clears -> STILL BUILDING. -> transforms into three-project gallery -> view all work -> final actions -> footer). +100vh buffer at the end: max scrollY is always (documentHeight - viewportHeight), so the spacer must exceed the final breakpoint (S6=2120vh) by a full viewport height or the last state is never fully reachable. -->
-<div style="height: 2260vh;"></div>
+<div style="height: 2140vh;"></div>
 
 </div><!-- /homeView -->
 
@@ -5389,12 +5937,7 @@
               <h3 class="ab-tl-word">HBO ICT <span class="ab-tl-slash" aria-hidden="true">/</span><span class="ab-tl-maybe"><span class="ab-sr" data-i18n="tlMaybeSr">, mogelijke richting: </span>Cybersecurity</span></h3>
               <p class="ab-tl-meta"><span data-i18n="tlFrom">Vanaf 2027</span><span class="ab-tl-status" data-i18n="tlPlan">Toekomstplan</span></p>
               <div class="ab-tl-copy">
-                <p data-i18n="next1">Na mijn opleiding wil ik verder studeren aan het HBO, richting ICT. Cybersecurity spreekt me aan als mogelijke richting, maar ik weet nog niet precies welke kant ik uiteindelijk op wil.</p>
-                <p class="ab-tl-dirs">
-                  <span class="ab-tl-dirs-label" data-i18n="dirLabel">Richtingen die ik wil verkennen</span>
-                  <span class="ab-tl-dirs-list"><span>Software</span><span data-i18n="dir2">Systemen</span><span data-i18n="dir3">Automatisering</span><span class="ab-tl-dirs-hi">Cybersecurity<span aria-hidden="true">?</span></span></span>
-                </p>
-                <p class="ab-tl-close" data-i18n="next3">Daarom wil ik mezelf blijven ontwikkelen en ontdekken welke richting het beste bij mij past.</p>
+                <p data-i18n="next1">Na mijn opleiding wil ik doorstuderen. Dit is nog een plan: welke richting het precies wordt, ontdek ik onderweg.</p>
               </div>
             </div>
           </li>
@@ -5468,331 +6011,311 @@
   <button type="button" class="ab-seq-skip" data-i18n="skip">Intro overslaan</button>
 </div>
 
-<!-- /experience — practice & skills: an intro, an interactive overview of
-     five internships (most recent first), then what I work with. No education
-     here — that story lives on /about. Text that changes with the NL/EN
-     switch carries data-i18n="key"; the English is in the script below. -->
+<!-- /experience — THE EXPERIENCE ARCHIVE: the internships as five files in
+     an archive, each its own chapter with its own composition.
+       hero      ERVARING. / NIET ALLEEN / OP PAPIER. — one intro: the
+                 three lines rise, the archive rule draws, 01–05 tick in
+       index     the five companies as large type lines; hover / focus shows
+                 a short line in the preview, a click opens the file. On
+                 phones the row in the middle of the screen lights up.
+       01 Ceva       Fundament     ledger: facts, lead, the four tasks as cells
+       02 Hydro      Systemen      the ticket flow (illustration), same tasks → 01
+       03 Infotech   Ontwikkeling  the tasks as lines in an editor
+       04 ADC        Automatisering the data stream (illustration)
+       05 Baril      Integratie    processes ⇄ API ⇄ systems (illustration), now
+       appendix  the full toolkit, compact (the skills per internship are in
+                 the files themselves)
+       outro     a large link on to Work, then the shared site footer
+     Archive transition (script, no scroll-jacking): each file opens on a
+     card whose large name slides together as it enters, the file before it
+     closes (its end rule draws, its content steps back), and a fixed
+     archive indicator rolls to the new number. Figures are illustrations
+     (aria-hidden, captioned as such), not screenshots. Only what happened
+     in practice: the plan for further study lives on /about.
+     Text that changes with the NL/EN switch carries data-i18n="key"; the
+     English is in the script below. -->
 <div id="experienceView" class="page-view subpage" hidden>
-  <div class="ex-shell">
+  <div class="xa-shell">
 
-    <!-- 00 — intro -->
-    <header class="ex-intro" aria-labelledby="exTitle">
-      <p class="ex-label ex-intro-fade"><span class="ex-label-num">Experience</span><span data-i18n="eyebrow">Praktijk &amp; skills</span></p>
+    <!-- ===== hero ===== -->
+    <header class="xa-hero" id="xaHero" aria-labelledby="xaTitle">
+      <div class="xa-hero-top xa-fade" style="--d:.05s">
+        <p class="xa-tag"><span class="xa-tag-num">Experience</span><span data-i18n="heroTag">Het archief</span></p>
+        <p class="xa-hero-meta"><span data-i18n="heroMeta">05 dossiers</span><span aria-hidden="true">·</span><span>2022 — <span data-i18n="now">nu</span></span></p>
+      </div>
 
-      <h1 class="ex-title" id="exTitle">
-        <span class="ex-title-line"><span class="ex-word-mask"><span class="ex-word" style="--d:.1s">Learning</span></span></span>
-        <span class="ex-title-line ex-title-line--2"><span class="ex-word-mask"><span class="ex-word" style="--d:.22s">By</span></span> <span class="ex-word-mask"><span class="ex-word" style="--d:.32s">Doing<span class="ex-dot">.</span></span></span></span>
+      <h1 class="xa-title" id="xaTitle">
+        <span class="xa-line xa-line--1"><span class="xa-mask"><span class="xa-rise" data-i18n="heroL1">Ervaring.</span></span></span>
+        <span class="xa-line xa-line--2"><span class="xa-mask"><span class="xa-rise" data-i18n="heroL2">Niet alleen</span></span></span>
+        <span class="xa-line xa-line--3"><span class="xa-mask"><span class="xa-rise"><span data-i18n="heroL3">op papier</span><span class="xa-dot">.</span></span></span></span>
       </h1>
 
-      <div class="ex-intro-foot ex-intro-fade" style="--d:.55s">
-        <div class="ex-intro-copy">
+      <!-- the archive rule: draws once, then the five file numbers tick in -->
+      <div class="xa-rule" aria-hidden="true">
+        <span class="xa-rule-line"></span>
+        <ol class="xa-rule-ticks"><li style="--i:0">01</li><li style="--i:1">02</li><li style="--i:2">03</li><li style="--i:3">04</li><li style="--i:4">05</li></ol>
+      </div>
+
+      <div class="xa-hero-foot xa-fade" style="--d:.9s">
+        <button type="button" class="xa-jump" data-target="xaIndex"><span data-i18n="toIndex">Naar de index</span><span class="xa-jump-arrow" aria-hidden="true">&darr;</span></button>
+        <div class="xa-hero-copy">
           <p data-i18n="intro1">Tijdens mijn stages heb ik verschillende kanten van IT leren kennen. Ik heb ervaring opgedaan met IT-support, softwareontwikkeling en het onderzoeken van automatiseringsmogelijkheden.</p>
           <p data-i18n="intro2">Van technische problemen oplossen tot werken aan software en systemen. Hieronder zie je waar ik heb gewerkt en met welke technieken ik ervaring heb opgedaan.</p>
-        </div>
-        <div class="ex-jump">
-          <p class="ex-sub" id="exJumpLabel" data-i18n="jump">Stages</p>
-          <ol class="ex-jump-list" aria-labelledby="exJumpLabel">
-            <li><button type="button" data-target="exBtn-baril"><span class="ex-jump-num">01</span>Baril Coatings<span class="ex-jump-track">Dev &amp; Automation</span><span class="ex-jump-arrow" aria-hidden="true">&darr;</span></button></li>
-            <li><button type="button" data-target="exBtn-adc"><span class="ex-jump-num">02</span>ADC Nederland<span class="ex-jump-track">Dev &amp; Automation</span><span class="ex-jump-arrow" aria-hidden="true">&darr;</span></button></li>
-            <li><button type="button" data-target="exBtn-infotech"><span class="ex-jump-num">03</span>Infotech BV<span class="ex-jump-track">Dev &amp; Automation</span><span class="ex-jump-arrow" aria-hidden="true">&darr;</span></button></li>
-            <li><button type="button" data-target="exBtn-hydro"><span class="ex-jump-num">04</span>Hydro Extrusion<span class="ex-jump-track">IT Support</span><span class="ex-jump-arrow" aria-hidden="true">&darr;</span></button></li>
-            <li><button type="button" data-target="exBtn-ceva"><span class="ex-jump-num">05</span>Ceva Logistics<span class="ex-jump-track">IT Support</span><span class="ex-jump-arrow" aria-hidden="true">&darr;</span></button></li>
-          </ol>
         </div>
       </div>
     </header>
 
-    <!-- 01 — experience: an interactive overview. Desktop: the five
-         internships as a list on the left, the selected one large on the
-         right (the current one is open by default). Phones: the same markup
-         becomes an accordion — each panel follows its own button. Buttons
-         carry aria-expanded / aria-controls; the arrow keys move between them. -->
-    <section class="ex-section" aria-labelledby="exExpTitle">
-      <div class="ex-head">
-        <p class="ex-label ex-reveal"><span class="ex-label-num">01</span><span>Experience</span></p>
-        <h2 class="ex-h2 ex-reveal" id="exExpTitle" data-i18n="expTitle">In de<br>praktijk.</h2>
-        <p class="ex-head-note ex-reveal" style="--d:.12s" data-i18n="expNote">Vijf stages, van meest recent naar oudste. Kies een stage om te zien wat ik heb gedaan en welke vaardigheden ik heb opgedaan.</p>
+    <!-- ===== the archive index ===== -->
+    <section class="xa-index" id="xaIndex" tabindex="-1" aria-labelledby="xaIndexTitle">
+      <div class="xa-index-head xa-reveal">
+        <h2 class="xa-tag" id="xaIndexTitle"><span class="xa-tag-num">Index</span><span data-i18n="indexTitle">Vijf dossiers, op volgorde</span></h2>
+        <p class="xa-index-hint" data-i18n="indexHint">Kies een dossier om het te openen</p>
       </div>
-
-      <div class="ex-x ex-reveal" id="exExplorer">
-
-        <h3 class="ex-x-head">
-          <button type="button" class="ex-x-btn" id="exBtn-baril" aria-expanded="true" aria-controls="exPanel-baril">
-            <span class="ex-x-num">01</span>
-            <span class="ex-x-name">Baril Coatings</span>
-            <span class="ex-x-info"><span>2026 – 2027</span><span class="ex-x-now" data-i18n="nowShort">Nu</span></span>
-            <span class="ex-x-icon" aria-hidden="true"></span>
-          </button>
-        </h3>
-        <div class="ex-x-panel is-open" id="exPanel-baril" role="region" aria-labelledby="exBtn-baril">
-          <p class="ex-x-title" aria-hidden="true"><span>Baril</span> <span class="ex-x-soft">Coatings</span></p>
-          <dl class="ex-x-facts">
-            <div><dt class="ex-sub" data-i18n="period">Periode</dt><dd><time datetime="2026-08">Aug 2026</time> — <time datetime="2027-01">Jan 2027</time></dd></div>
-            <div><dt class="ex-sub" data-i18n="role">Functie</dt><dd data-i18n="barilRole">IT &amp; Automatisering</dd></div>
-            <div><dt class="ex-sub" data-i18n="field">Richting</dt><dd>Development &amp; Automation</dd></div>
-            <div class="ex-x-facts-status"><span class="ex-status" data-i18n="current">Huidige stage</span></div>
-          </dl>
-          <div class="ex-x-desc ex-desc">
-            <p data-i18n="barilDesc1">Tijdens mijn stage bij Baril Coatings houd ik me bezig met het onderzoeken en verbeteren van IT-processen. Ik kijk waar automatisering mogelijk is en hoe verschillende systemen beter met elkaar kunnen samenwerken.</p>
-            <p data-i18n="barilDesc2">Daarnaast ondersteun ik bij technische IT-vraagstukken en onderzoek ik mogelijkheden om bestaande werkzaamheden efficiënter te maken.</p>
-          </div>
-          <div class="ex-x-cols">
-            <div>
-              <h4 class="ex-sub" data-i18n="tasks">Werkzaamheden</h4>
-              <ul class="ex-tasks">
-                <li data-i18n="baril1">Onderzoeken van automatiseringsmogelijkheden.</li>
-                <li data-i18n="baril2">Onderzoeken van API-koppelingen en systeemintegraties.</li>
-                <li data-i18n="baril3">Werken aan automatiseringsoplossingen.</li>
-                <li data-i18n="baril4">Ondersteunen bij technische IT-vraagstukken.</li>
-                <li data-i18n="baril5">Analyseren en verbeteren van bestaande werkprocessen.</li>
-              </ul>
-            </div>
-            <div>
-              <h4 class="ex-sub" data-i18n="skillsSub">Vaardigheden</h4>
-              <ul class="ex-tag-list">
-                <li data-i18n="skProcAuto">Procesautomatisering</li><li data-i18n="skApiInt">API-integraties</li><li>IT Support</li><li data-i18n="skProblem">Probleemanalyse</li>
-              </ul>
-            </div>
-          </div>
+      <div class="xa-index-grid">
+        <ol class="xa-rows" id="xaRows">
+          <li class="xa-reveal"><button type="button" class="xa-row" data-ch="1" data-target="xaCh1"><span class="xa-row-num">01</span><span class="xa-row-name">Ceva Logistics</span><span class="xa-row-side"><span class="xa-row-period">2022</span><span class="xa-row-theme" data-i18n="th1">Fundament</span></span><span class="xa-row-desc"><span class="xa-row-role">IT Support Intern</span> — <span data-i18n="ix1">IT-support op de ICT Service Desk: laptops, monitoren en werkplekken.</span></span></button></li>
+          <li class="xa-reveal" style="--d:.06s"><button type="button" class="xa-row" data-ch="2" data-target="xaCh2"><span class="xa-row-num">02</span><span class="xa-row-name">Hydro Extrusion</span><span class="xa-row-side"><span class="xa-row-period">2022 – 2023</span><span class="xa-row-theme" data-i18n="th2">Systemen</span></span><span class="xa-row-desc"><span class="xa-row-role">IT Support Intern</span> — <span data-i18n="ix2">Opnieuw de ICT Service Desk: werkplekken inrichten en het ticketingsysteem bijhouden.</span></span></button></li>
+          <li class="xa-reveal" style="--d:.12s"><button type="button" class="xa-row" data-ch="3" data-target="xaCh3"><span class="xa-row-num">03</span><span class="xa-row-name">Infotech BV</span><span class="xa-row-side"><span class="xa-row-period">2024 – 2025</span><span class="xa-row-theme" data-i18n="th3">Ontwikkeling</span></span><span class="xa-row-desc"><span class="xa-row-role">Software Development Intern</span> — <span data-i18n="ix3">Mijn eerste stage binnen softwareontwikkeling: werken aan de UniWeb-client.</span></span></button></li>
+          <li class="xa-reveal" style="--d:.18s"><button type="button" class="xa-row" data-ch="4" data-target="xaCh4"><span class="xa-row-num">04</span><span class="xa-row-name">ADC Nederland</span><span class="xa-row-side"><span class="xa-row-period">2026</span><span class="xa-row-theme" data-i18n="th4">Automatisering</span></span><span class="xa-row-desc"><span class="xa-row-role">Software Development Intern</span> — <span data-i18n="ix4">Gegevens uit productiemachines verzamelen en verwerken, met Python en Microsoft SQL Server.</span></span></button></li>
+          <li class="xa-reveal" style="--d:.24s"><button type="button" class="xa-row xa-row--now" data-ch="5" data-target="xaCh5"><span class="xa-row-num">05</span><span class="xa-row-name">Baril Coatings</span><span class="xa-row-side"><span class="xa-row-period">2026 – <span data-i18n="now">nu</span></span><span class="xa-row-theme" data-i18n="th5">Integratie</span></span><span class="xa-row-desc"><span class="xa-row-role" data-i18n="barilRole">IT &amp; Automatisering</span> — <span data-i18n="ix5">IT-processen onderzoeken en verbeteren, met automatisering en API-koppelingen.</span></span></button></li>
+        </ol>
+        <!-- wide screens: the hovered / focused file, next to its row -->
+        <div class="xa-preview" id="xaPreview" aria-hidden="true">
+          <p class="xa-preview-num" id="xaPrevNum">01</p>
+          <p class="xa-preview-theme" id="xaPrevTheme"></p>
+          <p class="xa-preview-desc" id="xaPrevDesc"></p>
+          <p class="xa-preview-open"><span data-i18n="openFile">Open dossier</span> <span class="xa-pink">&rarr;</span></p>
         </div>
+      </div>
+    </section>
 
-        <h3 class="ex-x-head">
-          <button type="button" class="ex-x-btn" id="exBtn-adc" aria-expanded="false" aria-controls="exPanel-adc">
-            <span class="ex-x-num">02</span>
-            <span class="ex-x-name">ADC Nederland</span>
-            <span class="ex-x-info"><span>2026</span></span>
-            <span class="ex-x-icon" aria-hidden="true"></span>
-          </button>
-        </h3>
-        <div class="ex-x-panel" id="exPanel-adc" role="region" aria-labelledby="exBtn-adc">
-          <p class="ex-x-title" aria-hidden="true"><span>ADC</span> <span class="ex-x-soft">Nederland</span></p>
-          <dl class="ex-x-facts">
-            <div><dt class="ex-sub" data-i18n="period">Periode</dt><dd><time datetime="2026-02">Feb 2026</time> — <time datetime="2026">2026</time></dd></div>
-            <div><dt class="ex-sub" data-i18n="role">Functie</dt><dd>Software Development Intern</dd></div>
-            <div><dt class="ex-sub" data-i18n="field">Richting</dt><dd>Development &amp; Automation</dd></div>
+    <!-- ===== 01 — Ceva Logistics: the foundation, a calm ruled ledger ===== -->
+    <section class="xa-ch xa-ch--1" id="xaCh1" data-ch="1" data-name="Ceva Logistics" tabindex="-1" aria-labelledby="xaName1">
+      <div class="xa-card">
+        <p class="xa-card-meta"><span><span data-i18n="file">Dossier</span> 01 / 05</span><span class="xa-card-theme" data-i18n="th1">Fundament</span><span>2022</span></p>
+        <h2 class="xa-name" id="xaName1"><span class="xa-name-a">Ceva</span> <span class="xa-name-b">Logistics</span></h2>
+        <span class="xa-card-num" aria-hidden="true">01</span>
+      </div>
+      <div class="xa-body">
+        <div class="xa-ledger">
+          <dl class="xa-facts xa-reveal">
+            <div><dt data-i18n="period">Periode</dt><dd><time datetime="2022-03" data-i18n="mar2022">Mrt 2022</time> — <time datetime="2022-06">Jun 2022</time></dd></div>
+            <div><dt data-i18n="role">Functie</dt><dd>IT Support Intern</dd></div>
+            <div><dt data-i18n="dept">Afdeling</dt><dd>ICT Service Desk</dd></div>
           </dl>
-          <div class="ex-x-desc ex-desc">
-            <p data-i18n="adcDesc1">Bij ADC Nederland heb ik gewerkt aan een oplossing voor het verzamelen en verwerken van gegevens uit productiemachines.</p>
-            <p data-i18n="adcDesc2">Hierbij heb ik ervaring opgedaan met Python, databases en het verwerken van gegevens uit verschillende systemen.</p>
-          </div>
-          <div class="ex-x-cols">
-            <div>
-              <h4 class="ex-sub" data-i18n="tasks">Werkzaamheden</h4>
-              <ul class="ex-tasks">
-                <li data-i18n="adc1">Ontwikkelen en onderzoeken van een Python-collector.</li>
-                <li data-i18n="adc2">Werken met Microsoft SQL Server.</li>
-                <li data-i18n="adc3">Verzamelen en verwerken van machinegegevens.</li>
-                <li data-i18n="adc4">Onderzoeken van gegevens uit een extern productieplatform.</li>
-                <li data-i18n="adc5">Werken aan een oplossing voor machinemonitoring.</li>
-              </ul>
-            </div>
-            <div>
-              <h4 class="ex-sub" data-i18n="skillsSub">Vaardigheden</h4>
-              <ul class="ex-tag-list">
-                <li>Python</li><li>Microsoft SQL Server</li><li data-i18n="dataProc">Dataverwerking</li>
-              </ul>
-            </div>
-          </div>
+          <p class="xa-lead xa-reveal" style="--d:.08s" data-i18n="ch1Lead">Mijn eerste twee stages liep ik op de ICT Service Desk. Laptops configureren, werkplekken inrichten en het ticketingsysteem bijhouden: hier leerde ik hoe IT in de praktijk werkt.</p>
         </div>
+        <h3 class="xa-sub xa-reveal" id="xaTasks1" data-i18n="tasksBoth">Werkzaamheden · bij Ceva én Hydro</h3>
+        <ol class="xa-cells" aria-labelledby="xaTasks1">
+          <li class="xa-reveal"><span class="xa-cell-num" aria-hidden="true">01</span><span data-i18n="desk1">Configureren van laptops.</span></li>
+          <li class="xa-reveal" style="--d:.06s"><span class="xa-cell-num" aria-hidden="true">02</span><span data-i18n="desk2">Plaatsen van monitoren.</span></li>
+          <li class="xa-reveal" style="--d:.12s"><span class="xa-cell-num" aria-hidden="true">03</span><span data-i18n="desk3">Inrichten en organiseren van nieuwe werkplekken.</span></li>
+          <li class="xa-reveal" style="--d:.18s"><span class="xa-cell-num" aria-hidden="true">04</span><span data-i18n="desk4">Beheren en bijhouden van het ticketingsysteem.</span></li>
+        </ol>
+        <div class="xa-tech xa-reveal"><h3 class="xa-tech-label" data-i18n="skillsSub">Vaardigheden</h3><ul class="xa-tech-list"><li>IT Support</li><li data-i18n="skWorkplace">Werkplekbeheer</li><li data-i18n="skTicketing">Ticketsystemen</li></ul></div>
+      </div>
+      <p class="xa-end" aria-hidden="true"><span class="xa-end-rule"></span><span class="xa-end-label"><span data-i18n="endFile">Einde dossier</span> 01</span></p>
+    </section>
 
-        <h3 class="ex-x-head">
-          <button type="button" class="ex-x-btn" id="exBtn-infotech" aria-expanded="false" aria-controls="exPanel-infotech">
-            <span class="ex-x-num">03</span>
-            <span class="ex-x-name">Infotech BV</span>
-            <span class="ex-x-info"><span>2024 – 2025</span></span>
-            <span class="ex-x-icon" aria-hidden="true"></span>
-          </button>
-        </h3>
-        <div class="ex-x-panel" id="exPanel-infotech" role="region" aria-labelledby="exBtn-infotech">
-          <p class="ex-x-title" aria-hidden="true"><span>Infotech</span> <span class="ex-x-soft">BV</span></p>
-          <dl class="ex-x-facts">
-            <div><dt class="ex-sub" data-i18n="period">Periode</dt><dd><time datetime="2024-08">Aug 2024</time> — <time datetime="2025-01">Jan 2025</time></dd></div>
-            <div><dt class="ex-sub" data-i18n="role">Functie</dt><dd>Software Development Intern</dd></div>
-            <div><dt class="ex-sub" data-i18n="field">Richting</dt><dd>Development &amp; Automation</dd></div>
+    <!-- ===== 02 — Hydro Extrusion: systems, the ticket flow ===== -->
+    <section class="xa-ch xa-ch--2" id="xaCh2" data-ch="2" data-name="Hydro Extrusion" tabindex="-1" aria-labelledby="xaName2">
+      <div class="xa-card">
+        <p class="xa-card-meta"><span><span data-i18n="file">Dossier</span> 02 / 05</span><span class="xa-card-theme" data-i18n="th2">Systemen</span><span>2022 – 2023</span></p>
+        <h2 class="xa-name" id="xaName2"><span class="xa-name-a">Hydro</span> <span class="xa-name-b">Extrusion</span></h2>
+        <span class="xa-card-num" aria-hidden="true">02</span>
+      </div>
+      <div class="xa-body">
+        <figure class="xa-fig xa-flow xa-reveal" aria-hidden="true">
+          <ol class="xa-flow-steps">
+            <li><span class="xa-flow-k">01</span><span data-i18n="flow1">Melding</span></li>
+            <li><span class="xa-flow-k">02</span><span data-i18n="flow2">Ticket</span></li>
+            <li><span class="xa-flow-k">03</span><span data-i18n="flow3">In behandeling</span></li>
+            <li><span class="xa-flow-k">04</span><span data-i18n="flow4">Opgelost</span></li>
+          </ol>
+          <figcaption class="xa-cap"><span>Fig. 02</span> <span data-i18n="cap2">Het ticketingsysteem als werkproces. Illustratie.</span></figcaption>
+        </figure>
+        <div class="xa-col">
+          <dl class="xa-facts xa-facts--row xa-reveal">
+            <div><dt data-i18n="period">Periode</dt><dd><time datetime="2022-10" data-i18n="oct2022">Okt 2022</time> — <time datetime="2023-02">Feb 2023</time></dd></div>
+            <div><dt data-i18n="role">Functie</dt><dd>IT Support Intern</dd></div>
+            <div><dt data-i18n="dept">Afdeling</dt><dd>ICT Service Desk</dd></div>
           </dl>
-          <div class="ex-x-desc ex-desc">
+          <p class="xa-lead xa-reveal" style="--d:.08s" data-i18n="hydroLead">Mijn tweede stage op de ICT Service Desk. Dezelfde werkzaamheden als bij Ceva Logistics: laptops configureren, monitoren plaatsen, werkplekken inrichten en het ticketingsysteem beheren en bijhouden, nu bij Hydro Extrusion.</p>
+          <button type="button" class="xa-link xa-reveal" data-target="xaTasks1"><span data-i18n="seeTasks">De werkzaamheden in dossier 01</span><span class="xa-pink" aria-hidden="true">&uarr;</span></button>
+          <div class="xa-tech xa-reveal"><h3 class="xa-tech-label" data-i18n="skillsSub">Vaardigheden</h3><ul class="xa-tech-list"><li>IT Support</li><li data-i18n="skWorkplace">Werkplekbeheer</li><li data-i18n="skTicketing">Ticketsystemen</li></ul></div>
+        </div>
+      </div>
+      <p class="xa-end" aria-hidden="true"><span class="xa-end-rule"></span><span class="xa-end-label"><span data-i18n="endFile">Einde dossier</span> 02</span></p>
+    </section>
+
+    <!-- ===== 03 — Infotech BV: development, the tasks as editor lines ===== -->
+    <section class="xa-ch xa-ch--3" id="xaCh3" data-ch="3" data-name="Infotech BV" tabindex="-1" aria-labelledby="xaName3">
+      <div class="xa-card">
+        <p class="xa-card-meta"><span><span data-i18n="file">Dossier</span> 03 / 05</span><span class="xa-card-theme" data-i18n="th3">Ontwikkeling</span><span>2024 – 2025</span></p>
+        <h2 class="xa-name" id="xaName3"><span class="xa-name-a">Infotech</span> <span class="xa-name-b">BV</span></h2>
+        <span class="xa-card-num" aria-hidden="true">03</span>
+      </div>
+      <div class="xa-body">
+        <div class="xa-col">
+          <p class="xa-lead xa-reveal" data-i18n="ch2Lead">Mijn eerste stage binnen softwareontwikkeling: bij Infotech BV werkte ik aan de UniWeb-client, in een bestaande codebase.</p>
+          <div class="xa-desc xa-reveal" style="--d:.08s">
             <p data-i18n="infoDesc1">Bij Infotech BV heb ik stagegelopen binnen softwareontwikkeling en gewerkt aan de UniWeb-client.</p>
             <p data-i18n="infoDesc2">Tijdens deze stage heb ik praktijkervaring opgedaan met het ontwikkelen van software en het werken aan een bestaande applicatie.</p>
           </div>
-          <div class="ex-x-cols">
-            <div>
-              <h4 class="ex-sub" data-i18n="tasks">Werkzaamheden</h4>
-              <ul class="ex-tasks">
-                <li data-i18n="info1">Werken aan de UniWeb-client.</li>
-                <li data-i18n="info2">Meewerken aan softwareontwikkeling.</li>
-                <li data-i18n="info3">Ervaring opdoen met een bestaande codebase.</li>
-                <li data-i18n="info4">Werken binnen een professionele IT-omgeving.</li>
-              </ul>
-            </div>
-            <div>
-              <h4 class="ex-sub" data-i18n="skillsSub">Vaardigheden</h4>
-              <ul class="ex-tag-list">
-                <li data-i18n="skSoftDev">Softwareontwikkeling</li><li data-i18n="skCodebase">Bestaande codebase</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <h3 class="ex-x-head">
-          <button type="button" class="ex-x-btn" id="exBtn-hydro" aria-expanded="false" aria-controls="exPanel-hydro">
-            <span class="ex-x-num">04</span>
-            <span class="ex-x-name">Hydro Extrusion</span>
-            <span class="ex-x-info"><span>2022 – 2023</span></span>
-            <span class="ex-x-icon" aria-hidden="true"></span>
-          </button>
-        </h3>
-        <div class="ex-x-panel" id="exPanel-hydro" role="region" aria-labelledby="exBtn-hydro">
-          <p class="ex-x-title" aria-hidden="true"><span>Hydro</span> <span class="ex-x-soft">Extrusion</span></p>
-          <dl class="ex-x-facts">
-            <div><dt class="ex-sub" data-i18n="period">Periode</dt><dd><time datetime="2022-10" data-i18n="oct2022">Okt 2022</time> — <time datetime="2023-02">Feb 2023</time></dd></div>
-            <div><dt class="ex-sub" data-i18n="role">Functie</dt><dd>IT Support Intern</dd></div>
-            <div><dt class="ex-sub" data-i18n="field">Richting</dt><dd>IT Support</dd></div>
+          <dl class="xa-facts xa-reveal">
+            <div><dt data-i18n="period">Periode</dt><dd><time datetime="2024-08">Aug 2024</time> — <time datetime="2025-01">Jan 2025</time></dd></div>
+            <div><dt data-i18n="role">Functie</dt><dd>Software Development Intern</dd></div>
+            <div><dt data-i18n="field">Richting</dt><dd>Development &amp; Automation</dd></div>
           </dl>
-          <div class="ex-x-desc ex-desc">
-            <p data-i18n="hydroDesc1">Bij Hydro Extrusion heb ik stagegelopen op de ICT Service Desk. Ik hield me bezig met het inrichten van werkplekken en het beheren van het ticketingsysteem.</p>
-          </div>
-          <div class="ex-x-cols">
-            <div>
-              <h4 class="ex-sub" data-i18n="tasks">Werkzaamheden</h4>
-              <ul class="ex-tasks">
-                <li data-i18n="hydro1">Configureren van laptops.</li>
-                <li data-i18n="hydro2">Plaatsen van monitoren.</li>
-                <li data-i18n="hydro3">Organiseren van nieuwe werkplekken.</li>
-                <li data-i18n="hydro4">Beheren van het ticketingsysteem.</li>
-              </ul>
-            </div>
-            <div>
-              <h4 class="ex-sub" data-i18n="skillsSub">Vaardigheden</h4>
-              <ul class="ex-tag-list">
-                <li>IT Support</li><li data-i18n="skWorkplace">Werkplekbeheer</li><li data-i18n="skTicketing">Ticketsystemen</li>
-              </ul>
-            </div>
-          </div>
         </div>
-
-        <h3 class="ex-x-head">
-          <button type="button" class="ex-x-btn" id="exBtn-ceva" aria-expanded="false" aria-controls="exPanel-ceva">
-            <span class="ex-x-num">05</span>
-            <span class="ex-x-name">Ceva Logistics</span>
-            <span class="ex-x-info"><span>2022</span></span>
-            <span class="ex-x-icon" aria-hidden="true"></span>
-          </button>
-        </h3>
-        <div class="ex-x-panel" id="exPanel-ceva" role="region" aria-labelledby="exBtn-ceva">
-          <p class="ex-x-title" aria-hidden="true"><span>Ceva</span> <span class="ex-x-soft">Logistics</span></p>
-          <dl class="ex-x-facts">
-            <div><dt class="ex-sub" data-i18n="period">Periode</dt><dd><time datetime="2022-03" data-i18n="mar2022">Mrt 2022</time> — <time datetime="2022-06">Jun 2022</time></dd></div>
-            <div><dt class="ex-sub" data-i18n="role">Functie</dt><dd>IT Support Intern</dd></div>
-            <div><dt class="ex-sub" data-i18n="field">Richting</dt><dd>IT Support</dd></div>
-          </dl>
-          <div class="ex-x-desc ex-desc">
-            <p data-i18n="cevaDesc1">Bij Ceva Logistics heb ik stagegelopen op de ICT Service Desk. Ik hield me bezig met het inrichten van werkplekken en het bijhouden van het ticketingsysteem.</p>
-          </div>
-          <div class="ex-x-cols">
-            <div>
-              <h4 class="ex-sub" data-i18n="tasks">Werkzaamheden</h4>
-              <ul class="ex-tasks">
-                <li data-i18n="ceva1">Configureren van laptops.</li>
-                <li data-i18n="ceva2">Plaatsen van monitoren.</li>
-                <li data-i18n="ceva3">Inrichten van nieuwe werkplekken.</li>
-                <li data-i18n="ceva4">Bijhouden van het ticketingsysteem.</li>
-              </ul>
-            </div>
-            <div>
-              <h4 class="ex-sub" data-i18n="skillsSub">Vaardigheden</h4>
-              <ul class="ex-tag-list">
-                <li>IT Support</li><li data-i18n="skWorkplace">Werkplekbeheer</li><li data-i18n="skTicketing">Ticketsystemen</li>
-              </ul>
-            </div>
-          </div>
+        <!-- the real task list, set as an editor: line numbers and // are CSS -->
+        <div class="xa-editor xa-reveal" style="--d:.1s">
+          <div class="xa-editor-bar" aria-hidden="true"><span class="xa-editor-dots"><i></i><i></i><i></i></span><span class="xa-editor-tab">uniweb-client</span><span class="xa-editor-note" data-i18n="illus">illustratie</span></div>
+          <h3 class="xa-editor-title" id="xaTasks3" data-i18n="tasks">Werkzaamheden</h3>
+          <ol class="xa-editor-lines" aria-labelledby="xaTasks3">
+            <li data-i18n="info1">Werken aan de UniWeb-client.</li>
+            <li data-i18n="info2">Meewerken aan softwareontwikkeling.</li>
+            <li data-i18n="info3">Ervaring opdoen met een bestaande codebase.</li>
+            <li data-i18n="info4">Werken binnen een professionele IT-omgeving.</li>
+          </ol>
+          <span class="xa-editor-caret" aria-hidden="true"></span>
         </div>
-
+        <div class="xa-tech xa-reveal"><h3 class="xa-tech-label" data-i18n="skillsSub">Vaardigheden</h3><ul class="xa-tech-list"><li data-i18n="skSoftDev">Softwareontwikkeling</li><li data-i18n="skCodebase">Bestaande codebase</li></ul></div>
       </div>
+      <p class="xa-end" aria-hidden="true"><span class="xa-end-rule"></span><span class="xa-end-label"><span data-i18n="endFile">Einde dossier</span> 03</span></p>
     </section>
 
-    <!-- 02 — skills & expertise: three ruled rows, one per level (used
-         regularly / basic knowledge / internships & research), each split into
-         the same three areas. The level is the heading, so it is also clear
-         without the marks. No bars or percentages. -->
-    <section class="ex-section ex-skills" aria-labelledby="exSkillsTitle">
-      <div class="ex-head">
-        <p class="ex-label ex-reveal"><span class="ex-label-num">02</span><span>Skills &amp; Expertise</span></p>
-        <h2 class="ex-h2 ex-reveal" id="exSkillsTitle">What I<br>work with.</h2>
-        <p class="ex-head-note ex-reveal" style="--d:.12s" data-i18n="skillsIntro">Door mijn opleidingen, projecten en stages heb ik met verschillende programmeertalen, tools en systemen gewerkt. Ik blijf nieuwe technieken ontdekken en mijn kennis verder uitbreiden.</p>
+    <!-- ===== 04 — ADC Nederland: automation, the data stream ===== -->
+    <section class="xa-ch xa-ch--4" id="xaCh4" data-ch="4" data-name="ADC Nederland" tabindex="-1" aria-labelledby="xaName4">
+      <div class="xa-card">
+        <p class="xa-card-meta"><span><span data-i18n="file">Dossier</span> 04 / 05</span><span class="xa-card-theme" data-i18n="th4">Automatisering</span><span>2026</span></p>
+        <h2 class="xa-name" id="xaName4"><span class="xa-name-a">ADC</span> <span class="xa-name-b">Nederland</span></h2>
+        <span class="xa-card-num" aria-hidden="true">04</span>
       </div>
-
-      <ol class="ex-cats">
-        <li class="ex-cat ex-tier ex-tier--core">
-          <span class="ex-cat-num">01</span>
-          <div class="ex-tier-head">
-            <h3 class="ex-cat-name"><span class="ex-mark" aria-hidden="true"></span><span data-i18n="lvlCore">Regelmatig<br>gebruikt</span></h3>
-            <p class="ex-tier-note" data-i18n="lvlCoreNote">Technieken die ik vaak gebruik in mijn opleiding en projecten.</p>
+      <div class="xa-body">
+        <p class="xa-lead xa-lead--wide xa-reveal" data-i18n="ch3Lead">Data uit productiemachines verzamelen, systemen aan elkaar koppelen en processen automatiseren. Mijn laatste twee stages draaien om hoe systemen samenwerken.</p>
+        <figure class="xa-fig xa-stream xa-reveal" aria-hidden="true">
+          <ol class="xa-stream-nodes">
+            <li><span class="xa-stream-k">in</span><span data-i18n="node1">Productie&shy;machines</span></li>
+            <li><span class="xa-stream-k">py</span><span data-i18n="node2">Python-collector</span></li>
+            <li><span class="xa-stream-k">sql</span><span>Microsoft SQL Server</span></li>
+            <li><span class="xa-stream-k">out</span><span data-i18n="node4">Monitoring</span></li>
+          </ol>
+          <span class="xa-stream-line"><i></i><i></i><i></i></span>
+          <figcaption class="xa-cap"><span>Fig. 04</span> <span data-i18n="cap4">Van machinegegevens naar monitoring. Illustratie, geen systeemschema.</span></figcaption>
+        </figure>
+        <div class="xa-trio">
+          <div class="xa-desc xa-reveal">
+            <p data-i18n="adcDesc1">Bij ADC Nederland heb ik gewerkt aan een oplossing voor het verzamelen en verwerken van gegevens uit productiemachines.</p>
+            <p data-i18n="adcDesc2">Hierbij heb ik ervaring opgedaan met Python, databases en het verwerken van gegevens uit verschillende systemen.</p>
           </div>
-          <div class="ex-tier-groups">
-            <div class="ex-tier-group">
-              <span class="ex-sub">Development</span>
-              <ul class="ex-skill-list">
-                <li class="ex-skill">HTML</li><li class="ex-skill">CSS</li><li class="ex-skill">JavaScript</li><li class="ex-skill">PHP</li><li class="ex-skill">C#</li>
-              </ul>
-            </div>
-            <div class="ex-tier-group">
-              <span class="ex-sub">Data &amp; Automation</span>
-              <ul class="ex-skill-list">
-                <li class="ex-skill">SQL</li>
-              </ul>
-            </div>
-            <div class="ex-tier-group">
-              <span class="ex-sub">Tools &amp; IT</span>
-              <ul class="ex-skill-list">
-                <li class="ex-skill">Git</li><li class="ex-skill">GitHub</li><li class="ex-skill">Visual Studio Code</li><li class="ex-skill">Microsoft 365</li><li class="ex-skill">IT Support</li><li class="ex-skill">Troubleshooting</li>
-              </ul>
-            </div>
+          <div class="xa-reveal" style="--d:.06s">
+            <h3 class="xa-sub" id="xaTasks4" data-i18n="tasks">Werkzaamheden</h3>
+            <ol class="xa-list" aria-labelledby="xaTasks4">
+              <li data-i18n="adc1">Ontwikkelen en onderzoeken van een Python-collector.</li>
+              <li data-i18n="adc2">Werken met Microsoft SQL Server.</li>
+              <li data-i18n="adc3">Verzamelen en verwerken van machinegegevens.</li>
+              <li data-i18n="adc4">Onderzoeken van gegevens uit een extern productieplatform.</li>
+              <li data-i18n="adc5">Werken aan een oplossing voor machinemonitoring.</li>
+            </ol>
           </div>
-        </li>
-        <li class="ex-cat ex-tier ex-tier--basic">
-          <span class="ex-cat-num">02</span>
-          <div class="ex-tier-head">
-            <h3 class="ex-cat-name"><span class="ex-mark ex-mark--basic" aria-hidden="true"></span><span data-i18n="lvlBasic">Basis&shy;kennis</span></h3>
-            <p class="ex-tier-note" data-i18n="lvlBasicNote">Hier heb ik mee gewerkt en ken ik de basis.</p>
+          <div class="xa-reveal" style="--d:.12s">
+            <dl class="xa-facts">
+              <div><dt data-i18n="period">Periode</dt><dd><time datetime="2026-02">Feb 2026</time> — <time datetime="2026">2026</time></dd></div>
+              <div><dt data-i18n="role">Functie</dt><dd>Software Development Intern</dd></div>
+              <div><dt data-i18n="field">Richting</dt><dd>Development &amp; Automation</dd></div>
+            </dl>
+            <div class="xa-tech"><h3 class="xa-tech-label" data-i18n="skillsSub">Vaardigheden</h3><ul class="xa-tech-list"><li>Python</li><li>Microsoft SQL Server</li><li data-i18n="dataProc">Dataverwerking</li></ul></div>
           </div>
-          <div class="ex-tier-groups">
-            <div class="ex-tier-group">
-              <span class="ex-sub">Development</span>
-              <ul class="ex-skill-list">
-                <li class="ex-skill">Vue.js</li><li class="ex-skill">Python</li>
-              </ul>
-            </div>
-            <div class="ex-tier-group">
-              <span class="ex-sub">Data &amp; Automation</span>
-              <ul class="ex-skill-list">
-                <li class="ex-skill">Power BI</li><li class="ex-skill" data-i18n="restApis">REST API's</li>
-              </ul>
-            </div>
-          </div>
-        </li>
-        <li class="ex-cat ex-tier ex-tier--intern">
-          <span class="ex-cat-num">03</span>
-          <div class="ex-tier-head">
-            <h3 class="ex-cat-name"><span class="ex-mark ex-mark--intern" aria-hidden="true"></span><span data-i18n="lvlIntern">Stage &amp;<br>onderzoek</span></h3>
-            <p class="ex-tier-note" data-i18n="lvlInternNote">Alleen tijdens een stage mee gewerkt of onderzoek naar gedaan.</p>
-          </div>
-          <div class="ex-tier-groups">
-            <div class="ex-tier-group">
-              <span class="ex-sub">Data &amp; Automation</span>
-              <ul class="ex-skill-list">
-                <li class="ex-skill">Microsoft SQL Server</li><li class="ex-skill">Power Automate</li>
-              </ul>
-            </div>
-            <div class="ex-tier-group">
-              <span class="ex-sub">Tools &amp; IT</span>
-              <ul class="ex-skill-list">
-                <li class="ex-skill" data-i18n="skWorkplace">Werkplekbeheer</li><li class="ex-skill" data-i18n="skTicketing">Ticketsystemen</li>
-              </ul>
-            </div>
-          </div>
-        </li>
-      </ol>
+        </div>
+      </div>
+      <p class="xa-end" aria-hidden="true"><span class="xa-end-rule"></span><span class="xa-end-label"><span data-i18n="endFile">Einde dossier</span> 04</span></p>
     </section>
+
+    <!-- ===== 05 — Baril Coatings: integration, now ===== -->
+    <section class="xa-ch xa-ch--5" id="xaCh5" data-ch="5" data-name="Baril Coatings" tabindex="-1" aria-labelledby="xaName5">
+      <div class="xa-card">
+        <p class="xa-card-meta"><span><span data-i18n="file">Dossier</span> 05 / 05</span><span class="xa-card-theme" data-i18n="th5">Integratie</span><span class="xa-status" data-i18n="current">Huidige stage</span></p>
+        <h2 class="xa-name" id="xaName5"><span class="xa-name-a">Baril</span> <span class="xa-name-b">Coatings</span></h2>
+        <span class="xa-card-num" aria-hidden="true">05</span>
+      </div>
+      <div class="xa-body">
+        <figure class="xa-fig xa-link-fig xa-reveal" aria-hidden="true">
+          <div class="xa-hub">
+            <svg class="xa-hub-lines" viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false"><line x1="50" y1="14" x2="50" y2="50"/><line x1="25" y1="84" x2="50" y2="50"/><line x1="75" y1="84" x2="50" y2="50"/></svg>
+            <span class="xa-hub-node xa-hub-node--a" data-i18n="hubA">Processen</span>
+            <span class="xa-hub-node xa-hub-node--b" data-i18n="hubB">API-koppelingen</span>
+            <span class="xa-hub-node xa-hub-node--c" data-i18n="hubC">Systemen</span>
+            <span class="xa-hub-core" data-i18n="hubCore">Automatisering</span>
+          </div>
+          <figcaption class="xa-cap"><span>Fig. 05</span> <span data-i18n="cap5">Processen, systemen en de koppelingen ertussen. Illustratie.</span></figcaption>
+        </figure>
+        <div class="xa-col">
+          <div class="xa-desc xa-desc--big xa-reveal">
+            <p data-i18n="barilDesc1">Tijdens mijn stage bij Baril Coatings houd ik me bezig met het onderzoeken en verbeteren van IT-processen. Ik kijk waar automatisering mogelijk is en hoe verschillende systemen beter met elkaar kunnen samenwerken.</p>
+            <p data-i18n="barilDesc2">Daarnaast ondersteun ik bij technische IT-vraagstukken en onderzoek ik mogelijkheden om bestaande werkzaamheden efficiënter te maken.</p>
+          </div>
+          <dl class="xa-facts xa-facts--row xa-reveal">
+            <div><dt data-i18n="period">Periode</dt><dd><time datetime="2026-08">Aug 2026</time> — <time datetime="2027-01">Jan 2027</time></dd></div>
+            <div><dt data-i18n="role">Functie</dt><dd data-i18n="barilRole">IT &amp; Automatisering</dd></div>
+            <div><dt data-i18n="field">Richting</dt><dd>Development &amp; Automation</dd></div>
+          </dl>
+        </div>
+        <h3 class="xa-sub xa-reveal" id="xaTasks5" data-i18n="tasks">Werkzaamheden</h3>
+        <ol class="xa-rowlist" aria-labelledby="xaTasks5">
+          <li class="xa-reveal"><span class="xa-cell-num" aria-hidden="true">01</span><span data-i18n="baril1">Onderzoeken van automatiseringsmogelijkheden.</span></li>
+          <li class="xa-reveal" style="--d:.05s"><span class="xa-cell-num" aria-hidden="true">02</span><span data-i18n="baril2">Onderzoeken van API-koppelingen en systeemintegraties.</span></li>
+          <li class="xa-reveal" style="--d:.1s"><span class="xa-cell-num" aria-hidden="true">03</span><span data-i18n="baril3">Werken aan automatiseringsoplossingen.</span></li>
+          <li class="xa-reveal" style="--d:.15s"><span class="xa-cell-num" aria-hidden="true">04</span><span data-i18n="baril4">Ondersteunen bij technische IT-vraagstukken.</span></li>
+          <li class="xa-reveal" style="--d:.2s"><span class="xa-cell-num" aria-hidden="true">05</span><span data-i18n="baril5">Analyseren en verbeteren van bestaande werkprocessen.</span></li>
+        </ol>
+        <div class="xa-tech xa-reveal"><h3 class="xa-tech-label" data-i18n="skillsSub">Vaardigheden</h3><ul class="xa-tech-list"><li data-i18n="skProcAuto">Procesautomatisering</li><li data-i18n="skApiInt">API-integraties</li><li>IT Support</li><li data-i18n="skProblem">Probleemanalyse</li></ul></div>
+      </div>
+      <p class="xa-end" aria-hidden="true"><span class="xa-end-rule"></span><span class="xa-end-label"><span data-i18n="endArchive">Einde archief</span></span></p>
+    </section>
+
+    <!-- ===== appendix: the whole toolkit, compact. The level is the
+         heading, so it is also clear without the marks. ===== -->
+    <section class="xa-appendix" id="xaAppendix" aria-labelledby="xaAppTitle">
+      <div class="xa-app-head xa-reveal">
+        <h2 class="xa-tag" id="xaAppTitle"><span class="xa-tag-num" data-i18n="appNum">Bijlage</span><span data-i18n="appTitle">Gereedschap</span></h2>
+        <p class="xa-app-lead" data-i18n="skillsIntro">Door mijn opleidingen, projecten en stages heb ik met verschillende programmeertalen, tools en systemen gewerkt. Ik blijf nieuwe technieken ontdekken en mijn kennis verder uitbreiden.</p>
+      </div>
+      <dl class="xa-tiers">
+        <div class="xa-tier xa-tier--core xa-reveal">
+          <dt><span class="xa-mark" aria-hidden="true"></span><span class="xa-tier-name" data-i18n="lvlCore">Regelmatig gebruikt</span><span class="xa-tier-note" data-i18n="lvlCoreNote">Technieken die ik vaak gebruik in mijn opleiding en projecten.</span></dt>
+          <dd><ul class="xa-tools"><li>HTML</li><li>CSS</li><li>JavaScript</li><li>PHP</li><li>C#</li><li>SQL</li><li>Git</li><li>GitHub</li><li>Visual Studio Code</li><li>Microsoft 365</li><li>IT Support</li><li>Troubleshooting</li></ul></dd>
+        </div>
+        <div class="xa-tier xa-tier--basic xa-reveal" style="--d:.06s">
+          <dt><span class="xa-mark xa-mark--basic" aria-hidden="true"></span><span class="xa-tier-name" data-i18n="lvlBasic">Basiskennis</span><span class="xa-tier-note" data-i18n="lvlBasicNote">Hier heb ik mee gewerkt en ken ik de basis.</span></dt>
+          <dd><ul class="xa-tools"><li>Vue.js</li><li>Python</li><li>Power BI</li><li data-i18n="restApis">REST API's</li></ul></dd>
+        </div>
+        <div class="xa-tier xa-tier--intern xa-reveal" style="--d:.12s">
+          <dt><span class="xa-mark xa-mark--intern" aria-hidden="true"></span><span class="xa-tier-name" data-i18n="lvlIntern">Stage &amp; onderzoek</span><span class="xa-tier-note" data-i18n="lvlInternNote">Alleen tijdens een stage mee gewerkt of onderzoek naar gedaan.</span></dt>
+          <dd><ul class="xa-tools"><li>Microsoft SQL Server</li><li>Power Automate</li><li data-i18n="skWorkplace">Werkplekbeheer</li><li data-i18n="skTicketing">Ticketsystemen</li></ul></dd>
+        </div>
+      </dl>
+    </section>
+
+    <!-- ===== outro: from where I worked to what I built ===== -->
+    <section class="xa-outro" aria-labelledby="xaOutroTitle">
+      <p class="xa-outro-lead xa-reveal" data-i18n="outroLead">Je hebt gezien waar ik ervaring heb opgedaan.</p>
+      <h2 class="xa-outro-title xa-reveal" id="xaOutroTitle" style="--d:.08s">
+        <a class="xa-outro-link" href="#/work">
+          <span class="xa-outro-l1" data-i18n="outroL1">Bekijk nu wat ik</span>
+          <span class="xa-outro-l2"><span data-i18n="outroL2">heb gebouwd</span><span class="xa-outro-arrow" aria-hidden="true">&rarr;</span></span>
+        </a>
+      </h2>
+    </section>
+
+    <!-- the archive indicator: fixed, while the files are on screen -->
+    <div class="xa-ind" id="xaInd" aria-hidden="true">
+      <span class="xa-ind-label" data-i18n="file">Dossier</span>
+      <span class="xa-ind-num"><span class="xa-ind-strip" id="xaIndStrip"><span>01</span><span>02</span><span>03</span><span>04</span><span>05</span></span></span>
+      <span class="xa-ind-total">/ 05</span>
+      <span class="xa-ind-name" id="xaIndName">Ceva Logistics</span>
+      <span class="xa-ind-bar"><i></i><i></i><i></i><i></i><i></i></span>
+    </div>
 
     <!-- the closing is the shared site footer (#siteFooter, after the views) -->
 
@@ -5804,80 +6327,144 @@
      whichever page view is shown, and stays hidden on the home page, which
      keeps its own scripted closing scene. Dutch in the markup, English in
      the footer script below (same remembered "akif-lang" choice). -->
-<!-- /contact — the last page of the story: a large two-line title (second
-     line indented), a short intro, then direct contact details on the left
-     and the form on the right (stacked on phones). The form validates in the
-     browser but is NOT connected to any sending service yet: on a valid
-     submit it says plainly that nothing was sent and offers the e-mail
-     address instead. Dutch in the markup, English in the contact script
-     below (same remembered "akif-lang" choice). -->
+<!-- /contact — OPEN CHANNEL: starting a conversation, not filling in a form.
+       hero      LAAT VAN / JE HOREN. (EN: LET'S MAKE / CONTACT.), the local
+                 time, a status line (a graphic detail: no live connection
+                 is claimed) and the direct ways in: e-mail (copy),
+                 LinkedIn, GitHub — never hidden behind an animation
+       channel   a thin pink line that leaves the status dot and runs down
+                 into the conversation as its progress rail (scroll-linked)
+       convo     three questions as one composition (01 Wie ben je? / 02
+                 Waar bereik ik je? / 03 Wat wil je kwijt?), each a real
+                 labelled field, all reachable at once (no wizard). Beside
+                 it the MESSAGE COMPOSITION: the message taking shape as a
+                 letter while typing (aria-hidden: it only mirrors the
+                 fields), with the progress (three segments + the active
+                 question). On phones it sits compact above the send button.
+       send      validates in the browser but is NOT connected to any
+                 sending service: a valid submit says plainly that nothing
+                 was sent and offers the e-mail address. The note sits next
+                 to the button, so it's known before clicking.
+     Dutch in the markup, English in the contact script below (same
+     remembered "akif-lang" choice). -->
 <div id="contactView" class="page-view subpage" hidden>
-  <div class="ct-shell">
+  <div class="oc-shell">
 
-    <header class="ct-hero" aria-labelledby="ctTitle">
-      <p class="ab-chapter ct-fade"><span class="ab-chapter-num">04</span><span>Contact</span></p>
-      <h1 class="ct-title" id="ctTitle">
-        <span class="ct-line"><span class="ct-mask"><span class="ct-rise" data-i18n="ctLine1">Laten we iets</span></span></span>
-        <span class="ct-line ct-line--2"><span class="ct-mask"><span class="ct-rise" data-i18n="ctLine2">Moois maken<span class="ct-dot">.</span></span></span></span>
+    <!-- ===== hero ===== -->
+    <header class="oc-hero" id="ocHero" aria-labelledby="ocTitle">
+      <div class="oc-top oc-fade" style="--d:.05s">
+        <p class="oc-tag"><span class="oc-tag-num">Contact</span><span data-i18n="ocTag">Open kanaal</span></p>
+        <p class="oc-clock"><span data-i18n="ocPlace">Nederland</span> · <time id="ocTime">--:--</time></p>
+      </div>
+
+      <h1 class="oc-title" id="ocTitle">
+        <span class="oc-line oc-line--1"><span class="oc-mask"><span class="oc-rise" data-i18n="ocL1">Laat van</span></span></span>
+        <span class="oc-line oc-line--2"><span class="oc-mask"><span class="oc-rise"><span data-i18n="ocL2">je horen</span><span class="oc-dot">.</span></span></span></span>
       </h1>
-      <p class="ct-intro ct-fade" data-i18n="ctIntro">Een idee, een project of gewoon kennismaken? Stuur me gerust een bericht.</p>
+
+      <div class="oc-hero-foot">
+        <!-- the status: a graphic detail; its dot is where the channel starts -->
+        <p class="oc-status oc-fade" style="--d:.7s"><span class="oc-status-dot" id="ocStatusDot" aria-hidden="true"></span><span class="oc-status-a" data-i18n="ocStatusA">Kanaal open</span><span class="oc-status-b" data-i18n="ocStatusB">Klaar voor je bericht</span></p>
+
+        <div class="oc-hero-side oc-fade" style="--d:.85s">
+          <p class="oc-intro" data-i18n="ocIntro">Een idee, een project of gewoon kennismaken? Stuur me gerust een bericht.</p>
+          <!-- the direct ways in -->
+          <section class="oc-direct" id="ocDirect" aria-labelledby="ocDirectTitle">
+            <h2 class="oc-direct-title" id="ocDirectTitle" data-i18n="ocDirect">Liever direct?</h2>
+            <ul class="oc-direct-list">
+              <li class="oc-direct-row">
+                <span class="oc-direct-k">E-mail</span>
+                <a class="oc-direct-link" href="mailto:Akif.Albayrak12@hotmail.com">Akif.Albayrak12@hotmail.com</a>
+                <button type="button" class="oc-copy" id="ocCopy" data-copy="Akif.Albayrak12@hotmail.com"><span data-i18n="ocCopy">Kopieer</span></button>
+              </li>
+              <li class="oc-direct-row">
+                <span class="oc-direct-k">LinkedIn</span>
+                <a class="oc-direct-link" href="https://linkedin.com/in/akif-albayrak-7aa606259" target="_blank" rel="noopener">Akif Albayrak<span class="oc-ext" aria-hidden="true">&nearr;</span><span class="ab-sr" data-i18n="ocNewTab"> (opent in een nieuw tabblad)</span></a>
+              </li>
+              <li class="oc-direct-row">
+                <span class="oc-direct-k">GitHub</span>
+                <a class="oc-direct-link" href="https://github.com/Akif52340416" target="_blank" rel="noopener">Akif52340416<span class="oc-ext" aria-hidden="true">&nearr;</span><span class="ab-sr" data-i18n="ocNewTab"> (opent in een nieuw tabblad)</span></a>
+              </li>
+            </ul>
+            <p class="ab-sr" id="ocCopyStatus" role="status" aria-live="polite"></p>
+          </section>
+        </div>
+      </div>
     </header>
 
-    <div class="ct-body">
-      <aside class="ct-direct ct-fade" aria-labelledby="ctDirectTitle">
-        <h2 class="ct-sub" id="ctDirectTitle" data-i18n="ctDirect">Direct contact</h2>
-        <ul class="ct-links">
-          <li>
-            <span class="ct-link-label">E-mail</span>
-            <a class="ct-link ct-link--mail" href="mailto:Akif.Albayrak12@hotmail.com">Akif.Albayrak12@hotmail.com</a>
-          </li>
-          <li>
-            <span class="ct-link-label">LinkedIn</span>
-            <a class="ct-link" href="https://linkedin.com/in/akif-albayrak-7aa606259" target="_blank" rel="noopener">Akif Albayrak<span class="ct-ext" aria-hidden="true">&nearr;</span><span class="ab-sr" data-i18n="ctNewTab"> (opent in een nieuw tabblad)</span></a>
-          </li>
-          <li>
-            <span class="ct-link-label">GitHub</span>
-            <a class="ct-link" href="https://github.com/Akif52340416" target="_blank" rel="noopener">Akif52340416<span class="ct-ext" aria-hidden="true">&nearr;</span><span class="ab-sr" data-i18n="ctNewTab"> (opent in een nieuw tabblad)</span></a>
-          </li>
-          <li>
-            <span class="ct-link-label" data-i18n="ctPlaceLabel">Locatie</span>
-            <span class="ct-place" data-i18n="ctPlace">Nederland</span>
-          </li>
-        </ul>
-      </aside>
+    <!-- ===== the conversation ===== -->
+    <section class="oc-convo" id="ocConvo" aria-labelledby="ocFormTitle">
+      <!-- the channel: from the status dot down along the questions -->
+      <span class="oc-channel" id="ocChannel" aria-hidden="true"><span class="oc-channel-fill" id="ocChannelFill"></span></span>
 
-      <form class="ct-form" id="ctForm" novalidate aria-labelledby="ctFormTitle">
-        <h2 class="ct-sub" id="ctFormTitle" data-i18n="ctFormTitle">Stuur een bericht</h2>
+      <h2 class="ab-sr" id="ocFormTitle" data-i18n="ocFormTitle">Stuur een bericht</h2>
 
-        <div class="ct-field ct-fade">
-          <label class="ct-label" for="ctName"><span class="ct-num" aria-hidden="true">01</span><span data-i18n="ctNameLabel">Naam</span></label>
-          <input class="ct-input" id="ctName" name="name" type="text" autocomplete="name" required maxlength="100"
-                 placeholder="Je naam" data-i18n-ph="ctNamePh" aria-describedby="ctNameErr">
-          <p class="ct-error" id="ctNameErr" hidden></p>
+      <form class="oc-form" id="ocForm" novalidate aria-labelledby="ocFormTitle">
+
+        <div class="oc-step" data-step="1">
+          <span class="oc-num" aria-hidden="true">01</span>
+          <div class="oc-step-body">
+            <label class="oc-q" for="ocName" data-i18n="ocQ1">Wie ben je?</label>
+            <input class="oc-input" id="ocName" name="name" type="text" autocomplete="name" required maxlength="100"
+                   placeholder="Je naam" data-i18n-ph="ocPh1" aria-describedby="ocNameErr">
+            <p class="oc-error" id="ocNameErr" hidden></p>
+          </div>
         </div>
 
-        <div class="ct-field ct-fade">
-          <label class="ct-label" for="ctEmail"><span class="ct-num" aria-hidden="true">02</span><span data-i18n="ctEmailLabel">E-mailadres</span></label>
-          <input class="ct-input" id="ctEmail" name="email" type="email" autocomplete="email" required maxlength="160"
-                 placeholder="naam@voorbeeld.nl" data-i18n-ph="ctEmailPh" aria-describedby="ctEmailErr">
-          <p class="ct-error" id="ctEmailErr" hidden></p>
+        <div class="oc-step" data-step="2">
+          <span class="oc-num" aria-hidden="true">02</span>
+          <div class="oc-step-body">
+            <label class="oc-q" for="ocEmail" data-i18n="ocQ2">Waar kan ik je bereiken?</label>
+            <input class="oc-input" id="ocEmail" name="email" type="email" autocomplete="email" required maxlength="160"
+                   placeholder="naam@voorbeeld.nl" data-i18n-ph="ocPh2" aria-describedby="ocEmailErr">
+            <p class="oc-error" id="ocEmailErr" hidden></p>
+          </div>
         </div>
 
-        <div class="ct-field ct-fade">
-          <label class="ct-label" for="ctMessage"><span class="ct-num" aria-hidden="true">03</span><span data-i18n="ctMsgLabel">Bericht</span></label>
-          <textarea class="ct-input ct-textarea" id="ctMessage" name="message" rows="5" required minlength="10" maxlength="2000"
-                    placeholder="Waar kan ik je mee helpen?" data-i18n-ph="ctMsgPh" aria-describedby="ctMessageErr"></textarea>
-          <p class="ct-error" id="ctMessageErr" hidden></p>
+        <div class="oc-step" data-step="3">
+          <span class="oc-num" aria-hidden="true">03</span>
+          <div class="oc-step-body">
+            <label class="oc-q" for="ocMessage" data-i18n="ocQ3">Wat wil je kwijt?</label>
+            <textarea class="oc-textarea" id="ocMessage" name="message" rows="5" required minlength="10" maxlength="2000"
+                      placeholder="Een idee, een vraag of gewoon hallo." data-i18n-ph="ocPh3" aria-describedby="ocMessageErr ocCount"></textarea>
+            <p class="oc-count" id="ocCount"><span id="ocCountN">0</span> / 2000</p>
+            <p class="oc-error" id="ocMessageErr" hidden></p>
+          </div>
         </div>
 
-        <div class="ct-actions ct-fade">
-          <button type="submit" class="ct-submit"><span data-i18n="ctSend">Verstuur bericht</span><span class="ct-arrow" aria-hidden="true">&rarr;</span></button>
-          <p class="ct-pending" id="ctPending"><span class="ct-pending-dot" aria-hidden="true"></span><span data-i18n="ctPending">Dit formulier is nog niet aangesloten: berichten worden nog niet verstuurd.</span></p>
-        </div>
+        <!-- MESSAGE COMPOSITION: the message as a letter, while typing.
+             It only mirrors the fields above, so screen readers skip it. -->
+        <aside class="oc-comp" id="ocComp" aria-hidden="true">
+          <div class="oc-comp-in" id="ocCompIn">
+            <div class="oc-comp-head">
+              <span class="oc-comp-step"><span id="ocCompStep">01</span> / 03</span>
+              <span class="oc-comp-bar"><i data-seg="1"></i><i data-seg="2"></i><i data-seg="3"></i></span>
+              <span class="oc-comp-label" id="ocCompLabel">Wie ben je?</span>
+            </div>
+            <dl class="oc-comp-meta">
+              <div><dt data-i18n="ocTo">Aan</dt><dd>Akif Albayrak</dd></div>
+              <div data-row="1"><dt data-i18n="ocFrom">Van</dt><dd id="ocCompFrom" class="is-empty">—</dd></div>
+              <div data-row="2"><dt data-i18n="ocReply">Antwoord naar</dt><dd id="ocCompMail" class="is-empty">—</dd></div>
+            </dl>
+            <div class="oc-comp-letter">
+              <p class="oc-comp-hi" data-i18n="ocHi">Hoi Akif,</p>
+              <p class="oc-comp-body is-empty" id="ocCompBody">Je bericht verschijnt hier terwijl je typt.</p>
+              <p class="oc-comp-sign"><span data-i18n="ocSign">Groet,</span><br><span id="ocCompSign" class="is-empty">…</span></p>
+            </div>
+            <p class="oc-comp-foot"><span class="oc-comp-draft" data-i18n="ocDraft">Concept · nog niet verstuurd</span></p>
+          </div>
+        </aside>
 
-        <div class="ct-status" id="ctStatus" role="status" aria-live="polite" tabindex="-1" hidden></div>
+        <div class="oc-actions">
+          <button type="submit" class="oc-send"><span data-i18n="ocSend">Verstuur bericht</span><span class="oc-send-arrow" aria-hidden="true">&rarr;</span></button>
+          <p class="oc-pending" id="ocPending"><span class="oc-pending-dot" aria-hidden="true"></span><span data-i18n="ocPending">Dit formulier is nog niet aangesloten: berichten worden nog niet verstuurd. Mailen kan altijd.</span></p>
+          <div class="oc-status-msg" id="ocStatusMsg" role="status" aria-live="polite" tabindex="-1" hidden></div>
+        </div>
       </form>
-    </div>
+
+      <!-- the channel ends here, just above the shared site footer -->
+      <p class="oc-end" aria-hidden="true"><span class="oc-end-dot"></span><span data-i18n="ocEnd">Het kanaal blijft open</span></p>
+    </section>
 
   </div>
 </div>
@@ -6004,27 +6591,25 @@
   var B4 = 550; // 03 -> 04 improvement settled
   var B5 = 700; // introduction fully closed, chapter break
 
-  // ---- story continues: NEXT CHAPTER -> CURRENT -> NEXT -> KEEP EXPLORING,
+  // ---- story continues: NEXT CHAPTER -> CURRENT -> KEEP EXPLORING,
   // all staged on the same dark veil that already closes the introduction
   var N1 = 820;  // NEXT CHAPTER settles
   var N2 = 940;  // CURRENT: MBO 4 / Software Development
-  var N3 = 1060; // NEXT: HBO / ICT
-  var N4 = 1180; // KEEP EXPLORING + interest words
-  var N5 = 1300; // KEEP EXPLORING resolves -> canvas clears
+  var N4 = 1060; // KEEP EXPLORING + interest words
+  var N5 = 1180; // KEEP EXPLORING resolves -> canvas clears
 
   // ---- STILL BUILDING. is the bridge: its own clean state first, then it
   // transforms into the three-project gallery (the evidence), then closes
   // through VIEW ALL WORK into the final actions and footer.
-  var S1 = 1420; // STILL BUILDING. settled, on its own
-  var S2 = 1620; // transform complete: heading shrunk, gallery fully composed
-  var S3 = 1820; // gallery hold ends
-  var S4 = 1940; // gallery cleared, VIEW ALL WORK settled
-  var S5 = 2060; // VIEW ALL WORK cleared, final actions settled
-  var S6 = 2120; // footer settled
+  var S1 = 1300; // STILL BUILDING. settled, on its own
+  var S2 = 1500; // transform complete: heading shrunk, gallery fully composed
+  var S3 = 1700; // gallery hold ends
+  var S4 = 1820; // gallery cleared, VIEW ALL WORK settled
+  var S5 = 1940; // VIEW ALL WORK cleared, final actions settled
+  var S6 = 2000; // footer settled
 
   var nextChapter = document.getElementById("nextChapter");
   var storyCurrent = document.getElementById("storyCurrent");
-  var storyNext = document.getElementById("storyNext");
   var keepExploring = document.getElementById("keepExploring");
   var keepWords = document.getElementById("keepWords");
   var keepWordEls = keepWords ? Array.prototype.slice.call(keepWords.querySelectorAll(".keep-word")) : [];
@@ -6115,22 +6700,20 @@
     if (teaser) teaser.style.opacity = String((e3 > 0.85 ? (e3 - 0.85) / 0.15 : 0) * (1 - e4));
 
     // ---- the story continues on the same dark veil that already closed
-    // the introduction: NEXT CHAPTER -> CURRENT -> NEXT -> KEEP EXPLORING.
+    // the introduction: NEXT CHAPTER -> CURRENT -> KEEP EXPLORING.
     // Same crossfade() hand-off logic as 01-04, just a later stretch of
     // the same canvas — Work has not entered yet.
     var eN1 = easeInOutCubic(clamp01((scrollVh - B5) / (N1 - B5)));  // chapter break -> NEXT CHAPTER
     var eN2 = easeInOutCubic(clamp01((scrollVh - N1) / (N2 - N1)));  // NEXT CHAPTER -> CURRENT
-    var eN3 = easeInOutCubic(clamp01((scrollVh - N2) / (N3 - N2)));  // CURRENT -> NEXT
-    var eN4mid = N3 + (N4 - N3) * 0.5; // splits the NEXT->KEEP EXPLORING window: HBO exits first, then keep-words enter
-    var eN4exit = easeInOutCubic(clamp01((scrollVh - N3) / (eN4mid - N3)));   // NEXT (HBO) fully exits
+    var eN4mid = N2 + (N4 - N2) * 0.5; // splits the CURRENT->KEEP EXPLORING window: CURRENT exits first, then keep-words enter
+    var eN4exit = easeInOutCubic(clamp01((scrollVh - N2) / (eN4mid - N2)));   // CURRENT fully exits
     var eN4mid2 = eN4mid + (N4 - eN4mid) * 0.5; // splits KEEP EXPLORING's own window: text enters/holds, then exits as the interest words take over
     var eKeepEnter = easeInOutCubic(clamp01((scrollVh - eN4mid) / (eN4mid2 - eN4mid))); // "Keep exploring" enters and holds
     var eKeepExit = easeInOutCubic(clamp01((scrollVh - eN4mid2) / (N4 - eN4mid2)));      // "Keep exploring" exits as interest words enter
     var eN5 = easeInOutCubic(clamp01((scrollVh - N4) / (N5 - N4)));  // KEEP EXPLORING resolves
 
     crossfade(nextChapter, eN1, eN2);
-    crossfade(storyCurrent, eN2, eN3);
-    crossfade(storyNext, eN3, eN4exit);
+    crossfade(storyCurrent, eN2, eN4exit);
     crossfade(keepExploring, eKeepEnter, eKeepExit);
 
     var keepWordsOpacity = clamp01(eKeepExit) * (1 - eN5);
@@ -6836,11 +7419,7 @@
     also: 'Also',
     gaming: 'Gaming',
     reading: 'Reading',
-    next1: "After my current programme I want to continue studying ICT at HBO level (university of applied sciences). Cybersecurity appeals to me as a possible direction, but I don't know yet exactly which way I'll go.",
-    dirLabel: 'Directions I want to explore',
-    dir2: 'Systems',
-    dir3: 'Automation',
-    next3: "That's why I want to keep developing myself and find out which direction suits me best.",
+    next1: "After my current programme I want to keep studying. This is still a plan: I'll find out along the way which direction it will be.",
     skip: 'Skip intro'
   };
   var KEY = 'akif-lang';
@@ -6931,27 +7510,94 @@
 <script>
 (function () {
   "use strict";
-  // /experience: NL / EN (the same remembered "akif-lang" choice as /about),
-  // the intro words, fade-ups, the internship overview (list + detail, an
-  // accordion on phones) and the quick jumps to each internship. Motion only
-  // touches transform/opacity; with reduced motion everything still works.
+  // /experience — THE EXPERIENCE ARCHIVE: NL / EN (the same remembered
+  // "akif-lang" choice as /about), the hero intro, the archive index
+  // (preview on hover / focus, the middle row on phones, a click opens the
+  // file), the archive transition (scroll-linked --p / --e / --q on each
+  // file and the fixed indicator) and the fade-ups. Nothing holds the
+  // scroll; motion only touches opacity / transform. With reduced motion
+  // (or without JS) every file simply stands open.
   var view = document.getElementById('experienceView');
   if (!view) return;
 
   var EN = {
-    eyebrow: 'Practice &amp; skills',
+    heroTag: 'The archive',
+    heroMeta: '05 files',
+    now: 'now',
+    heroL1: 'Experience.',
+    heroL2: 'Not just',
+    heroL3: 'on paper',
+    toIndex: 'To the index',
     intro1: "During my internships I got to know different sides of IT. I gained experience with IT support, software development and researching opportunities for automation.",
     intro2: "From solving technical problems to working on software and systems. Below you can see where I've worked and which technologies I've gained experience with.",
-    jump: 'Internships',
-    expTitle: 'In<br>practice.',
-    expNote: 'Five internships, most recent first. Pick one to see what I did and which skills I developed.',
-    nowShort: 'Now',
-    current: 'Current internship',
+    indexTitle: 'Five files, in order',
+    indexHint: 'Choose a file to open it',
+    openFile: 'Open file',
+    th1: 'Foundation',
+    th2: 'Systems',
+    th3: 'Development',
+    th4: 'Automation',
+    th5: 'Integration',
+    ix1: 'IT support at the ICT Service Desk: laptops, monitors and workstations.',
+    ix2: 'The ICT Service Desk again: setting up workstations and keeping the ticketing system up to date.',
+    ix3: 'My first internship in software development: working on the UniWeb client.',
+    ix4: 'Collecting and processing data from production machines, with Python and Microsoft SQL Server.',
+    ix5: 'Researching and improving IT processes, with automation and API connections.',
+    file: 'File',
+    endFile: 'End of file',
+    endArchive: 'End of the archive',
     period: 'Period',
     role: 'Role',
     field: 'Track',
+    dept: 'Department',
     tasks: 'Activities',
+    tasksBoth: 'Activities · at Ceva and Hydro',
     skillsSub: 'Skills',
+    mar2022: 'Mar 2022',
+    oct2022: 'Oct 2022',
+    ch1Lead: 'My first two internships were at the ICT Service Desk. Configuring laptops, setting up workstations and keeping the ticketing system up to date: this is where I learned how IT works in practice.',
+    desk1: 'Configuring laptops.',
+    desk2: 'Setting up monitors.',
+    desk3: 'Setting up and organising new workstations.',
+    desk4: 'Managing and maintaining the ticketing system.',
+    skWorkplace: 'Workstation management',
+    skTicketing: 'Ticketing systems',
+    flow1: 'Report',
+    flow2: 'Ticket',
+    flow3: 'In progress',
+    flow4: 'Resolved',
+    cap2: 'The ticketing system as a work process. Illustration.',
+    hydroLead: 'My second internship at the ICT Service Desk. The same activities as at Ceva Logistics: configuring laptops, setting up monitors, setting up workstations and managing and maintaining the ticketing system, now at Hydro Extrusion.',
+    seeTasks: 'The activities in file 01',
+    ch2Lead: 'My first internship in software development: at Infotech BV I worked on the UniWeb client, in an existing codebase.',
+    infoDesc1: 'At Infotech BV I did my internship in software development, working on the UniWeb client.',
+    infoDesc2: 'During this internship I gained hands-on experience developing software and working on an existing application.',
+    illus: 'illustration',
+    info1: 'Working on the UniWeb client.',
+    info2: 'Contributing to software development.',
+    info3: 'Gaining experience with an existing codebase.',
+    info4: 'Working in a professional IT environment.',
+    skSoftDev: 'Software development',
+    skCodebase: 'Existing codebase',
+    ch3Lead: 'Collecting data from production machines, connecting systems and automating processes. My two most recent internships are about how systems work together.',
+    node1: 'Production machines',
+    node2: 'Python collector',
+    node4: 'Monitoring',
+    cap4: 'From machine data to monitoring. An illustration, not a system diagram.',
+    adcDesc1: 'At ADC Nederland I worked on a solution for collecting and processing data from production machines.',
+    adcDesc2: 'Along the way I gained experience with Python, databases and processing data from different systems.',
+    adc1: 'Developing and researching a Python collector.',
+    adc2: 'Working with Microsoft SQL Server.',
+    adc3: 'Collecting and processing machine data.',
+    adc4: 'Researching data from an external production platform.',
+    adc5: 'Working on a machine monitoring solution.',
+    dataProc: 'Data processing',
+    current: 'Current internship',
+    hubA: 'Processes',
+    hubB: 'API connections',
+    hubC: 'Systems',
+    hubCore: 'Automation',
+    cap5: 'Processes, systems and the connections between them. Illustration.',
     barilRole: 'IT &amp; Automation',
     barilDesc1: 'During my internship at Baril Coatings I research and improve IT processes. I look at where automation is possible and how different systems can work together better.',
     barilDesc2: 'I also help with technical IT questions and look into ways to make existing work more efficient.',
@@ -6963,44 +7609,19 @@
     skProcAuto: 'Process automation',
     skApiInt: 'API integrations',
     skProblem: 'Problem analysis',
-    adcDesc1: 'At ADC Nederland I worked on a solution for collecting and processing data from production machines.',
-    adcDesc2: 'Along the way I gained experience with Python, databases and processing data from different systems.',
-    adc1: 'Developing and researching a Python collector.',
-    adc2: 'Working with Microsoft SQL Server.',
-    adc3: 'Collecting and processing machine data.',
-    adc4: 'Researching data from an external production platform.',
-    adc5: 'Working on a machine monitoring solution.',
-    dataProc: 'Data processing',
-    infoDesc1: 'At Infotech BV I did my internship in software development, working on the UniWeb client.',
-    infoDesc2: 'During this internship I gained hands-on experience developing software and working on an existing application.',
-    info1: 'Working on the UniWeb client.',
-    info2: 'Contributing to software development.',
-    info3: 'Gaining experience with an existing codebase.',
-    info4: 'Working in a professional IT environment.',
-    skSoftDev: 'Software development',
-    skCodebase: 'Existing codebase',
-    hydroDesc1: 'At Hydro Extrusion I did my internship at the ICT Service Desk. I worked on setting up workstations and managing the ticketing system.',
-    hydro1: 'Configuring laptops.',
-    hydro2: 'Setting up monitors.',
-    hydro3: 'Organising new workstations.',
-    hydro4: 'Managing the ticketing system.',
-    oct2022: 'Oct 2022',
-    cevaDesc1: 'At Ceva Logistics I did my internship at the ICT Service Desk. I worked on setting up workstations and keeping the ticketing system up to date.',
-    ceva1: 'Configuring laptops.',
-    ceva2: 'Setting up monitors.',
-    ceva3: 'Setting up new workstations.',
-    ceva4: 'Keeping the ticketing system up to date.',
-    mar2022: 'Mar 2022',
-    skWorkplace: 'Workstation management',
-    skTicketing: 'Ticketing systems',
+    appNum: 'Appendix',
+    appTitle: 'Toolkit',
     skillsIntro: "Through my studies, projects and internships I've worked with a range of programming languages, tools and systems. I keep discovering new technologies and expanding my knowledge.",
-    lvlCore: 'Used<br>regularly',
+    lvlCore: 'Used regularly',
     lvlCoreNote: 'Technologies I use often in my studies and projects.',
-    lvlBasic: 'Basic<br>knowledge',
+    lvlBasic: 'Basic knowledge',
     lvlBasicNote: "I've worked with these and know the basics.",
-    lvlIntern: 'Internships<br>&amp; research',
-    lvlInternNote: "Only worked with or researched during an internship.",
-    restApis: 'REST APIs'
+    lvlIntern: 'Internships &amp; research',
+    lvlInternNote: 'Only worked with or researched during an internship.',
+    restApis: 'REST APIs',
+    outroLead: "You've seen where I gained my experience.",
+    outroL1: 'Now see what',
+    outroL2: "I've built"
   };
   var KEY = 'akif-lang';
   var nodes = [].slice.call(view.querySelectorAll('[data-i18n]'));
@@ -7009,15 +7630,149 @@
   function onPage() { return (window.location.hash || '') === '#/experience'; }
   function saved() { try { return window.localStorage.getItem(KEY) === 'en' ? 'en' : 'nl'; } catch (e) { return 'nl'; } }
   var lang = saved();
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var behavior = reduceMotion ? 'auto' : 'smooth';
 
+  function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+  function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+
+  // ---- going to a place on the page: measured from the layout (offsetTop),
+  // so an element mid fade-up (translateY) lands right; focus follows ----
+  function goTo(target) {
+    var y = 0;
+    for (var n = target; n; n = n.offsetParent) y += n.offsetTop;
+    window.scrollTo({ top: Math.max(0, y - 100), behavior: behavior });
+    if (!target.hasAttribute('tabindex') && !/^(BUTTON|A)$/.test(target.tagName)) target.setAttribute('tabindex', '-1');
+    target.focus({ preventScroll: true });
+  }
+  view.querySelectorAll('.xa-jump, .xa-link').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var t = document.getElementById(b.getAttribute('data-target'));
+      if (t) goTo(t);
+    });
+  });
+
+  // ---- the index: a row in focus lights up and fills the preview beside
+  // it; on phones (no preview) the row in the middle of the screen does ----
+  var rowsList = document.getElementById('xaRows');
+  var rows = [].slice.call(view.querySelectorAll('.xa-row'));
+  var preview = document.getElementById('xaPreview');
+  var prevNum = document.getElementById('xaPrevNum');
+  var prevTheme = document.getElementById('xaPrevTheme');
+  var prevDesc = document.getElementById('xaPrevDesc');
+  var pointed = null;   // row under the mouse / keyboard focus
+  var middle = null;    // phones: the row in the middle of the screen
+
+  function text(el) { return el ? el.textContent.replace(/\s+/g, ' ').trim() : ''; }
+  function stacked() { return !preview || !preview.offsetParent; }
+  function paintRows() {
+    var on = pointed || (stacked() ? middle : null);
+    rows.forEach(function (r) { r.classList.toggle('is-on', r === on); });
+    rowsList.classList.toggle('is-focused', !!pointed);
+    if (!preview || stacked()) return;
+    preview.classList.toggle('is-shown', !!pointed);
+    if (!pointed) return;
+    prevNum.textContent = text(pointed.querySelector('.xa-row-num'));
+    prevTheme.textContent = text(pointed.querySelector('.xa-row-period')) + ' · ' + text(pointed.querySelector('.xa-row-theme'));
+    prevDesc.textContent = text(pointed.querySelector('.xa-row-desc'));
+    // level with its row: measured against the grid both share
+    var y = pointed.getBoundingClientRect().top - preview.parentNode.getBoundingClientRect().top;
+    preview.style.setProperty('--y', Math.max(0, Math.round(y)) + 'px');
+  }
+  function isMouse(e) { return !e.pointerType || e.pointerType === 'mouse'; }
+  rows.forEach(function (r) {
+    r.addEventListener('pointerenter', function (e) { if (isMouse(e)) { pointed = r; paintRows(); } });
+    r.addEventListener('pointerleave', function (e) { if (isMouse(e) && pointed === r) { pointed = null; paintRows(); } });
+    r.addEventListener('focus', function () { pointed = r; paintRows(); });
+    r.addEventListener('blur', function () { if (pointed === r) { pointed = null; paintRows(); } });
+    r.addEventListener('click', function () {
+      var t = document.getElementById(r.getAttribute('data-target'));
+      if (t) goTo(t);
+    });
+  });
+
+  // ---- the archive transition: per file --p (its card entering, the name
+  // slides together), --e (leaving: the content steps back), --q (its end
+  // rule draws); the indicator rolls to the file in view ----
+  var files = [].slice.call(view.querySelectorAll('.xa-ch'));
+  var ind = document.getElementById('xaInd');
+  var indStrip = document.getElementById('xaIndStrip');
+  var indName = document.getElementById('xaIndName');
+  var indBars = ind ? [].slice.call(ind.querySelectorAll('.xa-ind-bar i')) : [];
+  var current = -1;
+  // the page view is its own stacking layer (z-index 5) under the nav (10);
+  // on phones the indicator sits in the nav band, so it lives on <body>.
+  // It only shows while /experience is open (is-on).
+  if (ind) document.body.appendChild(ind);
+
+  function setVar(el, name, v) {
+    var s = v.toFixed(3);
+    if (el.style.getPropertyValue(name) !== s) el.style.setProperty(name, s);
+  }
+  function setIndicator(i) {
+    if (i === current) return;
+    current = i;
+    if (i < 0) return;
+    indStrip.style.setProperty('--n', i);
+    indName.textContent = files[i].getAttribute('data-name');
+    indBars.forEach(function (b, k) { b.classList.toggle('is-done', k <= i); });
+  }
+
+  var ticking = false;
+  function update() {
+    ticking = false;
+    if (view.hidden) return;
+    var vh = window.innerHeight;
+    var mid = vh * 0.5;
+    var active = -1;
+    files.forEach(function (f, i) {
+      var r = f.getBoundingClientRect();
+      if (r.top <= mid) active = i;
+      if (r.bottom < -vh || r.top > vh * 2) return;   // far away: leave as is
+      if (!reduceMotion) {
+        var card = f.firstElementChild.getBoundingClientRect();
+        setVar(f, '--p', easeOut(clamp01((vh - card.top) / (vh * 0.75))));
+        setVar(f, '--e', clamp01((vh * 0.4 - r.bottom) / (vh * 0.4)));
+        var end = f.querySelector('.xa-end').getBoundingClientRect();
+        setVar(f, '--q', easeOut(clamp01((vh * 0.95 - end.top) / (vh * 0.35))));
+      }
+    });
+    // the indicator: from the first file until the last one has gone by
+    var last = files[files.length - 1].getBoundingClientRect();
+    var inFiles = active > -1 && last.bottom > vh * 0.5;
+    if (inFiles) setIndicator(active);
+    if (ind) ind.classList.toggle('is-on', inFiles);
+
+    // phones: the index row closest to the middle of the screen
+    if (stacked()) {
+      var best = null, dist = Infinity;
+      rows.forEach(function (r) {
+        var b = r.getBoundingClientRect();
+        var d = Math.abs(b.top + b.height / 2 - mid);
+        if (b.bottom > 0 && b.top < vh && d < dist) { dist = d; best = r; }
+      });
+      var listBox = rowsList.getBoundingClientRect();
+      if (listBox.bottom < vh * 0.2 || listBox.top > vh * 0.8) best = null;
+      if (best !== middle) { middle = best; paintRows(); }
+    }
+  }
+  function requestUpdate() {
+    if (ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(update);
+  }
+  window.addEventListener('scroll', requestUpdate, { passive: true });
+  window.addEventListener('resize', function () { requestUpdate(); if (pointed) paintRows(); });
+
+  // ---- language ----
   function apply() {
     nodes.forEach(function (el) {
       var k = el.getAttribute('data-i18n');
       el.innerHTML = lang === 'en' && EN[k] ? EN[k] : el.getAttribute('data-nl');
     });
+    if (pointed) paintRows();
     if (onPage()) document.documentElement.lang = lang;
   }
-
   document.addEventListener('click', function (e) {
     var a = e.target.closest && e.target.closest('.nav .lang');
     if (!a || !onPage()) return;
@@ -7027,93 +7782,14 @@
     apply();
   });
 
-  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var behavior = reduceMotion ? 'auto' : 'smooth';
-
-  // ---- the internship overview: list + detail on wider screens, an
-  // accordion on phones. On wide screens exactly one panel is open; on
-  // phones the open one can be closed again. ----
-  var explorer = document.getElementById('exExplorer');
-  var xBtns = explorer ? [].slice.call(explorer.querySelectorAll('.ex-x-btn')) : [];
-  var phone = window.matchMedia ? window.matchMedia('(max-width: 780px)') : { matches: false };
-  var selected = xBtns.filter(function (b) { return b.getAttribute('aria-expanded') === 'true'; })[0] || xBtns[0];
-
-  function setOpen(btn, open) {
-    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-    var panel = document.getElementById(btn.getAttribute('aria-controls'));
-    if (panel) panel.classList.toggle('is-open', open);
-  }
-  function select(btn) {
-    xBtns.forEach(function (b) { if (b !== btn) setOpen(b, false); });
-    if (btn.getAttribute('aria-expanded') !== 'true') setOpen(btn, true);
-    selected = btn;
-  }
-  // on phones, closing the panel above can pull the opened one out of view
-  function keepInView(btn) {
-    var top = btn.getBoundingClientRect().top;
-    if (top < 140) window.scrollBy({ top: top - 150, behavior: behavior });
-  }
-
-  xBtns.forEach(function (btn, i) {
-    btn.addEventListener('click', function () {
-      if (phone.matches) {
-        if (btn.getAttribute('aria-expanded') === 'true') { setOpen(btn, false); return; }
-        select(btn);
-        keepInView(btn);
-      } else {
-        select(btn);
-      }
-    });
-    // arrow keys / Home / End move between the internships
-    btn.addEventListener('keydown', function (e) {
-      var next = null;
-      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') next = xBtns[(i + 1) % xBtns.length];
-      else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') next = xBtns[(i - 1 + xBtns.length) % xBtns.length];
-      else if (e.key === 'Home') next = xBtns[0];
-      else if (e.key === 'End') next = xBtns[xBtns.length - 1];
-      if (!next) return;
-      e.preventDefault();
-      next.focus();
-    });
-  });
-
-  // back on a wide screen there must always be one internship shown
-  function syncLayout() {
-    if (phone.matches || !xBtns.length) return;
-    var open = xBtns.filter(function (b) { return b.getAttribute('aria-expanded') === 'true'; });
-    if (open.length !== 1) select(open[0] || selected || xBtns[0]);
-  }
-  if (phone.addEventListener) phone.addEventListener('change', syncLayout);
-  else if (phone.addListener) phone.addListener(syncLayout);
-
-  // ---- quick jumps from the intro: open that internship and go to it ----
-  view.querySelectorAll('.ex-jump-list button').forEach(function (jump) {
-    jump.addEventListener('click', function () {
-      var btn = document.getElementById(jump.getAttribute('data-target'));
-      if (!btn) return;
-      select(btn);
-      // measured from the layout (offsetTop), not getBoundingClientRect: the
-      // section may still be mid fade-up (translateY), which would make it
-      // land too high. 150px keeps it clear of the fixed nav and its backdrop.
-      var el = phone.matches ? btn : explorer, y = 0;
-      for (var n = el; n; n = n.offsetParent) y += n.offsetTop;
-      window.scrollTo({ top: Math.max(0, y - 150), behavior: behavior });
-      btn.focus({ preventScroll: true });
-    });
-  });
-
-  // skills appear one after another within their row
-  view.querySelectorAll('.ex-skill-list').forEach(function (list) {
-    [].forEach.call(list.children, function (li, i) { li.style.setProperty('--i', i); });
-  });
-
-  var intro = view.querySelector('.ex-intro');
+  // ---- the hero intro: the lines rise, the rules draw, the numbers tick ----
+  var hero = document.getElementById('xaHero');
   function playIntro() {
-    if (!intro || !view.classList.contains('ex-armed')) return;
-    intro.classList.remove('is-in');
-    void intro.offsetWidth;
+    if (!hero || !view.classList.contains('xa-armed')) return;
+    hero.classList.remove('is-in');
+    void hero.offsetWidth;
     window.requestAnimationFrame(function () {
-      window.requestAnimationFrame(function () { intro.classList.add('is-in'); });
+      window.requestAnimationFrame(function () { hero.classList.add('is-in'); });
     });
   }
 
@@ -7121,14 +7797,16 @@
     var l = saved();
     if (l !== lang) lang = l;
     apply();
-    if (onPage()) playIntro();
+    if (onPage()) { playIntro(); requestUpdate(); }
+    else if (ind) ind.classList.remove('is-on');
   });
   apply();
+  requestUpdate();
 
   if (reduceMotion || !('IntersectionObserver' in window)) return;
-  view.classList.add('ex-armed');
+  view.classList.add('xa-armed');
 
-  // ---- fade-ups and skill rows, once each ----
+  // ---- fade-ups, once each ----
   var io = new IntersectionObserver(function (entries) {
     entries.forEach(function (entry) {
       if (entry.isIntersecting) {
@@ -7137,7 +7815,7 @@
       }
     });
   }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
-  view.querySelectorAll('.ex-reveal, .ex-cat').forEach(function (el) { io.observe(el); });
+  view.querySelectorAll('.xa-reveal').forEach(function (el) { io.observe(el); });
 
   if (onPage()) playIntro();
 })();
@@ -7146,50 +7824,75 @@
 <script>
 (function () {
   "use strict";
-  // /contact: NL / EN (the same remembered "akif-lang" choice; the NL · EN
-  // link switches it while this page is open), the form's validation and
-  // its honest "not connected yet" state, and the reveals. The form is NOT
-  // sent anywhere: a valid submit only explains that and offers the e-mail.
+  // /contact — OPEN CHANNEL: NL / EN (the same remembered "akif-lang"
+  // choice; the NL · EN link switches it while this page is open), the
+  // three questions (active / done states, validation, the honest "not
+  // connected yet" state), the message composition that mirrors them, the
+  // channel line, copying the e-mail address, the local time and the
+  // reveals. The form is NOT sent anywhere: a valid submit only explains
+  // that and offers the e-mail address.
   var view = document.getElementById('contactView');
   if (!view) return;
-  var form = document.getElementById('ctForm');
-  var status = document.getElementById('ctStatus');
+  var form = document.getElementById('ocForm');
+  var status = document.getElementById('ocStatusMsg');
   var MAIL = 'Akif.Albayrak12@hotmail.com';
 
   var EN = {
-    ctLine1: "Let's build",
-    ctLine2: 'Something new<span class="ct-dot">.</span>',
-    ctIntro: 'Have an idea, a project, or just want to connect? Feel free to send me a message.',
-    ctDirect: 'Direct contact',
-    ctNewTab: ' (opens in a new tab)',
-    ctPlaceLabel: 'Location',
-    ctPlace: 'The Netherlands',
-    ctFormTitle: 'Send a message',
-    ctNameLabel: 'Name',
-    ctEmailLabel: 'Email address',
-    ctMsgLabel: 'Message',
-    ctSend: 'Send message',
-    ctPending: "This form isn't connected yet: messages are not being sent.",
-    ctNamePh: 'Your name',
-    ctEmailPh: 'name@example.com',
-    ctMsgPh: 'How can I help?'
+    ocTag: 'Open channel',
+    ocPlace: 'The Netherlands',
+    ocL1: "Let's make",
+    ocL2: 'contact',
+    ocStatusA: 'Channel open',
+    ocStatusB: 'Ready for your message',
+    ocIntro: 'Have an idea, a project, or just want to connect? Feel free to send me a message.',
+    ocDirect: 'Rather get in touch directly?',
+    ocCopy: 'Copy',
+    ocNewTab: ' (opens in a new tab)',
+    ocFormTitle: 'Send a message',
+    ocQ1: 'Who are you?',
+    ocQ2: 'Where can I reach you?',
+    ocQ3: "What's on your mind?",
+    ocPh1: 'Your name',
+    ocPh2: 'name@example.com',
+    ocPh3: 'An idea, a question or just hello.',
+    ocTo: 'To',
+    ocFrom: 'From',
+    ocReply: 'Reply to',
+    ocHi: 'Hi Akif,',
+    ocSign: 'Best,',
+    ocDraft: 'Draft · not sent yet',
+    ocSend: 'Send message',
+    ocPending: "This form isn't connected yet: messages are not being sent. Email always works.",
+    ocEnd: 'The channel stays open'
+  };
+  var Q = {
+    nl: ['Wie ben je?', 'Waar kan ik je bereiken?', 'Wat wil je kwijt?'],
+    en: [EN.ocQ1, EN.ocQ2, EN.ocQ3]
   };
   var MSG = {
     nl: {
+      empty: 'Je bericht verschijnt hier terwijl je typt.',
       nameMissing: 'Vul je naam in.',
       emailMissing: 'Vul je e-mailadres in.',
       emailInvalid: 'Dit e-mailadres lijkt niet te kloppen. Controleer het even (bijvoorbeeld naam@voorbeeld.nl).',
       msgMissing: 'Schrijf een kort bericht.',
       msgShort: 'Je bericht is nog wat kort. Schrijf minimaal 10 tekens.',
-      notSent: '<strong>Je bericht is niet verstuurd.</strong> Dit formulier is nog niet aangesloten op een verzenddienst, dus er is niets verzonden. Wil je me nu al bereiken? Mail dan naar <a href="mailto:' + MAIL + '">' + MAIL + '</a>.'
+      notSent: '<strong>Je bericht is niet verstuurd.</strong> Dit formulier is nog niet aangesloten op een verzenddienst, dus er is niets verzonden. Wil je me nu al bereiken? Mail dan naar <a href="mailto:' + MAIL + '">' + MAIL + '</a>.',
+      copied: 'Gekopieerd',
+      copiedSr: 'E-mailadres gekopieerd.',
+      copyFail: 'Kopiëren lukte niet. Selecteer het e-mailadres en kopieer het zelf.'
     },
     en: {
+      empty: 'Your message appears here as you type.',
       nameMissing: 'Please enter your name.',
       emailMissing: 'Please enter your email address.',
       emailInvalid: "This email address doesn't look right. Please check it (for example name@example.com).",
       msgMissing: 'Please write a short message.',
       msgShort: 'Your message is a little short. Please write at least 10 characters.',
-      notSent: "<strong>Your message has not been sent.</strong> This form isn't connected to a sending service yet, so nothing was sent. Want to reach me now? Email <a href=\"mailto:" + MAIL + '">' + MAIL + '</a>.'
+      notSent: "<strong>Your message has not been sent.</strong> This form isn't connected to a sending service yet, so nothing was sent. Want to reach me now? Email <a href=\"mailto:" + MAIL + '">' + MAIL + '</a>.',
+      copied: 'Copied',
+      copiedSr: 'Email address copied.',
+      copyFail: "Copying didn't work. Please select the email address and copy it yourself."
     }
   };
 
@@ -7202,7 +7905,220 @@
   function onPage() { return (window.location.hash || '') === '#/contact'; }
   function saved() { try { return window.localStorage.getItem(KEY) === 'en' ? 'en' : 'nl'; } catch (e) { return 'nl'; } }
   var lang = saved();
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var behavior = reduceMotion ? 'auto' : 'smooth';
+  function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
 
+  // ---- the three questions: checked on submit; a field marked invalid is
+  // re-checked while typing, so its message goes as soon as it's fixed. A
+  // question whose answer is right is "done" (its number fills). ----
+  var steps = [].slice.call(view.querySelectorAll('.oc-step'));
+  var fields = [
+    { input: document.getElementById('ocName'), err: document.getElementById('ocNameErr'),
+      check: function (v) { return v.trim() ? '' : 'nameMissing'; } },
+    { input: document.getElementById('ocEmail'), err: document.getElementById('ocEmailErr'),
+      check: function (v, el) { v = v.trim(); if (!v) return 'emailMissing'; return (el.validity.typeMismatch || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) ? 'emailInvalid' : ''; } },
+    { input: document.getElementById('ocMessage'), err: document.getElementById('ocMessageErr'),
+      check: function (v) { v = v.trim(); if (!v) return 'msgMissing'; return v.length < 10 ? 'msgShort' : ''; } }
+  ];
+  function setError(f, key) {
+    var step = f.input.closest('.oc-step');
+    if (key) {
+      f.err.dataset.key = key;
+      f.err.textContent = MSG[lang][key];
+      f.err.hidden = false;
+      f.input.setAttribute('aria-invalid', 'true');
+      step.classList.add('is-invalid');
+    } else {
+      delete f.err.dataset.key;
+      f.err.textContent = '';
+      f.err.hidden = true;
+      f.input.removeAttribute('aria-invalid');
+      step.classList.remove('is-invalid');
+    }
+  }
+
+  // ---- the message composition: the letter, the progress, the question ----
+  var compStep = document.getElementById('ocCompStep');
+  var compLabel = document.getElementById('ocCompLabel');
+  var compFrom = document.getElementById('ocCompFrom');
+  var compMail = document.getElementById('ocCompMail');
+  var compBody = document.getElementById('ocCompBody');
+  var compSign = document.getElementById('ocCompSign');
+  var segs = [].slice.call(view.querySelectorAll('.oc-comp-bar i'));
+  var countN = document.getElementById('ocCountN');
+  var active = 0;      // the question in focus (0–2), or the first one still open
+  var focused = false;
+
+  function fill(el, value, empty) {
+    var was = el.classList.contains('is-empty');
+    var now = !value;
+    el.textContent = now ? empty : value;
+    el.classList.toggle('is-empty', now);
+    if (was && !now && !reduceMotion) {
+      el.classList.remove('is-fresh');
+      void el.offsetWidth;
+      el.classList.add('is-fresh');
+    }
+  }
+  function render() {
+    var done = fields.map(function (f) { return !f.check(f.input.value, f.input); });
+    if (!focused) { active = done.indexOf(false); if (active < 0) active = 2; }
+    steps.forEach(function (s, i) {
+      s.classList.toggle('is-done', done[i]);
+      s.classList.toggle('is-active', focused && i === active);
+    });
+    segs.forEach(function (g, i) {
+      g.classList.toggle('is-done', done[i]);
+      g.classList.toggle('is-active', !done[i] && i === active);
+    });
+    compStep.textContent = '0' + (active + 1);
+    compLabel.textContent = Q[lang][active];
+    var name = fields[0].input.value.trim();
+    fill(compFrom, name, '—');
+    fill(compMail, fields[1].input.value.trim(), '—');
+    fill(compBody, fields[2].input.value.replace(/^\s+|\s+$/g, ''), MSG[lang].empty);
+    fill(compSign, name, '…');
+    countN.textContent = fields[2].input.value.length;
+  }
+
+  fields.forEach(function (f, i) {
+    f.input.addEventListener('input', function () {
+      if (f.input.getAttribute('aria-invalid') === 'true') setError(f, f.check(f.input.value, f.input));
+      if (!status.hidden) status.hidden = true;
+      render();
+    });
+    f.input.addEventListener('focus', function () { focused = true; active = i; render(); });
+    f.input.addEventListener('blur', function () { focused = false; render(); });
+  });
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var firstBad = null;
+    fields.forEach(function (f) {
+      var key = f.check(f.input.value, f.input);
+      setError(f, key);
+      if (key && !firstBad) firstBad = f.input;
+    });
+    render();
+    if (firstBad) { status.hidden = true; firstBad.focus(); return; }
+    // valid, but there is no sending yet: say so plainly, keep what was typed
+    status.innerHTML = MSG[lang].notSent;
+    status.hidden = false;
+    status.focus();
+  });
+
+  // ---- copy the e-mail address (the button says so for a moment; screen
+  // readers hear it through the status line) ----
+  var copyBtn = document.getElementById('ocCopy');
+  var copyStatus = document.getElementById('ocCopyStatus');
+  var copyTimer = null;
+  function copied(ok) {
+    copyStatus.textContent = ok ? MSG[lang].copiedSr : MSG[lang].copyFail;
+    if (!ok) return;
+    var label = copyBtn.querySelector('[data-i18n]');
+    copyBtn.classList.add('is-copied');
+    label.textContent = MSG[lang].copied;
+    clearTimeout(copyTimer);
+    copyTimer = setTimeout(function () {
+      copyBtn.classList.remove('is-copied');
+      label.innerHTML = lang === 'en' ? EN.ocCopy : label.getAttribute('data-nl');
+      copyStatus.textContent = '';
+    }, 2200);
+  }
+  function legacyCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;left:-9999px;top:0;';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+    copyBtn.focus();
+    return ok;
+  }
+  if (copyBtn) copyBtn.addEventListener('click', function () {
+    var text = copyBtn.getAttribute('data-copy');
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { copied(true); }, function () { copied(legacyCopy(text)); });
+    } else {
+      copied(legacyCopy(text));
+    }
+  });
+
+  // ---- the footer's "Let's talk" points at this very page: here it goes
+  // to the first question instead ----
+  function goTo(el, focusEl) {
+    var y = 0;
+    for (var n = el; n; n = n.offsetParent) y += n.offsetTop;
+    window.scrollTo({ top: Math.max(0, y - 130), behavior: behavior });
+    if (focusEl) focusEl.focus({ preventScroll: true });
+  }
+  document.addEventListener('click', function (e) {
+    var cta = e.target.closest && e.target.closest('.site-footer .sf-cta');
+    if (!cta || !onPage()) return;
+    e.preventDefault();
+    goTo(document.getElementById('ocConvo'), fields[0].input);
+  });
+
+  // ---- the channel (from the status dot down, filling with the scroll) and
+  // the composition held in view beside the questions (wide screens) ----
+  var convo = document.getElementById('ocConvo');
+  var channel = document.getElementById('ocChannel');
+  var dot = document.getElementById('ocStatusDot');
+  var comp = document.getElementById('ocComp');
+  var compIn = document.getElementById('ocCompIn');
+  function place() {
+    if (view.hidden) return;
+    var c = convo.getBoundingClientRect(), d = dot.getBoundingClientRect();
+    channel.style.setProperty('--oc-channel-top', Math.round(d.top + d.height / 2 - c.top) + 'px');
+  }
+  var ticking = false;
+  function update() {
+    ticking = false;
+    if (view.hidden) return;
+    var vh = window.innerHeight;
+    if (!reduceMotion) {
+      var r = channel.getBoundingClientRect();
+      channel.style.setProperty('--c', clamp01((vh * 0.6 - r.top) / (r.height || 1)).toFixed(4));
+    }
+    // held 120–160px from the top, never past the end of its column
+    if (comp.offsetParent && window.innerWidth > 980) {
+      var top = Math.min(160, Math.max(120, vh * 0.15));
+      var b = comp.getBoundingClientRect();
+      var y = Math.max(0, Math.min(top - b.top, b.height - compIn.offsetHeight));
+      compIn.style.transform = y ? 'translate3d(0,' + Math.round(y) + 'px,0)' : '';
+    }
+  }
+  function requestUpdate() {
+    if (ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(update);
+  }
+  window.addEventListener('scroll', requestUpdate, { passive: true });
+  window.addEventListener('resize', function () { place(); requestUpdate(); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { place(); requestUpdate(); });
+
+  // ---- the local time in the Netherlands, updated while this page is open ----
+  var timeEl = document.getElementById('ocTime');
+  var fmt = null;
+  try { fmt = new Intl.DateTimeFormat('nl-NL', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Amsterdam' }); } catch (e) {}
+  function tick() {
+    if (!timeEl || !fmt) return;
+    var t = fmt.format(new Date());
+    if (timeEl.textContent !== t) timeEl.textContent = t;
+  }
+  var clock = null;
+  function syncClock() {
+    if (onPage() && !clock) { tick(); clock = setInterval(tick, 15000); }
+    else if (!onPage() && clock) { clearInterval(clock); clock = null; }
+  }
+  // no time zone support: show only the place
+  if (!fmt && timeEl) { var p = timeEl.parentNode; p.removeChild(timeEl.previousSibling); p.removeChild(timeEl); timeEl = null; }
+
+  // ---- language: the NL · EN link while /contact is open ----
   function apply() {
     nodes.forEach(function (el) {
       var k = el.getAttribute('data-i18n');
@@ -7216,57 +8132,9 @@
     fields.forEach(function (f) { if (f.err.dataset.key) f.err.textContent = MSG[lang][f.err.dataset.key]; });
     if (!status.hidden) status.innerHTML = MSG[lang].notSent;
     if (onPage()) document.documentElement.lang = lang;
+    render();
+    place();
   }
-
-  // ---- validation: checked on submit; a field marked invalid is re-checked
-  // while typing, so the message disappears as soon as it is fixed ----
-  var fields = [
-    { input: document.getElementById('ctName'), err: document.getElementById('ctNameErr'),
-      check: function (v) { return v.trim() ? '' : 'nameMissing'; } },
-    { input: document.getElementById('ctEmail'), err: document.getElementById('ctEmailErr'),
-      check: function (v, el) { v = v.trim(); if (!v) return 'emailMissing'; return (el.validity.typeMismatch || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) ? 'emailInvalid' : ''; } },
-    { input: document.getElementById('ctMessage'), err: document.getElementById('ctMessageErr'),
-      check: function (v) { v = v.trim(); if (!v) return 'msgMissing'; return v.length < 10 ? 'msgShort' : ''; } }
-  ];
-  function setError(f, key) {
-    var field = f.input.closest('.ct-field');
-    if (key) {
-      f.err.dataset.key = key;
-      f.err.textContent = MSG[lang][key];
-      f.err.hidden = false;
-      f.input.setAttribute('aria-invalid', 'true');
-      field.classList.add('is-invalid');
-    } else {
-      delete f.err.dataset.key;
-      f.err.textContent = '';
-      f.err.hidden = true;
-      f.input.removeAttribute('aria-invalid');
-      field.classList.remove('is-invalid');
-    }
-  }
-  fields.forEach(function (f) {
-    f.input.addEventListener('input', function () {
-      if (f.input.getAttribute('aria-invalid') === 'true') setError(f, f.check(f.input.value, f.input));
-      if (!status.hidden) status.hidden = true;
-    });
-  });
-
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
-    var firstBad = null;
-    fields.forEach(function (f) {
-      var key = f.check(f.input.value, f.input);
-      setError(f, key);
-      if (key && !firstBad) firstBad = f.input;
-    });
-    if (firstBad) { status.hidden = true; firstBad.focus(); return; }
-    // valid, but there is no sending yet: say so plainly, keep what was typed
-    status.innerHTML = MSG[lang].notSent;
-    status.hidden = false;
-    status.focus();
-  });
-
-  // ---- language: the NL · EN link while /contact is open ----
   document.addEventListener('click', function (e) {
     var a = e.target.closest && e.target.closest('.nav .lang');
     if (!a || !onPage()) return;
@@ -7275,36 +8143,30 @@
     try { window.localStorage.setItem(KEY, lang); } catch (err) {}
     apply();
   });
-  window.addEventListener('hashchange', function () {
-    var l = saved();
-    if (l !== lang) { lang = l; apply(); }
-    if (onPage()) { document.documentElement.lang = lang; replay(); }
-  });
-  apply();
 
-  // ---- reveals: the title rises line by line, the rest fades up in turn ----
-  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var hero = view.querySelector('.ct-hero');
-  var fades = [].slice.call(view.querySelectorAll('.ct-fade'));
+  // ---- the hero: the two lines rise, then the status and the rest ----
+  var hero = document.getElementById('ocHero');
   function replay() {
-    if (!view.classList.contains('ct-armed')) return;
+    if (!view.classList.contains('oc-armed')) return;
     hero.classList.remove('is-in');
     void hero.offsetWidth;
     window.requestAnimationFrame(function () { window.requestAnimationFrame(function () { hero.classList.add('is-in'); }); });
   }
-  if (reduceMotion || !('IntersectionObserver' in window)) return;
-  view.classList.add('ct-armed');
-  view.querySelectorAll('.ct-form .ct-fade').forEach(function (el, i) { el.style.setProperty('--d', (0.08 * i) + 's'); });
-  var intro = view.querySelector('.ct-intro'); if (intro) intro.style.setProperty('--d', '0.35s');
-  var io = new IntersectionObserver(function (entries) {
-    entries.forEach(function (entry) {
-      if (!entry.isIntersecting) return;
-      entry.target.classList.add('is-in');
-      io.unobserve(entry.target);
-    });
-  }, { threshold: 0.15, rootMargin: '0px 0px -5% 0px' });
-  io.observe(hero);
-  fades.forEach(function (el) { io.observe(el); });
+
+  window.addEventListener('hashchange', function () {
+    var l = saved();
+    if (l !== lang) { lang = l; }
+    apply();
+    syncClock();
+    if (onPage()) { document.documentElement.lang = lang; place(); requestUpdate(); replay(); }
+  });
+  apply();
+  syncClock();
+  requestUpdate();
+
+  if (reduceMotion) return;
+  view.classList.add('oc-armed');
+  if (onPage()) replay();
 })();
 </script>
 
