@@ -11,6 +11,27 @@
   rel="stylesheet"
 />
 <link rel="stylesheet" href="assets/css/site.css" />
+<link rel="stylesheet" href="assets/css/motion.css" />
+<script>
+  // Home's opening (a line of light opens the portrait): decided before the
+  // first paint, so the full portrait never flashes up first. Once per
+  // session, only when the site opens on Home, never with reduced motion.
+  (function () {
+    try {
+      var h = location.hash;
+      if ((h === '' || h === '#' || h === '#/') && !sessionStorage.getItem('akif-home-intro') &&
+          !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        var html = document.documentElement;
+        html.classList.add('home-intro');
+        sessionStorage.setItem('akif-home-intro', '1');
+        // home-motion.js starts it once the portrait is ready; this is the
+        // safety net, so the page can never stay closed
+        setTimeout(function () { html.classList.add('home-intro-go'); }, 2500);
+        setTimeout(function () { html.classList.remove('home-intro'); }, 6000);
+      }
+    } catch (e) {}
+  })();
+</script>
 </head>
 <body>
 
@@ -46,6 +67,9 @@
     <div class="vignette-bottom"></div>
   </div>
 </section>
+
+<!-- the opening's line of light (shown only while html.home-intro plays) -->
+<div class="home-slit" aria-hidden="true"><i></i><i></i></div>
 
 <div class="chapter-veil" id="chapterVeil"></div>
 
@@ -1399,7 +1423,7 @@
               <li class="oc-direct-row">
                 <span class="oc-direct-k">E-mail</span>
                 <a class="oc-direct-link" href="mailto:Akif.Albayrak12@hotmail.com">Akif.Albayrak12@hotmail.com</a>
-                <button type="button" class="oc-copy" id="ocCopy" data-copy="Akif.Albayrak12@hotmail.com"><span data-i18n="ocCopy">Kopieer</span></button>
+                <button type="button" class="oc-copy" id="ocCopy" data-copy="Akif.Albayrak12@hotmail.com"><svg class="oc-tick" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" /></svg><span data-i18n="ocCopy">Kopieer</span></button>
               </li>
               <li class="oc-direct-row">
                 <span class="oc-direct-k">LinkedIn</span>
@@ -1419,7 +1443,7 @@
     <!-- ===== the conversation ===== -->
     <section class="oc-convo" id="ocConvo" aria-labelledby="ocFormTitle">
       <!-- the channel: from the status dot down along the questions -->
-      <span class="oc-channel" id="ocChannel" aria-hidden="true"><span class="oc-channel-fill" id="ocChannelFill"></span></span>
+      <span class="oc-channel" id="ocChannel" aria-hidden="true"><span class="oc-channel-fill" id="ocChannelFill"></span><span class="oc-channel-head"></span></span>
 
       <h2 class="ab-sr" id="ocFormTitle" data-i18n="ocFormTitle">Stuur een bericht</h2>
 
@@ -1483,6 +1507,14 @@
           <button type="submit" class="oc-send"><span data-i18n="ocSend">Verstuur bericht</span><span class="oc-send-arrow" aria-hidden="true">&rarr;</span></button>
           <p class="oc-pending" id="ocPending"><span class="oc-pending-dot" aria-hidden="true"></span><span data-i18n="ocPending">Dit formulier is nog niet aangesloten: berichten worden nog niet verstuurd. Mailen kan altijd.</span></p>
           <div class="oc-status-msg" id="ocStatusMsg" role="status" aria-live="polite" tabindex="-1" hidden></div>
+          <!-- after a valid submit (nothing is sent): two things that really
+               happen — the message opened in the visitor's own mail program
+               (a filled-in mailto:) or copied. Only the copy can confirm
+               itself, so only the copy gets a tick. -->
+          <div class="oc-held" id="ocHeld" hidden>
+            <a class="oc-held-btn" id="ocMailIt" href="mailto:Akif.Albayrak12@hotmail.com"><span data-i18n="ocMailIt">Open in je mailprogramma</span><span class="oc-ext" aria-hidden="true">&nearr;</span></a>
+            <button type="button" class="oc-held-btn" id="ocCopyMsg"><svg class="oc-tick" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" /></svg><span data-i18n="ocCopyMsg">Kopieer je bericht</span></button>
+          </div>
         </div>
       </form>
     </section>
@@ -1517,6 +1549,7 @@
   </div>
 </footer>
 
+<script src="assets/js/home-motion.js"></script>
 <script src="assets/js/home.js"></script>
 
 <script src="assets/js/router.js"></script>
@@ -1536,9 +1569,13 @@
 
 <script src="assets/js/cases.js"></script>
 
+<script src="assets/js/case-motion.js"></script>
+
 <script src="assets/js/experience.js"></script>
 
 <script src="assets/js/contact.js"></script>
+
+<script src="assets/js/contact-motion.js"></script>
 
 <script src="assets/js/footer.js"></script>
 <script src="assets/js/i18n.js"></script>

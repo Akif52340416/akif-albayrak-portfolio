@@ -274,6 +274,11 @@
       finalFooter.style.opacity = String(footerOpacity);
       live(finalFooter, footerOpacity > 0.6);
     }
+
+    // the light layer (home-motion.js) follows the same position from this
+    // same loop: the trail through the chapters, the light over the
+    // education headline and the light behind STILL BUILDING.
+    if (window.akifHomeFx) window.akifHomeFx(scrollVh, mobile, { sb: sbOpacity * (1 - eC), eB: eB, nc: eNC, n5: eN5 });
   }
 
   // smoothing: the visible state always eases toward the scroll position instead of
@@ -282,8 +287,22 @@
   var currentVh = 0;
   var smoothing = prefersReduced ? 1 : 0.085;
 
+  // the loop only runs while there is something to do: it stops once the
+  // eased position has reached the scroll position, and it never runs on
+  // the other pages. Scroll, resize, the pointer and a page change start
+  // it again. apply() depends on nothing but the position and the window
+  // size, so a stopped loop shows exactly what a running one would.
+  var running = false;
+
   function readTarget() {
     targetVh = (window.scrollY / window.innerHeight) * 100;
+    wake();
+  }
+
+  function wake() {
+    if (running || document.body.classList.contains("subpage")) return;
+    running = true;
+    requestAnimationFrame(loop);
   }
 
   function loop() {
@@ -296,10 +315,14 @@
         console.error("[akif-intro] apply() failed:", err);
       }
     }
-    requestAnimationFrame(loop);
+    if (currentVh !== targetVh && !document.body.classList.contains("subpage")) requestAnimationFrame(loop);
+    else running = false;
   }
 
   function onPointerMove(e) {
+    // apply() sets the photo's own transform on its next frame, as it always
+    // did while the loop never stopped: keep that by running one more frame
+    wake();
     if (window.scrollY > 4 || window.innerWidth <= 780 || !photoImg || !nameGroup) return;
     var nx = (e.clientX / window.innerWidth - 0.5) * 2;
     var ny = (e.clientY / window.innerHeight - 0.5) * 2;
@@ -317,8 +340,10 @@
 
   window.addEventListener("scroll", readTarget, { passive: true });
   window.addEventListener("resize", readTarget);
-  requestAnimationFrame(loop);
-  requestAnimationFrame(loop);
+  // back on Home: router.js loads after this script, so its hashchange
+  // handler (which removes .subpage) runs after this one; wait one tick
+  window.addEventListener("hashchange", function () { setTimeout(readTarget, 0); });
+  wake();
 
   if (!prefersReduced) {
     window.addEventListener("pointermove", onPointerMove);

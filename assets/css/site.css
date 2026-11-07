@@ -5006,3 +5006,26 @@
   @media (max-width: 780px) { .xa-hero { --xa-soft: rgba(247,243,234,0.55); } }
   /* the same on Talia's light chapter */
   .t-light .cs-label, .t-light .cs-caption, .t-light .cs-swatches { color: rgba(25,22,17,0.7); }
+
+  /* small pink TEXT (labels and numbers of 11–13px) in a lighter pink that
+     reaches 4.5:1 on the dark background (the signal pink is 3.1:1 as text).
+     The signal pink itself stays for everything decorative: dots, lines,
+     arrows, rules and the large headings */
+  :root { --signal-text: #e0577e; }
+  .sf-label-num, .ab-chapter-num, .ab-trait-num, .ab-tl-num, .ab-out-num, .ab-photo-cap-num,
+  .xa-tag-num, .xa-rule-ticks li:last-child, .xa-row-num, .xa-cell-num, .xa-cap > span:first-child,
+  .xa-stream-k, .oc-tag-num, .oc-comp-step span, .story-eyebrow { color: var(--signal-text); }
+  /* the archive indicator sits on the lighter dusk band: one step lighter */
+  .xa-ind-num { color: #ec7a98; }
+  /* a project's own colour as small text: lifted a little towards white, so
+     the dark red of Van der Hammen (3.6:1) reaches 4.5:1; the hue stays */
+  .work-entry.is-active .work-index, .page-cs .cs-label .cs-num, .vdh-showcase-eyebrow {
+    color: color-mix(in srgb, var(--acc, var(--vdh-accent)) 70%, #fff);
+  }
+  /* on Talia's light chapter the other way round: the same tan, darker */
+  .t-light .cs-label .cs-num { color: color-mix(in srgb, var(--vdh-accent) 62%, #000); }
+  /* small grey text that was still under 4.5:1 */
+  .xa-editor-note, .xa-rule-ticks li, .xa-cap > span, .oc-comp-meta dt, .xa-ind-total, .xa-ind-label { color: rgba(255,255,255,0.55); }
+  .xa-rule-ticks li:last-child, .xa-cap > span:first-child { color: var(--signal-text); }
+  /* the composition's empty state is a hint, but still readable text */
+  .oc-comp-body.is-empty { color: rgba(247,243,234,0.55); }

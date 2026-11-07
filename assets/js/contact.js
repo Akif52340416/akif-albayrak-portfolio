@@ -6,7 +6,9 @@
   // connected yet" state), the message composition that mirrors them, the
   // channel line, copying the e-mail address, the local time and the
   // reveals. The form is NOT sent anywhere: a valid submit only explains
-  // that and offers the e-mail address.
+  // that, and offers two things that really happen: the message opened in
+  // the visitor's own mail program (a filled-in mailto:) or copied. A tick
+  // only ever marks a copy the clipboard confirmed.
   var view = document.getElementById('contactView');
   if (!view) return;
   var form = document.getElementById('ocForm');
@@ -39,7 +41,9 @@
     ocDraft: 'Draft · not sent yet',
     ocSend: 'Send message',
     ocPending: "This form isn't connected yet: messages are not being sent. Email always works.",
-    ocEnd: 'The channel stays open'
+    ocEnd: 'The channel stays open',
+    ocMailIt: 'Open in your mail app',
+    ocCopyMsg: 'Copy your message'
   };
   var Q = {
     nl: ['Wie ben je?', 'Waar kan ik je bereiken?', 'Wat wil je kwijt?'],
@@ -56,7 +60,12 @@
       notSent: '<strong>Je bericht is niet verstuurd.</strong> Dit formulier is nog niet aangesloten op een verzenddienst, dus er is niets verzonden. Wil je me nu al bereiken? Mail dan naar <a href="mailto:' + MAIL + '">' + MAIL + '</a>.',
       copied: 'Gekopieerd',
       copiedSr: 'E-mailadres gekopieerd.',
-      copyFail: 'Kopiëren lukte niet. Selecteer het e-mailadres en kopieer het zelf.'
+      copyFail: 'Kopiëren lukte niet. Selecteer het e-mailadres en kopieer het zelf.',
+      copyFailLabel: 'Niet gelukt',
+      msgCopied: 'Bericht gekopieerd',
+      msgCopiedSr: 'Je bericht is gekopieerd.',
+      msgCopyFail: 'Kopiëren lukte niet. Selecteer je tekst in het berichtveld en kopieer hem zelf.',
+      subject: 'Bericht via je portfolio'
     },
     en: {
       empty: 'Your message appears here as you type.',
@@ -68,7 +77,12 @@
       notSent: "<strong>Your message has not been sent.</strong> This form isn't connected to a sending service yet, so nothing was sent. Want to reach me now? Email <a href=\"mailto:" + MAIL + '">' + MAIL + '</a>.',
       copied: 'Copied',
       copiedSr: 'Email address copied.',
-      copyFail: "Copying didn't work. Please select the email address and copy it yourself."
+      copyFail: "Copying didn't work. Please select the email address and copy it yourself.",
+      copyFailLabel: "Didn't work",
+      msgCopied: 'Message copied',
+      msgCopiedSr: 'Your message has been copied.',
+      msgCopyFail: "Copying didn't work. Please select your text in the message field and copy it yourself.",
+      subject: 'Message via your portfolio'
     }
   };
 
@@ -158,10 +172,29 @@
     countN.textContent = fields[2].input.value.length;
   }
 
+  // ---- after a valid submit: the honest message plus the two real ways on.
+  // Typing again takes it all away, so nothing is left half-true ----
+  var held = document.getElementById('ocHeld');
+  var mailIt = document.getElementById('ocMailIt');
+  var sendBtn = form.querySelector('.oc-send');
+  function letter() {
+    return fields[2].input.value.trim() + '\n\n' + fields[0].input.value.trim() + '\n' + fields[1].input.value.trim();
+  }
+  function setMailto() {
+    mailIt.href = 'mailto:' + MAIL + '?subject=' + encodeURIComponent(MSG[lang].subject + ' — ' + fields[0].input.value.trim()) +
+      '&body=' + encodeURIComponent(letter());
+  }
+  function showHeld(on) {
+    status.hidden = !on;
+    held.hidden = !on;
+    sendBtn.classList.toggle('is-held', on);
+    if (on) setMailto();
+  }
+
   fields.forEach(function (f, i) {
     f.input.addEventListener('input', function () {
       if (f.input.getAttribute('aria-invalid') === 'true') setError(f, f.check(f.input.value, f.input));
-      if (!status.hidden) status.hidden = true;
+      if (!status.hidden) showHeld(false);
       render();
     });
     f.input.addEventListener('focus', function () { focused = true; active = i; render(); });
@@ -177,32 +210,34 @@
       if (key && !firstBad) firstBad = f.input;
     });
     render();
-    if (firstBad) { status.hidden = true; firstBad.focus(); return; }
+    if (firstBad) { showHeld(false); firstBad.focus(); return; }
     // valid, but there is no sending yet: say so plainly, keep what was typed
     status.innerHTML = MSG[lang].notSent;
-    status.hidden = false;
+    showHeld(true);
     status.focus();
   });
 
-  // ---- copy the e-mail address (the button says so for a moment; screen
-  // readers hear it through the status line) ----
-  var copyBtn = document.getElementById('ocCopy');
+  // ---- copying (the e-mail address, and after a submit the message). The
+  // button says so for a moment; screen readers hear it through the status
+  // line. The tick and "Gekopieerd" come only once the clipboard said yes;
+  // if it refuses, the button says so and (for the address) the address is
+  // selected, so Ctrl+C / long-press still works ----
   var copyStatus = document.getElementById('ocCopyStatus');
-  var copyTimer = null;
-  function copied(ok) {
-    copyStatus.textContent = ok ? MSG[lang].copiedSr : MSG[lang].copyFail;
-    if (!ok) return;
-    var label = copyBtn.querySelector('[data-i18n]');
-    copyBtn.classList.add('is-copied');
-    label.textContent = MSG[lang].copied;
-    clearTimeout(copyTimer);
-    copyTimer = setTimeout(function () {
-      copyBtn.classList.remove('is-copied');
-      label.innerHTML = lang === 'en' ? EN.ocCopy : label.getAttribute('data-nl');
-      copyStatus.textContent = '';
-    }, 2200);
+  var GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  // the new label decodes from random letters (instant with reduced motion)
+  function decode(el, to) {
+    if (reduceMotion) { el.textContent = to; return; }
+    var t0 = performance.now();
+    (function step() {
+      var k = Math.min(1, (performance.now() - t0) / 480), out = '';
+      for (var i = 0; i < to.length; i++) {
+        out += (i / to.length < k || to.charAt(i) === ' ') ? to.charAt(i) : GLYPHS.charAt(Math.floor(Math.random() * GLYPHS.length));
+      }
+      el.textContent = out;
+      if (k < 1) window.requestAnimationFrame(step);
+    })();
   }
-  function legacyCopy(text) {
+  function legacyCopy(text, btn) {
     var ta = document.createElement('textarea');
     ta.value = text;
     ta.setAttribute('readonly', '');
@@ -212,17 +247,42 @@
     var ok = false;
     try { ok = document.execCommand('copy'); } catch (e) {}
     document.body.removeChild(ta);
-    copyBtn.focus();
+    btn.focus();
     return ok;
   }
-  if (copyBtn) copyBtn.addEventListener('click', function () {
-    var text = copyBtn.getAttribute('data-copy');
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(function () { copied(true); }, function () { copied(legacyCopy(text)); });
-    } else {
-      copied(legacyCopy(text));
+  function selectText(el) {
+    try { var r = document.createRange(); r.selectNodeContents(el); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); } catch (e) {}
+  }
+  function copyButton(btn, getText, keys, fallbackEl) {
+    if (!btn) return;
+    var label = btn.querySelector('[data-i18n]');
+    var timer = null;
+    function done(ok) {
+      clearTimeout(timer);
+      copyStatus.textContent = ok ? MSG[lang][keys.sr] : MSG[lang][keys.fail];
+      btn.classList.toggle('is-copied', ok);
+      decode(label, ok ? MSG[lang][keys.label] : MSG[lang].copyFailLabel);
+      if (!ok && fallbackEl) selectText(fallbackEl);
+      timer = setTimeout(function () {
+        btn.classList.remove('is-copied');
+        label.innerHTML = lang === 'en' ? EN[label.getAttribute('data-i18n')] : label.getAttribute('data-nl');
+        copyStatus.textContent = '';
+      }, ok ? 2200 : 4000);
     }
-  });
+    btn.addEventListener('click', function () {
+      var text = getText();
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(legacyCopy(text, btn)); });
+      } else {
+        done(legacyCopy(text, btn));
+      }
+    });
+  }
+  var copyBtn = document.getElementById('ocCopy');
+  copyButton(copyBtn, function () { return copyBtn.getAttribute('data-copy'); },
+    { label: 'copied', sr: 'copiedSr', fail: 'copyFail' }, copyBtn && copyBtn.parentNode.querySelector('.oc-direct-link'));
+  copyButton(document.getElementById('ocCopyMsg'), letter,
+    { label: 'msgCopied', sr: 'msgCopiedSr', fail: 'msgCopyFail' }, null);
 
   // ---- the footer's "Let's talk" points at this very page: here it goes
   // to the first question instead ----
@@ -258,7 +318,10 @@
     var vh = window.innerHeight;
     if (!reduceMotion) {
       var r = channel.getBoundingClientRect();
-      channel.style.setProperty('--c', clamp01((vh * 0.6 - r.top) / (r.height || 1)).toFixed(4));
+      var c = clamp01((vh * 0.6 - r.top) / (r.height || 1));
+      channel.style.setProperty('--c', c.toFixed(4));
+      // the light at its head only while the line is on its way
+      channel.classList.toggle('is-running', c > 0.01 && c < 0.99);
     }
     // held 120–160px from the top, never past the end of its column
     if (comp.offsetParent && window.innerWidth > 980) {
@@ -306,7 +369,7 @@
     });
     // messages already on screen follow the language too
     fields.forEach(function (f) { if (f.err.dataset.key) f.err.textContent = MSG[lang][f.err.dataset.key]; });
-    if (!status.hidden) status.innerHTML = MSG[lang].notSent;
+    if (!status.hidden) { status.innerHTML = MSG[lang].notSent; setMailto(); }
     if (onPage()) document.documentElement.lang = lang;
     render();
     place();
