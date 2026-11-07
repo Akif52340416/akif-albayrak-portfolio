@@ -293,6 +293,27 @@
   apply();
   requestUpdate();
 
+  // ---- the five endless details (the pulse by file 05 in the index and in
+  // its file, the editor caret, the data stream, the dashed hub lines) only
+  // move while they are on screen and the tab is in view; paused otherwise
+  // (see motion.css). Without IntersectionObserver they simply keep going. ----
+  if ('IntersectionObserver' in window) {
+    var hosts = [].slice.call(view.querySelectorAll('.xa-row--now, .xa-status, .xa-editor, .xa-stream, .xa-hub'));
+    var seen = [];
+    var playing = function () {
+      hosts.forEach(function (h, i) {
+        var on = !!seen[i] && !document.hidden;
+        if (h.classList.contains('is-playing') !== on) h.classList.toggle('is-playing', on);
+      });
+    };
+    var animIo = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { seen[hosts.indexOf(e.target)] = e.isIntersecting; });
+      playing();
+    });
+    hosts.forEach(function (h) { h.classList.add('xa-anim'); animIo.observe(h); });
+    document.addEventListener('visibilitychange', playing);
+  }
+
   if (reduceMotion || !('IntersectionObserver' in window)) return;
   view.classList.add('xa-armed');
 

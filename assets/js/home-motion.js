@@ -32,7 +32,7 @@
       if (started) return;
       started = true;
       root.classList.add('home-intro-go');
-      setTimeout(endIntro, 2700);
+      setTimeout(endIntro, 2150);
     };
     if (!photo || photo.complete) go();
     else {
@@ -54,10 +54,12 @@
   svg.innerHTML =
     '<defs><radialGradient id="homeTrailHalo"><stop offset="0" stop-color="#ff9fbb" stop-opacity=".85"/><stop offset=".4" stop-color="#af2d53" stop-opacity=".4"/><stop offset="1" stop-color="#af2d53" stop-opacity="0"/></radialGradient></defs>' +
     '<path class="ht-route"/><path class="ht-glow"/><path class="ht-line"/><g class="ht-nodes"></g>' +
-    '<circle class="ht-halo" r="22" fill="url(#homeTrailHalo)"/><circle class="ht-head" r="2.4"/>';
+    '<g class="ht-cursor"><circle class="ht-halo" r="22" fill="url(#homeTrailHalo)"/><circle class="ht-head" r="2.4"/></g>';
   homeView.appendChild(svg);
   var route = svg.querySelector('.ht-route'), glow = svg.querySelector('.ht-glow'), line = svg.querySelector('.ht-line');
-  var nodesG = svg.querySelector('.ht-nodes'), halo = svg.querySelector('.ht-halo'), head = svg.querySelector('.ht-head');
+  // head and halo move together, as one CSS transform: one write per frame,
+  // and no SVG attribute change (that costs a layout pass on slow phones)
+  var nodesG = svg.querySelector('.ht-nodes'), cursor = svg.querySelector('.ht-cursor'), cursorOn = null;
 
   // the chapters settle at these scroll positions in home.js (vh)
   var AT = [140, 240, 340, 440];
@@ -78,6 +80,8 @@
   function build() {
     var w = window.innerWidth, h = window.innerHeight, mobile = w <= 780;
     mobileNow = mobile;
+    // the lengths below need the trail rendered; trail() hides it again
+    svg.style.display = '';
     // desktop: up from the bottom over the water, right of the portrait and
     // under the annotations. Phones: a calm wave along the right edge.
     var rel = mobile
@@ -114,6 +118,7 @@
     });
     glow.style.strokeDasharray = line.style.strokeDasharray = total + ' ' + total;
     lastL = -1; lastOp = -1;
+    svg.style.opacity = '0';
   }
   function at(L) {
     var f = clamp01(L / (total || 1)) * 240, i = Math.floor(f), k = f - i, a = table[i], b = table[Math.min(240, i + 1)];
@@ -128,19 +133,25 @@
   }
   function trail(vh) {
     if (mobileNow === null || (window.innerWidth <= 780) !== mobileNow) build();
-    // in once the story starts, out before the chapter break
-    var op = map(vh, 95, 130) * (1 - map(vh, 470, 540));
-    if (Math.abs(op - lastOp) > 0.002) { lastOp = op; svg.style.opacity = op.toFixed(3); }
+    // in once the story starts, out before the chapter break (gone before
+    // the education headline, which starts rising at 490vh, can be read)
+    var op = map(vh, 95, 130) * (1 - map(vh, 460, 515));
+    if (Math.abs(op - lastOp) > 0.002 || (op === 0) !== (lastOp === 0)) {
+      // out of the render tree while it can't be seen: nothing to restyle or paint
+      svg.style.display = op > 0 ? '' : 'none';
+      lastOp = op; svg.style.opacity = op.toFixed(3);
+    }
     if (op <= 0) return;
     // reduced motion: no growing line, the route simply stands up to the chapter in view
     var L = reduceMotion ? nodeLen[Math.max(0, AT.filter(function (a) { return vh >= a - 50; }).length - 1)] : lengthAt(vh);
     if (Math.abs(L - lastL) < 0.4) return;
     lastL = L;
-    glow.style.strokeDashoffset = line.style.strokeDashoffset = (total - L).toFixed(1);
+    line.style.strokeDashoffset = (total - L).toFixed(1);
+    // phones show no wide glow under the line (see motion.css): don't move it either
+    if (!mobileNow) glow.style.strokeDashoffset = line.style.strokeDashoffset;
     var q = at(L), show = L > 1 && L < total - 1 && !reduceMotion;
-    head.setAttribute('transform', 'translate(' + q[0].toFixed(1) + ' ' + q[1].toFixed(1) + ')');
-    halo.setAttribute('transform', head.getAttribute('transform'));
-    head.style.opacity = halo.style.opacity = show ? 1 : 0;
+    if (show !== cursorOn) { cursorOn = show; cursor.style.opacity = show ? 1 : 0; }
+    if (show) cursor.style.transform = 'translate(' + q[0].toFixed(1) + 'px,' + q[1].toFixed(1) + 'px)';
     nodes.forEach(function (g, i) { var lit = L >= nodeLen[i] - 0.5; if (lit !== g.classList.contains('is-lit')) g.classList.toggle('is-lit', lit); });
   }
   build();
@@ -183,7 +194,7 @@
     var measure = function () {
       letters.forEach(function (l) { l.el.style.width = ''; l.el.style.removeProperty('--sb-w'); });
       letters.forEach(function (l) { l.el.style.width = l.el.offsetWidth + 'px'; });
-      letters.forEach(function (l) { l.el.style.setProperty('--sb-w', Math.round(600 - 220 * l.n)); });
+      letters.forEach(function (l) { l.el.style.setProperty('--sb-w', Math.round(600 - 200 * l.n)); });
     };
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
     measure();
@@ -197,7 +208,7 @@
       if (Math.abs(n - l.t) < 0.003) n = l.t;
       if (n !== l.n) {
         l.n = n;
-        l.el.style.setProperty('--sb-w', Math.round(600 - 220 * n));
+        l.el.style.setProperty('--sb-w', Math.round(600 - 200 * n));
         l.el.style.setProperty('--sb-n', n.toFixed(3));
       }
       if (n !== l.t) moving = true;
@@ -224,6 +235,7 @@
   var layer = document.createElement('div');
   layer.className = 'home-finale-light';
   layer.setAttribute('aria-hidden', 'true');
+  layer.style.display = 'none';
   var stillEl = document.getElementById('stillBuilding');
   homeView.insertBefore(layer, stillEl || null);
   var useGL = finePointer && window.innerWidth > 780 && !reduceMotion;
@@ -351,6 +363,9 @@
     // the light: with the statement, calmer once the gallery is in
     var f = clamp01(s.sb) * (1 - 0.75 * clamp01(s.eB));
     if (Math.abs(f - fade) > 0.002 || (f === 0) !== (fade === 0)) {
+      // out of the render tree until the statement comes in (the whole
+      // story before it scrolls without this layer)
+      if ((f > 0) !== (fade > 0)) layer.style.display = f > 0 ? '' : 'none';
       fade = f;
       layer.style.opacity = glOK ? '1' : f.toFixed(3);
       if (glOK && !raf && !wait) { if (visible()) lightOn(); else if (f <= 0.02) { gl.clear(gl.COLOR_BUFFER_BIT); } }

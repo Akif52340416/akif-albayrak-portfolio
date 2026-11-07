@@ -19,7 +19,7 @@
   html, body {
     margin: 0;
     overflow-x: hidden;
-    font-family: "Instrument Sans", sans-serif;
+    font-family: "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
     background: rgb(var(--dusk));
   }
 
@@ -2669,7 +2669,7 @@
   .ab-trait-word {
     display: block;
     font-size: clamp(2.6rem, 7.4vw, 8.6rem);
-    font-weight: 800;
+    font-weight: 700;
     line-height: 0.9;
     letter-spacing: -0.04em;
     text-transform: uppercase;
@@ -2951,7 +2951,7 @@
     align-self: start;
     margin-top: clamp(26px, 2.4vw, 36px);
     font-size: clamp(4rem, 9.5vw, 10.5rem);
-    font-weight: 800;
+    font-weight: 700;
     line-height: 0.8;
     letter-spacing: -0.05em;
     font-variant-numeric: tabular-nums;
@@ -2975,7 +2975,7 @@
   .ab-tl-word {
     margin: clamp(14px, 1.6vw, 22px) 0 0;
     font-size: clamp(2.3rem, 4.8vw, 5.8rem);
-    font-weight: 800;
+    font-weight: 700;
     line-height: 0.92;
     letter-spacing: -0.035em;
     text-transform: uppercase;
@@ -3134,7 +3134,7 @@
   .ab-out-voetbal {
     padding-left: 3cqi;
     font-size: 20cqi;
-    font-weight: 800;
+    font-weight: 700;
     line-height: 0.84;
     letter-spacing: -0.05em;
   }
@@ -3191,7 +3191,7 @@
     background: #0b0a09;
     /* cqw, not cqi: in vertical writing the inline axis is the height */
     font-size: 9.6cqw;
-    font-weight: 800;
+    font-weight: 700;
     line-height: 0.92;
     letter-spacing: -0.03em;
   }
@@ -3214,7 +3214,7 @@
     align-items: baseline;
     gap: 18px;
     font-size: 6.4cqi;
-    font-weight: 300;
+    font-weight: 400;
     line-height: 1;
   }
   .ab-out-track {
@@ -3453,7 +3453,7 @@
     border-radius: 999px;
     background: rgba(11,10,9,0.45);
     color: rgba(247,243,234,0.8);
-    font: 500 11px/1 "Instrument Sans", sans-serif;
+    font: 500 11px/1 "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
     letter-spacing: 0.16em;
     text-transform: uppercase;
     cursor: pointer;
@@ -3583,7 +3583,7 @@
   .xa-title {
     margin: auto 0 0;
     padding-top: clamp(36px, 6vh, 80px);
-    font-weight: 800;
+    font-weight: 700;
     line-height: 0.84;
     letter-spacing: -0.05em;
     text-transform: uppercase;
@@ -3675,7 +3675,7 @@
     border-bottom: 1px solid rgba(255,255,255,0.3);
     background: none;
     color: var(--cream);
-    font: 600 12px/1.4 "Instrument Sans", sans-serif;
+    font: 600 12px/1.4 "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     cursor: pointer;
@@ -3737,7 +3737,7 @@
   .xa-row-num { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; color: var(--signal); font-variant-numeric: tabular-nums; }
   .xa-row-name {
     font-size: clamp(1.7rem, 6.6cqi, 6.6rem);
-    font-weight: 800;
+    font-weight: 700;
     line-height: 0.95;
     letter-spacing: -0.045em;
     text-transform: uppercase;
@@ -3786,7 +3786,7 @@
   }
   .xa-preview.is-shown { opacity: 1; }
   .xa-preview p { margin: 0; }
-  .xa-preview-num { font-size: clamp(2.6rem, 4vw, 4.4rem); font-weight: 800; line-height: 0.9; letter-spacing: -0.05em; color: var(--signal); font-variant-numeric: tabular-nums; }
+  .xa-preview-num { font-size: clamp(2.6rem, 4vw, 4.4rem); font-weight: 700; line-height: 0.9; letter-spacing: -0.05em; color: var(--signal); font-variant-numeric: tabular-nums; }
   .xa-preview-theme { margin-top: 12px !important; font-size: 12px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--cream); }
   .xa-preview-desc { margin-top: 14px !important; font-size: 15px; line-height: 1.55; color: rgba(255,255,255,0.72); }
   .xa-preview-open { margin-top: 18px !important; font-size: 12px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(247,243,234,0.8); }
@@ -3829,7 +3829,7 @@
     z-index: 1;
     margin: 0;
     font-size: 14.5cqi;
-    font-weight: 800;
+    font-weight: 700;
     line-height: 0.86;
     letter-spacing: -0.05em;
     text-transform: uppercase;
@@ -3846,7 +3846,7 @@
     bottom: -0.1em;
     z-index: 0;
     font-size: 36cqi;
-    font-weight: 800;
+    font-weight: 700;
     line-height: 0.8;
     letter-spacing: -0.06em;
     color: rgba(247,243,234,0.05);
@@ -4016,7 +4016,7 @@
   .xa-editor-dots i { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,0.14); }
   .xa-editor-dots i:first-child { background: var(--signal); }
   .xa-editor-tab { padding: 3px 10px; border-radius: 4px; background: rgba(255,255,255,0.06); color: var(--cream); }
-  .xa-editor-note { margin-left: auto; font-family: "Instrument Sans", sans-serif; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.35); }
+  .xa-editor-note { margin-left: auto; font-family: "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.35); }
   .xa-editor-title { margin: 18px 0 6px; padding: 0 18px 0 62px; font: 500 13px/1.5 var(--xa-mono); color: rgba(255,255,255,0.45); }
   .xa-editor-title::before { content: '/** '; }
   .xa-editor-title::after { content: ' */'; }
@@ -4229,7 +4229,7 @@
     border-top: 1px solid var(--signal);
   }
   .xa-outro-lead { margin: 0; font-size: clamp(1.05rem, 1.4vw, 1.3rem); color: rgba(255,255,255,0.66); }
-  .xa-outro-title { margin: clamp(28px, 3.4vw, 52px) 0 0; font-size: 9cqi; font-weight: 800; line-height: 0.9; letter-spacing: -0.05em; text-transform: uppercase; }
+  .xa-outro-title { margin: clamp(28px, 3.4vw, 52px) 0 0; font-size: 9cqi; font-weight: 700; line-height: 0.9; letter-spacing: -0.05em; text-transform: uppercase; }
   .xa-outro-link { display: inline-block; color: var(--cream); text-decoration: none; }
   .xa-outro-l1 { display: block; color: var(--xa-soft); transition: color 0.4s ease; }
   .xa-outro-l2 { position: relative; display: inline-flex; align-items: baseline; gap: 0.2em; transition: transform 0.6s var(--xa-ease); }
@@ -4451,7 +4451,7 @@
     margin: auto 0 0;
     padding-top: clamp(40px, 7vh, 96px);
     font-size: 13.4cqi;
-    font-weight: 800;
+    font-weight: 700;
     line-height: 0.86;
     letter-spacing: -0.05em;
     text-transform: uppercase;
@@ -4558,7 +4558,7 @@
     border-radius: 999px;
     background: none;
     color: rgba(247,243,234,0.85);
-    font: 600 12px/1.2 "Instrument Sans", sans-serif;
+    font: 600 12px/1.2 "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     white-space: nowrap;
@@ -4610,7 +4610,7 @@
      filled once its answer is right */
   .oc-num {
     font-size: clamp(3.2rem, 6.4vw, 7.6rem);
-    font-weight: 800;
+    font-weight: 700;
     line-height: 0.82;
     letter-spacing: -0.06em;
     color: rgba(247,243,234,0.14);
@@ -4627,7 +4627,7 @@
   .oc-q {
     display: block;
     font-size: clamp(1.35rem, 2.5vw, 2.9rem);
-    font-weight: 800;
+    font-weight: 700;
     line-height: 1;
     letter-spacing: -0.035em;
     text-transform: uppercase;
@@ -4657,13 +4657,13 @@
     background: linear-gradient(var(--signal), var(--signal)) 0 100% / 0 2px no-repeat;
     transition: border-color 0.3s ease, background-size 0.6s cubic-bezier(.65,0,.25,1);
   }
-  .oc-input { font: 500 clamp(1.25rem, 2vw, 2rem)/1.3 "Instrument Sans", sans-serif; letter-spacing: -0.01em; }
+  .oc-input { font: 500 clamp(1.25rem, 2vw, 2rem)/1.3 "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; letter-spacing: -0.01em; }
   .oc-input::placeholder, .oc-textarea::placeholder { color: rgba(247,243,234,0.24); }
   .oc-input:focus, .oc-textarea:focus { background-size: 100% 2px; border-bottom-color: transparent; }
   .oc-textarea {
     --oc-lh: 1.6em;
     min-height: calc(5 * var(--oc-lh) + 8px);
-    font: 500 clamp(1.05rem, 1.4vw, 1.35rem)/var(--oc-lh) "Instrument Sans", sans-serif;
+    font: 500 clamp(1.05rem, 1.4vw, 1.35rem)/var(--oc-lh) "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
     resize: vertical;
     background:
       linear-gradient(var(--signal), var(--signal)) 0 100% / 0 2px no-repeat,
@@ -4739,7 +4739,7 @@
     border-bottom: 1px solid rgba(255,255,255,0.4);
     background: none;
     color: var(--cream);
-    font: 700 clamp(1.3rem, 2.2vw, 2.2rem)/1.1 "Instrument Sans", sans-serif;
+    font: 700 clamp(1.3rem, 2.2vw, 2.2rem)/1.1 "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
     letter-spacing: -0.02em;
     text-transform: uppercase;
     cursor: pointer;
@@ -5029,3 +5029,33 @@
   .xa-rule-ticks li:last-child, .xa-cap > span:first-child { color: var(--signal-text); }
   /* the composition's empty state is a hint, but still readable text */
   .oc-comp-body.is-empty { color: rgba(247,243,234,0.55); }
+
+  /* ==========================================================
+     ACCESSIBILITY — the skip link, the heading a new page focuses, and
+     content that receives focus while it is still fading in
+     ========================================================== */
+  /* the first Tab stop: out of sight until it has the keyboard focus */
+  .skip-link {
+    position: fixed;
+    left: 16px;
+    top: 12px;
+    z-index: 300;
+    padding: 12px 18px;
+    border-radius: 999px;
+    background: var(--cream);
+    color: #0b0a09;
+    font: 600 14px/1.2 "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    text-decoration: none;
+    transform: translateY(-160%);
+  }
+  .skip-link:focus { outline: none; }
+  .skip-link:focus-visible { transform: none; outline: 2px solid var(--signal); outline-offset: 3px; }
+  /* a new page moves the focus to its heading (router.js) so a screen reader
+     announces it; that heading is not a control, so it draws no ring */
+  main h1[tabindex="-1"]:focus { outline: none; }
+  /* a fade-up that receives focus before it has come in is shown at once,
+     so the keyboard never lands on something (nearly) invisible */
+  .cs-reveal:focus-within,
+  .about-reveal:focus-within,
+  #experienceView.xa-armed .xa-reveal:focus-within,
+  .oc-armed .oc-hero:not(.is-in) .oc-fade:focus-within { opacity: 1; transform: none; transition-duration: 0.15s; transition-delay: 0s; }

@@ -101,7 +101,7 @@
   border-radius: 999px;
   background: none;
   color: var(--cream);
-  font: 600 14px/1.2 "Instrument Sans", sans-serif;
+  font: 600 14px/1.2 "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   letter-spacing: 0.01em;
   text-decoration: none;
   cursor: pointer;
@@ -342,7 +342,7 @@ html.home-intro .home-slit { display: block; position: fixed; left: 0; right: 0;
   background: linear-gradient(90deg, transparent, rgba(255,214,226,0.95) 20%, #fff 50%, rgba(255,214,226,0.95) 80%, transparent);
   box-shadow: 0 0 18px 2px rgba(217,70,111,0.6);
   transform: scaleX(0);
-  animation: hsDraw 0.7s cubic-bezier(.65,0,.25,1) 0.1s forwards, hsUp 1.15s cubic-bezier(.65,0,.25,1) 0.8s forwards;
+  animation: hsDraw 0.55s cubic-bezier(.65,0,.25,1) 0.05s forwards, hsUp 1s cubic-bezier(.65,0,.25,1) 0.6s forwards;
 }
 .home-slit i:last-child { animation-name: hsDraw, hsDown; }
 @keyframes hsDraw { from { transform: scaleX(0); opacity: 0; } 20% { opacity: 1; } to { transform: scaleX(1); opacity: 1; } }
@@ -354,15 +354,15 @@ html.home-intro:not(.home-intro-go) .name-vertical-group .v-word,
 html.home-intro:not(.home-intro-go) .info { animation-play-state: paused; }
 @keyframes hsUp { from { transform: scaleX(1); opacity: 1; } to { transform: scaleX(1) translateY(-50vh); opacity: 0; } }
 @keyframes hsDown { from { transform: scaleX(1); opacity: 1; } to { transform: scaleX(1) translateY(50vh); opacity: 0; } }
-html.home-intro .photo-frame { animation: hfOpen 1.15s cubic-bezier(.65,0,.25,1) 0.8s both; }
+html.home-intro .photo-frame { animation: hfOpen 1s cubic-bezier(.65,0,.25,1) 0.6s both; }
 @keyframes hfOpen { from { clip-path: inset(50% 0 50% 0); } to { clip-path: inset(0 0 0 0); } }
 /* the portrait settles while it opens (scale, so home.js keeps its transform) */
-html.home-intro #photoImg { animation: hfSettle 2.2s cubic-bezier(.2,.7,.2,1) 0.8s both; }
+html.home-intro #photoImg { animation: hfSettle 1.45s cubic-bezier(.2,.7,.2,1) 0.6s both; }
 @keyframes hfSettle { from { scale: 1.1; } to { scale: 1; } }
-html.home-intro .name-vertical-group .v-word { animation: hfName 0.9s cubic-bezier(.2,.7,.2,1) 1.55s both; }
-html.home-intro #akifSpan { animation-delay: 1.7s; }
+html.home-intro .name-vertical-group .v-word { animation: hfName 0.8s cubic-bezier(.2,.7,.2,1) 1.15s both; }
+html.home-intro #akifSpan { animation-delay: 1.28s; }
 @keyframes hfName { from { opacity: 0; translate: 0 -14px; } to { opacity: 1; translate: 0 0; } }
-html.home-intro .info { animation: hfInfo 0.8s ease 1.9s both; }
+html.home-intro .info { animation: hfInfo 0.7s ease 1.4s both; }
 @keyframes hfInfo { from { opacity: 0; } to { opacity: 0.88; } }
 
 /* ---- the four chapters: one light trail, a node per chapter ---- */
@@ -371,9 +371,12 @@ body.subpage .home-trail { display: none; }
 .home-trail path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
 .ht-route { stroke: rgba(247,243,234,0.18); stroke-width: 1; stroke-dasharray: 1 7; }
 .ht-glow { stroke: var(--signal); stroke-width: 6; opacity: 0.24; }
+/* phones: the trail is a narrow strip by the edge; the head's halo carries
+   the light there, and a slow phone is spared painting the wide glow */
+@media (max-width: 780px) { .ht-glow { display: none; } }
 .ht-line { stroke: #f2b8c9; stroke-width: 1.5; }
 .ht-head { fill: #fff; }
-.ht-head, .ht-halo { opacity: 0; }
+.ht-cursor { opacity: 0; }
 /* an unlit node is only a faint ring, so it never reads as a speck on the photo */
 .ht-dot { fill: rgba(11,10,9,0.35); stroke: rgba(247,243,234,0.5); stroke-width: 1; transition: fill 0.5s ease, stroke 0.5s ease; }
 .ht-node.is-lit .ht-dot { fill: var(--signal); stroke: #fff; }
@@ -424,4 +427,257 @@ body.subpage .home-finale-light { display: none; }
 }
 /* ==========================================================
    end HOME
+   ========================================================== */
+
+/* ==========================================================
+   ABOUT (concept 04) — armed by about-motion.js; with reduced motion (or
+   without JS) About is exactly as it was.
+     - the opening in three depth planes (portrait / caption / AKIF.):
+       scroll on every screen, the pointer as well on wide screens
+     - the route: a light at the head of the growing line, and a short
+       ring as the line reaches each step
+   ========================================================== */
+
+/* a little room around the portrait, so it can shift against the pointer
+   without showing an edge (wide screens with a mouse only) */
+@media (min-width: 981px) {
+  #aboutView.ab-depth .ab-photo img { scale: 1.03; }
+}
+
+.ab-tl-head {
+  position: absolute;
+  z-index: 2;
+  left: var(--tl-x);
+  top: 6px;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+.ab-tl-head::before {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: -4px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(175,45,83,0.35), 0 0 18px 3px rgba(175,45,83,0.7);
+}
+.ab-tl.is-growing .ab-tl-head { opacity: 1; }
+
+/* the moment the line reaches a step: one ring from its node */
+.ab-tl.is-armed .ab-tl-node::before {
+  content: '';
+  position: absolute;
+  inset: -1.5px;
+  border-radius: 50%;
+  border: 1px solid #e0577e;
+  opacity: 0;
+  pointer-events: none;
+}
+.ab-tl.is-armed .ab-tl-step.is-reached .ab-tl-node::before { animation: abTlReach 1.2s cubic-bezier(.2,.7,.2,1) 1; }
+@keyframes abTlReach { from { opacity: 0.9; transform: scale(1); } to { opacity: 0; transform: scale(3.6); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ab-tl-head { display: none; }
+  .ab-tl.is-armed .ab-tl-step.is-reached .ab-tl-node::before { animation: none; }
+}
+/* ==========================================================
+   end ABOUT
+   ========================================================== */
+
+/* ==========================================================
+   EXPERIENCE (concept 05) — the archive drawer, armed by
+   experience-motion.js (#experienceView.xa-drawer-on). Without JS the index
+   is exactly as it was: the rows, and the preview next to them.
+     - wide screens: the preview's place holds a drawer of the five files
+       in 3D; the chosen file stands in front, the others behind it
+     - ≤ 980px: a stack of cards in place of the rows (swipe or buttons)
+   The files themselves (#xaCh1–5) are untouched.
+   ========================================================== */
+.xa-drawer, .xa-stack { display: none; }
+
+/* the five endless details (site.css) only move while they can be seen:
+   experience.js marks each holder .xa-anim and adds .is-playing while it is
+   on screen and the tab is in view */
+.xa-anim:not(.is-playing) .xa-row-num::after,
+.xa-anim.xa-status:not(.is-playing)::before,
+.xa-anim:not(.is-playing) .xa-editor-caret,
+.xa-anim:not(.is-playing) .xa-stream-line i,
+.xa-anim:not(.is-playing) .xa-hub-lines line { animation-play-state: paused; }
+
+/* ---- what a card says (drawer and stack alike) ---- */
+.xa-dc, .xa-sc { color: var(--cream); background: #141312; border: 1px solid rgba(255,255,255,0.1); }
+.xa-dc p, .xa-sc p { margin: 0; }
+.xa-dc-tab { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(247,243,234,0.7); white-space: nowrap; }
+/* a lighter pink on the card (#141312): the usual one is too dark at 11px */
+.xa-dc-num { color: #e8668b; font-variant-numeric: tabular-nums; }
+.xa-dc-co { overflow: hidden; text-overflow: ellipsis; }
+.xa-dc-body { display: flex; flex-direction: column; min-height: 0; }
+.xa-dc-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.55); }
+.xa-dc-now { display: inline-flex; align-items: center; gap: 7px; color: var(--cream); }
+.xa-dc-now::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--signal); }
+.xa-dc-name { margin-top: 14px !important; font-size: clamp(1.9rem, 2.6vw, 3rem); font-weight: 700; line-height: 0.92; letter-spacing: -0.045em; text-transform: uppercase; }
+.xa-dc-name span { color: rgba(247,243,234,0.4); }
+.xa-dc-role { margin-top: 14px !important; font-size: 14px; font-weight: 600; }
+.xa-dc-desc { margin-top: 6px !important; font-size: 15px; line-height: 1.5; color: rgba(255,255,255,0.72); }
+.xa-dc-skills { display: flex; flex-wrap: wrap; gap: 6px; margin: 16px 0 0; padding: 0; list-style: none; }
+.xa-dc-skills li { padding: 5px 10px; border: 1px solid rgba(255,255,255,0.16); border-radius: 999px; font-size: 12px; color: rgba(247,243,234,0.78); }
+.xa-dc-open { margin-top: auto !important; padding-top: 18px; font: 600 12px/1.4 "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; letter-spacing: 0.16em; text-transform: uppercase; color: var(--cream); }
+
+/* ---- the drawer ---- */
+@media (min-width: 981px) {
+  /* a little more room for the drawer than the preview had */
+  #experienceView.xa-drawer-on .xa-index-grid { grid-template-columns: minmax(0, 1fr) clamp(360px, 40%, 580px); }
+  /* the preview stays in the page (its place tells experience.js the screen
+     is wide), unseen under the drawer */
+  #experienceView.xa-drawer-on .xa-preview { grid-area: 1 / 2; visibility: hidden; }
+  #experienceView.xa-drawer-on .xa-drawer {
+    display: block;
+    grid-area: 1 / 2;
+    /* not sticky: the rows are about as tall as the drawer, and a sticky 3D
+       layer costs a slow laptop a redraw on every scrolled frame */
+    position: relative;
+    height: clamp(440px, 60vh, 560px);
+    perspective: 1500px;
+    perspective-origin: 50% -30%;
+  }
+}
+.xa-drawer-rig {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  /* turns a little towards the mouse */
+  transform: rotateX(calc(var(--ty, 0) * -3deg)) rotateY(calc(var(--tx, 0) * 4deg));
+  transition: transform 0.6s cubic-bezier(.2,.7,.2,1);
+  /* the rig is a plane at depth 0, in front of the files behind: it must
+     not catch the clicks meant for their tabs */
+  pointer-events: none;
+}
+.xa-dc { pointer-events: auto; }
+.xa-dc {
+  /* each file behind sits one step higher: a step taller than a tab, so
+     the tabs (wider than a fifth, staggered) never cover each other */
+  --step: 30px;
+  --tab-h: 28px;
+  --tab-w: max(24%, 120px);
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* room above for the four files behind it, and its own tab */
+  height: calc(100% - 4 * var(--step) - var(--tab-h));
+  border-radius: 0 6px 6px 6px;
+  box-shadow: 0 -12px 40px rgba(0,0,0,0.5);
+  cursor: pointer;
+  transform: translate3d(0, calc(var(--r, 0) * -1 * var(--step) + var(--lift, 0px)), calc(var(--r, 0) * -46px));
+  transition: transform 0.65s cubic-bezier(.2,.7,.2,1), border-color 0.4s ease;
+}
+/* the files behind are darker, the further back the more */
+.xa-dc::after { content: ''; position: absolute; inset: -1px; border-radius: inherit; background: #0b0a09; opacity: calc(var(--r, 0) * 0.17); pointer-events: none; transition: opacity 0.5s ease; }
+.xa-dc .xa-dc-tab {
+  position: absolute;
+  bottom: 100%;
+  left: calc(var(--i) * (100% - var(--tab-w)) / 4 - 1px);
+  width: var(--tab-w);
+  height: var(--tab-h);
+  box-sizing: border-box;
+  padding: 0 10px;
+  background: inherit;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 0;
+  border-radius: 6px 6px 0 0;
+}
+.xa-dc .xa-dc-tab::after { content: ''; position: absolute; inset: 0 -1px; border-radius: inherit; background: #0b0a09; opacity: calc(var(--r, 0) * 0.17); pointer-events: none; transition: opacity 0.5s ease; }
+.xa-dc .xa-dc-body { position: absolute; inset: 0; padding: clamp(22px, 2.2vw, 32px); overflow: hidden; transition: opacity 0.35s ease; }
+/* a file behind shows only its tab and its edge, no half-hidden lines */
+.xa-dc:not(.is-front) .xa-dc-body { opacity: 0; }
+.xa-dc.is-front { border-color: rgba(255,255,255,0.18); }
+.xa-dc.is-front .xa-dc-tab { border-color: rgba(255,255,255,0.18); color: var(--cream); }
+/* the file in front: a pink edge along its top */
+.xa-dc.is-front::before { content: ''; position: absolute; z-index: 1; left: -1px; right: -1px; top: -1px; height: 2px; background: linear-gradient(90deg, var(--signal), transparent 70%); }
+.xa-dc:not(.is-front):hover { --lift: -8px; }
+.xa-dc .xa-dc-open .xa-pink { display: inline-block; transition: transform 0.45s cubic-bezier(.2,.7,.2,1); }
+.xa-dc.is-front:hover .xa-dc-open .xa-pink { transform: translateX(6px); }
+/* a low laptop screen: a little tighter, so the longest file still fits */
+@media (min-width: 981px) and (max-height: 860px) {
+  .xa-dc { --step: 27px; --tab-h: 25px; }
+  .xa-dc-skills { margin-top: 12px; }
+  .xa-dc-desc { font-size: 14px; }
+}
+
+/* ---- the stack (≤ 980px) ---- */
+@media (max-width: 980px) {
+  #experienceView.xa-drawer-on .xa-rows { display: none; }
+  #experienceView.xa-drawer-on .xa-stack { display: block; }
+}
+/* clip: a card swiped away leaves the stack, never the screen */
+.xa-stack { overflow: hidden; margin: 0 -4px; padding: 0 4px; }
+.xa-stack-deck { display: grid; padding-top: 24px; touch-action: pan-y; }
+.xa-sc {
+  grid-area: 1 / 1;
+  position: relative;
+  z-index: calc(10 - var(--d, 0));
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  transform-origin: 50% 0;
+  /* the next two cards peek out above the one on top */
+  transform: translateX(var(--dx, 0px)) translateY(calc(min(var(--d, 0), 2) * -12px)) scale(calc(1 - min(var(--d, 0), 2) * 0.05));
+  opacity: clamp(0, 3 - var(--d, 0), 1);
+  transition: transform 0.5s cubic-bezier(.2,.7,.2,1), opacity 0.4s ease;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.xa-sc:not(.is-front)::after { content: ''; position: absolute; inset: -1px; border-radius: inherit; background: #0b0a09; opacity: 0.45; pointer-events: none; }
+.xa-sc.is-gone { opacity: 0; transform: translateX(-108%); pointer-events: none; }
+.xa-sc.is-dragging { transition: none; }
+.xa-sc .xa-dc-tab { padding: 14px 18px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+.xa-sc .xa-dc-body { flex: 1; padding: 20px 18px 18px; }
+.xa-sc.is-front { border-color: rgba(255,255,255,0.18); }
+.xa-sc .xa-dc-open {
+  align-self: flex-start;
+  display: inline-flex;
+  gap: 10px;
+  align-items: baseline;
+  min-height: 44px;
+  margin-top: auto;
+  padding: 18px 0 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.xa-sc .xa-dc-open > span:first-child { border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 6px; }
+.xa-sc .xa-dc-open:focus { outline: none; }
+.xa-sc .xa-dc-open:focus-visible { outline: 1px solid var(--signal); outline-offset: 4px; }
+.xa-stack-ctrl { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; }
+.xa-stack-btn {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 1px solid rgba(255,255,255,0.22);
+  border-radius: 50%;
+  background: none;
+  color: var(--cream);
+  font-size: 18px;
+  cursor: pointer;
+  transition: border-color 0.3s ease, opacity 0.3s ease;
+}
+.xa-stack-btn:disabled { opacity: 0.3; cursor: default; }
+.xa-stack-btn:not(:disabled):active { border-color: var(--signal); }
+.xa-stack-btn:focus { outline: none; }
+.xa-stack-btn:focus-visible { outline: 1px solid var(--signal); outline-offset: 3px; }
+.xa-stack-status { font-size: 12px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(247,243,234,0.8); text-align: center; }
+
+@media (prefers-reduced-motion: reduce) {
+  .xa-drawer-rig, .xa-dc, .xa-dc::after, .xa-dc .xa-dc-tab::after, .xa-dc .xa-dc-body, .xa-sc, .xa-stack-btn, .xa-dc .xa-dc-open .xa-pink { transition: none; }
+}
+/* ==========================================================
+   end EXPERIENCE
    ========================================================== */

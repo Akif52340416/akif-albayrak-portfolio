@@ -95,20 +95,26 @@
   var B5 = 560; // introduction fully closed, chapter break
 
   // ---- the chapter break: one scene, OPLEIDING — NU / MBO 4, on the same
-  // dark veil that already closes the introduction
-  var NC = 670;  // education settled
-  var N5 = 730;  // education exits -> canvas clears
+  // dark veil that already closes the introduction. Each next scene starts
+  // while the one before is nearly gone (under 0.3), never while it can
+  // still be read, so no stretch of the page is empty for long; every
+  // scene keeps the length of its own motion.
+  var E0 = 490;  // education starts rising, while the veil closes
+  var NC = 600;  // education settled
+  var N5 = 660;  // education exits -> canvas clears
 
   // ---- STILL BUILDING. is the bridge: its own clean state first, then it
   // transforms into the three-project gallery (the evidence, with the link
   // to all work right under it), then closes into the final actions and
   // footer. VIEW ALL WORK no longer has a scene of its own (that was 80vh).
-  var S1 = 830;  // STILL BUILDING. settled, on its own
-  var S2 = 990;  // transform complete: heading shrunk, gallery fully composed
-  var S3 = 1130; // gallery hold ends
-  var S4 = 1200; // gallery cleared
-  var S5 = 1250; // final actions settled
-  var S6 = 1310; // footer settled
+  var S0 = 635;  // STILL BUILDING. starts coming in, as education leaves
+  var S1 = 735;  // STILL BUILDING. settled, on its own
+  var S2 = 895;  // transform complete: heading shrunk, gallery fully composed
+  var S3 = 1035; // gallery hold ends
+  var S4 = 1105; // gallery cleared
+  var F0 = 1080; // final actions start, as the gallery clears
+  var S5 = 1155; // final actions settled
+  var S6 = 1215; // footer settled
 
   var storyCurrent = document.getElementById("storyCurrent");
 
@@ -212,7 +218,7 @@
     // ---- the chapter break on the same dark veil that already closed the
     // introduction: OPLEIDING — NU / MBO 4 enters once 04 has gone (e4
     // ends at B5), holds, then leaves the canvas clear for STILL BUILDING.
-    var eNC = easeInOutCubic(clamp01((scrollVh - B5) / (NC - B5)));  // chapter break -> education
+    var eNC = easeInOutCubic(clamp01((scrollVh - E0) / (NC - E0)));  // chapter break -> education
     var eN5 = easeInOutCubic(clamp01((scrollVh - NC) / (N5 - NC)));  // education exits
     crossfade(storyCurrent, eNC, eN5);
 
@@ -221,10 +227,10 @@
     // statement arrives on its own first, holds, then transforms — scale
     // and position shift as the three real projects enter beneath it.
     // Statement -> evidence, one continuous composition, not a hard cut.
-    var eA = easeInOutCubic(clamp01((scrollVh - N5) / (S1 - N5))); // clear canvas -> STILL BUILDING. enters
+    var eA = easeInOutCubic(clamp01((scrollVh - S0) / (S1 - S0))); // clear canvas -> STILL BUILDING. enters
     var eB = easeInOutCubic(clamp01((scrollVh - S1) / (S2 - S1))); // STILL BUILDING. transforms -> gallery composed
     var eC = easeInOutCubic(clamp01((scrollVh - S3) / (S4 - S3))); // gallery hold ends -> clears
-    var eD = easeInOutCubic(clamp01((scrollVh - S4) / (S5 - S4))); // canvas clear -> final actions
+    var eD = easeInOutCubic(clamp01((scrollVh - F0) / (S5 - F0))); // gallery clearing -> final actions
     var eE = easeInOutCubic(clamp01((scrollVh - S5) / (S6 - S5))); // final actions -> footer
 
     var sbOpacity = clamp01(eA);
@@ -348,4 +354,44 @@
   if (!prefersReduced) {
     window.addEventListener("pointermove", onPointerMove);
   }
+
+  // ---- the keyboard through the story. Home's links only exist (are not
+  // inert) while their scene is on screen, so from the heading (where the
+  // skip link puts the focus) the next Tab found nothing and left the page.
+  // Now Tab / Shift+Tab from the heading or one of Home's links takes the
+  // story to the scene of the next link, and focuses that link once it can
+  // be seen. A link that is already there gets the browser's own Tab. ----
+  var homeView = document.getElementById("homeView");
+  var homeHeading = homeView ? homeView.querySelector("h1") : null;
+  var stops = [];
+  function stopsAt(el, vh) { if (el) [].forEach.call(el.matches("a") ? [el] : el.querySelectorAll("a"), function (a) { stops.push({ el: a, vh: vh }); }); }
+  stopsAt(teaser, B4);                      // Uitgelicht werk: with 04
+  stopsAt(galleryProjects, (S2 + S3) / 2);  // the three projects + all work
+  stopsAt(finalNav, S6);                    // about me / let's talk ...
+  stopsAt(finalFooter, S6);                 // ... and the footer, settled together
+  function reachable(el) { return !el.closest("[inert]"); }
+  var pending = 0;
+  function goTo(stop) {
+    window.scrollTo(0, stop.vh / 100 * window.innerHeight);
+    var t0 = performance.now();
+    cancelAnimationFrame(pending);
+    (function wait() {
+      if (document.body.classList.contains("subpage")) return;
+      if (reachable(stop.el)) { stop.el.focus({ preventScroll: true }); return; }
+      if (performance.now() - t0 < 2500) pending = requestAnimationFrame(wait);
+    })();
+  }
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Tab" || e.altKey || e.ctrlKey || e.metaKey || document.body.classList.contains("subpage")) return;
+    var a = document.activeElement, i = -1;
+    if (a !== homeHeading) {
+      for (var k = 0; k < stops.length; k++) if (stops[k].el === a) i = k;
+      if (i < 0) return;
+    }
+    var next = stops[i + (e.shiftKey ? -1 : 1)];
+    // the first link back, or the last one on: the browser's own way out
+    if (!next || reachable(next.el)) return;
+    e.preventDefault();
+    goTo(next);
+  });
 })();

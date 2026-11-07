@@ -59,7 +59,58 @@
 
     window.scrollTo(0, 0);
     syncScrolled();
+    current = hash;
+    labels();
+    // a new page: focus goes to its heading, so a screen reader announces
+    // it and the next Tab starts on this page. Not on the first load (the
+    // browser starts at the top itself), and never with a scroll.
+    if (routed) focusHeading();
+    routed = true;
   }
+
+  // ---- the open page's name in the title, and the labels around the pages,
+  // in the page's language (each page script sets <html lang>) ----
+  var current = "#/", routed = false;
+  var TITLES = {
+    "#/": ["Akif Albayrak — Software Development", "Akif Albayrak — Software Development"],
+    "#/work": ["Werk — Akif Albayrak", "Work — Akif Albayrak"],
+    "#/work/van-der-hammen": ["Van der Hammen Gym — Akif Albayrak", "Van der Hammen Gym — Akif Albayrak"],
+    "#/work/unite-reintegratie": ["Unite Re-integratie — Akif Albayrak", "Unite Re-integratie — Akif Albayrak"],
+    "#/work/talia": ["Talia — Akif Albayrak", "Talia — Akif Albayrak"],
+    "#/about": ["Over mij — Akif Albayrak", "About me — Akif Albayrak"],
+    "#/experience": ["Ervaring — Akif Albayrak", "Experience — Akif Albayrak"],
+    "#/contact": ["Contact — Akif Albayrak", "Contact — Akif Albayrak"]
+  };
+  var skipLink = document.getElementById("skipLink");
+  var nav = document.querySelector(".nav");
+  function labels() {
+    var en = document.documentElement.lang === "en" ? 1 : 0;
+    var t = (TITLES[current] || TITLES["#/"])[en];
+    if (document.title !== t) document.title = t;
+    if (skipLink) skipLink.textContent = en ? "Skip to content" : "Naar de inhoud";
+    if (nav) nav.setAttribute("aria-label", en ? "Main navigation" : "Hoofdnavigatie");
+  }
+  if ("MutationObserver" in window) {
+    new MutationObserver(labels).observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
+  }
+
+  function openView() {
+    for (var i = 0; i < views.length; i++) if (views[i] && !views[i].hidden) return views[i];
+    return null;
+  }
+  function focusHeading() {
+    var view = openView();
+    var h = view && view.querySelector("h1");
+    if (!h) return;
+    if (!h.hasAttribute("tabindex")) h.setAttribute("tabindex", "-1");
+    h.focus({ preventScroll: true });
+  }
+  // the skip link: to the open page's heading (following "#main" itself
+  // would change the hash, which is a route)
+  if (skipLink) skipLink.addEventListener("click", function (e) {
+    e.preventDefault();
+    focusHeading();
+  });
 
   // the nav's backdrop on subpages (see body.subpage .nav::before) only
   // shows once the page has moved, so every page opening stays untouched

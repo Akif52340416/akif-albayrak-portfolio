@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Akif Albayrak</title>
+<title>Akif Albayrak — Software Development</title>
+<meta name="description" content="Portfolio van Akif Albayrak, student Software Development (MBO 4, Koning Willem I College): websites, stages in IT-support, softwareontwikkeling en automatisering, en contact." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link
@@ -35,7 +36,11 @@
 </head>
 <body>
 
-<nav class="nav">
+<!-- skip link: the first Tab stop; router.js moves the focus to the open
+     page's heading (a plain #main would be read as a route) -->
+<a class="skip-link" id="skipLink" href="#main">Naar de inhoud</a>
+
+<nav class="nav" aria-label="Hoofdnavigatie">
   <div>
     <a href="#/work">Work</a>
     <a href="#/about">About</a>
@@ -46,6 +51,9 @@
 </nav>
 
 <div class="identity-mark" id="identityMark"><a href="#/" class="identity-link">AKIF<span class="mark-sub">ALBAYRAK</span></a></div>
+
+<!-- every page view lives in <main>; only one is shown at a time -->
+<main id="main" tabindex="-1">
 
 <div id="homeView" class="page-view">
 
@@ -187,7 +195,7 @@
     <div class="gallery-info">
       <div class="gallery-index">01</div>
       <div class="gallery-name">VAN DER HAMMEN GYM</div>
-      <div class="gallery-desc">Website voor een fitness- en bokschool in Waalwijk.</div>
+      <div class="gallery-desc">Website voor een fitness- en boksschool in Waalwijk.</div>
       <span class="gallery-link">Bekijk case <span aria-hidden="true">&rarr;</span></span>
     </div>
   </a>
@@ -241,7 +249,7 @@
 </div>
 
 <!-- scroll room: phase 1+2 (opening -> introduction) + phase 3 (introduction -> story continues: next chapter -> current -> next -> keep exploring) + close (canvas clears -> STILL BUILDING. -> transforms into three-project gallery -> view all work -> final actions -> footer). +100vh buffer at the end: max scrollY is always (documentHeight - viewportHeight), so the spacer must exceed the final breakpoint (S6=2120vh) by a full viewport height or the last state is never fully reachable. -->
-<div style="height: 1450vh;"></div>
+<div style="height: 1355vh;"></div>
 
 </div><!-- /homeView -->
 
@@ -265,7 +273,7 @@
           <span class="work-index">01</span>
           <span class="work-body">
             <span class="work-name">Van der Hammen Gym</span>
-            <span class="work-meta"><span>Fitness- en bokschool — Waalwijk</span><span class="work-sep"> · </span><span>Design &amp; Development</span><span class="work-sep"> · </span><span>HTML · CSS · JavaScript</span></span>
+            <span class="work-meta"><span>Fitness- en boksschool — Waalwijk</span><span class="work-sep"> · </span><span>Design &amp; Development</span><span class="work-sep"> · </span><span>HTML · CSS · JavaScript</span></span>
           </span>
           <span class="work-arrow"><span>Bekijk case</span> <b aria-hidden="true">→</b></span>
         </a>
@@ -870,7 +878,7 @@
         <span class="cs-next-text">
           <span class="cs-next-label">Volgend project — 01</span>
           <span class="cs-next-name">Van der Hammen <span class="cs-nowrap">Gym<span class="cs-arrow">→</span></span></span>
-          <span class="cs-next-meta">Fitness- en bokschool — Waalwijk</span>
+          <span class="cs-next-meta">Fitness- en boksschool — Waalwijk</span>
         </span>
         <span class="cs-next-thumb"><img data-cs-clone="vdhHeroShot" alt="" /></span>
       </a>
@@ -1412,7 +1420,7 @@
 
       <div class="oc-hero-foot">
         <!-- the status: a graphic detail; its dot is where the channel starts -->
-        <p class="oc-status oc-fade" style="--d:.7s"><span class="oc-status-dot" id="ocStatusDot" aria-hidden="true"></span><span class="oc-status-a" data-i18n="ocStatusA">Kanaal open</span><span class="oc-status-b" data-i18n="ocStatusB">Klaar voor je bericht</span></p>
+        <p class="oc-status oc-fade" style="--d:.7s"><span class="oc-status-dot" id="ocStatusDot" aria-hidden="true"></span><span class="oc-status-a" data-i18n="ocStatusA">Kanaal open</span><span class="oc-status-b" data-i18n="ocStatusB">Je bericht via je eigen e-mail</span></p>
 
         <div class="oc-hero-side oc-fade" style="--d:.85s">
           <p class="oc-intro" data-i18n="ocIntro">Een idee, een project of gewoon kennismaken? Stuur me gerust een bericht.</p>
@@ -1445,7 +1453,7 @@
       <!-- the channel: from the status dot down along the questions -->
       <span class="oc-channel" id="ocChannel" aria-hidden="true"><span class="oc-channel-fill" id="ocChannelFill"></span><span class="oc-channel-head"></span></span>
 
-      <h2 class="ab-sr" id="ocFormTitle" data-i18n="ocFormTitle">Stuur een bericht</h2>
+      <h2 class="ab-sr" id="ocFormTitle" data-i18n="ocFormTitle">Stel je bericht op</h2>
 
       <form class="oc-form" id="ocForm" novalidate aria-labelledby="ocFormTitle">
 
@@ -1499,13 +1507,13 @@
               <p class="oc-comp-body is-empty" id="ocCompBody">Je bericht verschijnt hier terwijl je typt.</p>
               <p class="oc-comp-sign"><span data-i18n="ocSign">Groet,</span><br><span id="ocCompSign" class="is-empty">…</span></p>
             </div>
-            <p class="oc-comp-foot"><span class="oc-comp-draft" data-i18n="ocDraft">Concept · nog niet verstuurd</span></p>
+            <p class="oc-comp-foot"><span class="oc-comp-draft" data-i18n="ocDraft">Concept · je verstuurt het zelf per e-mail</span></p>
           </div>
         </aside>
 
         <div class="oc-actions">
-          <button type="submit" class="oc-send"><span data-i18n="ocSend">Verstuur bericht</span><span class="oc-send-arrow" aria-hidden="true">&rarr;</span></button>
-          <p class="oc-pending" id="ocPending"><span class="oc-pending-dot" aria-hidden="true"></span><span data-i18n="ocPending">Dit formulier is nog niet aangesloten: berichten worden nog niet verstuurd. Mailen kan altijd.</span></p>
+          <button type="submit" class="oc-send"><span data-i18n="ocSend">Bericht klaarzetten</span><span class="oc-send-arrow" aria-hidden="true">&rarr;</span></button>
+          <p class="oc-pending" id="ocPending"><span class="oc-pending-dot" aria-hidden="true"></span><span data-i18n="ocPending">Dit formulier verstuurt zelf niets. Daarna open je je bericht in je eigen e-mailprogramma, of kopieer je het.</span></p>
           <div class="oc-status-msg" id="ocStatusMsg" role="status" aria-live="polite" tabindex="-1" hidden></div>
           <!-- after a valid submit (nothing is sent): two things that really
                happen — the message opened in the visitor's own mail program
@@ -1521,6 +1529,8 @@
 
   </div>
 </div>
+
+</main>
 
 <footer class="site-footer" id="siteFooter" aria-labelledby="sfTitle">
   <div class="sf-shell">
@@ -1572,6 +1582,7 @@
 <script src="assets/js/case-motion.js"></script>
 
 <script src="assets/js/experience.js"></script>
+<script src="assets/js/experience-motion.js"></script>
 
 <script src="assets/js/contact.js"></script>
 
