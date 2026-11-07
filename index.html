@@ -103,8 +103,10 @@
     color: var(--cream);
   }
 
-  .nav a { color: inherit; text-decoration: none; margin-right: 28px; opacity: 0.9; }
-  .nav a:last-child { margin-right: 0; }
+  /* the padding is a touch area (44px high), cancelled out by the margins so
+     the links sit exactly where they did */
+  .nav a { color: inherit; text-decoration: none; padding: 13px 6px; margin: -13px 22px -13px -6px; opacity: 0.9; }
+  .nav a:last-child { margin-right: -6px; }
   .nav .lang { opacity: 0.75; }
 
 
@@ -156,6 +158,19 @@
     .name-vertical-group { left: 62%; top: 18%; }
   }
 
+  /* visually hidden, still read by screen readers and search engines */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
   .teaser {
     position: fixed;
     z-index: 10;
@@ -168,7 +183,16 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    text-decoration: none;
+    /* a 44px touch area around the same visual position */
+    padding: 14px 8px;
+    margin: -14px -8px;
+    pointer-events: none;
   }
+  .teaser.is-live { pointer-events: auto; }
+  .teaser span { transition: transform 0.25s; }
+  .teaser:hover span, .teaser:focus-visible span { transform: translateX(3px); }
+  .teaser:focus-visible { outline: 1px solid var(--signal); outline-offset: -6px; }
 
   /* ---- info line, bottom-left, always present ---- */
   .info {
@@ -296,7 +320,7 @@
     display: flex;
     align-items: center;
     gap: 9px;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.12em;
     color: rgba(255,255,255,0.85);
     text-shadow: 0 1px 10px rgba(0,0,0,0.65);
@@ -595,68 +619,76 @@
 
   .final-baseline span {
     color: rgba(255,255,255,0.32);
-    font-size: 11px;
+    font-size: 12px;
     
     letter-spacing: 0.14em;
     text-transform: uppercase;
   }
 
   @media (max-width: 780px) {
-    .final-nav { left: 20px; right: 20px; align-items: center; bottom: 22%; gap: 14px; }
+    /* phones and tablets: the two actions and the footer form one block
+       around the middle of the screen, instead of sitting low with the top
+       two thirds empty. The actions end just above the centre line, the
+       footer starts just below it. */
+    .final-nav { left: 20px; right: 20px; align-items: center; bottom: calc(50% + 6px); gap: 14px; }
     .final-nav a { width: min(80vw, 320px); font-size: clamp(1.15rem, 5vw, 1.4rem); }
-    .final-footer { left: 20px; right: 20px; bottom: 5%; gap: 12px; }
+    .final-footer { left: 20px; right: 20px; top: calc(50% + 34px); bottom: auto; gap: 12px; }
     .final-socials { justify-content: center; }
     .final-baseline { flex-direction: column; gap: 6px; text-align: center; border-top: none; padding-top: 2px; }
   }
 
   /* ---- three-project gallery: STILL BUILDING's evidence. One composition,
-     not a product grid — the middle project sits slightly forward, the
-     outer two slightly back, real screenshots in the approved laptop
-     styling (reused verbatim from the Work-page device component). ---- */
+     not a product grid: three real screenshots in the laptop styling of the
+     Work page, the middle project slightly forward. The projects use the
+     space under the shrunken heading, and the link to all work sits right
+     under them, so no separate scene is needed for it. Each project carries
+     the accent its case study and Work row use. ---- */
   .gallery-projects {
     position: fixed;
     z-index: 9;
     inset: 0;
     display: flex;
-    align-items: center;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    align-content: center;
     justify-content: center;
-    gap: clamp(6px, 2.6vw, 40px);
-    padding: 0 4vw;
+    column-gap: clamp(20px, 3vw, 48px);
+    row-gap: clamp(22px, 4vh, 40px);
+    padding: clamp(150px, 24vh, 260px) 4vw clamp(40px, 7vh, 80px);
   }
 
   .gallery-item {
+    --acc: var(--signal);
     display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
     text-decoration: none;
     color: inherit;
-    width: min(27vw, 34vh);
-    max-width: clamp(240px, 20vw, 380px);
+    width: min(29vw, 44vh, 440px);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s;
   }
+  .gallery-item--vdh { --acc: #C0392B; }
+  .gallery-item--unite { --acc: #3B82F6; margin-top: -18px; z-index: 2; }
+  .gallery-item--talia { --acc: #C98A5D; }
 
-  .gallery-projects.is-live .gallery-item { pointer-events: auto; }
-  .gallery-projects.is-live:hover .gallery-item:not(:hover) { opacity: 0.55 !important; }
-
-  .gallery-item:nth-child(2) { z-index: 2; }
-  .gallery-item:nth-child(2) .gallery-laptop { transform: translateY(-14px) scale(1.08); }
-  .gallery-item:nth-child(1) .gallery-laptop { transform: translateY(8px) scale(0.94); }
-  .gallery-item:nth-child(3) .gallery-laptop { transform: translateY(8px) scale(0.94); }
-  .gallery-item:hover .gallery-laptop { transform: translateY(-4px) scale(1.1) !important; }
+  .gallery-projects.is-live .gallery-item,
+  .gallery-projects.is-live .gallery-all a { pointer-events: auto; }
+  .gallery-projects.is-live:has(.gallery-item:hover) .gallery-item:not(:hover) { opacity: 0.5 !important; }
+  .gallery-item:focus-visible { outline: 1px solid var(--signal); outline-offset: 10px; }
 
   .gallery-laptop {
     width: 100%;
-    transition: transform 0.3s ease;
+    transition: transform 0.35s cubic-bezier(.2,.7,.2,1);
   }
+  .gallery-item:hover .gallery-laptop,
+  .gallery-item:focus-visible .gallery-laptop { transform: translateY(-6px); }
 
   .gallery-laptop-shell {
     background: linear-gradient(180deg, #4b4b4e, #232326);
-    border-radius: 7px 7px 3px 3px;
-    padding: 6px 6px 0;
-    box-shadow: 0 22px 44px rgba(0,0,0,0.55);
+    border-radius: 8px 8px 3px 3px;
+    padding: 7px 7px 0;
+    box-shadow: 0 26px 54px rgba(0,0,0,0.6);
   }
 
   .gallery-screen {
@@ -688,92 +720,115 @@
   .gallery-item--talia .gallery-screen img { object-position: center 48%; }
 
   .gallery-laptop-base {
-    height: 8px;
+    height: 9px;
     background: linear-gradient(180deg, #3a3a3d, #19191b);
     clip-path: polygon(2.5% 0%, 97.5% 0%, 100% 100%, 0% 100%);
   }
 
-  .gallery-info { margin-top: 16px; }
+  /* number + name on one line, the description and the link under the name */
+  .gallery-info {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 14px;
+    row-gap: 6px;
+    align-items: baseline;
+    margin-top: 22px;
+  }
 
   .gallery-index {
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.12em;
-    margin-bottom: 6px;
+    color: var(--acc);
+    font-variant-numeric: tabular-nums;
   }
-  .gallery-item--vdh .gallery-index { color: var(--signal); }
-  .gallery-item--unite .gallery-index { color: #5b8def; }
-  .gallery-item--talia .gallery-index { color: #d98aa3; }
 
   .gallery-name {
     color: var(--cream);
-    font-size: clamp(0.95rem, 1.6vw, 1.15rem);
+    font-size: clamp(1.05rem, 1.55vw, 1.4rem);
     font-weight: 600;
-    letter-spacing: -0.005em;
-    margin-bottom: 6px;
+    letter-spacing: -0.01em;
   }
 
   .gallery-desc {
-    color: rgba(255,255,255,0.55);
-    font-size: 11.5px;
-    letter-spacing: 0.01em;
-    margin-bottom: 4px;
-  }
-
-  .gallery-tech {
-    color: rgba(255,255,255,0.35);
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    margin-bottom: 8px;
+    grid-column: 2;
+    color: rgba(255,255,255,0.6);
+    font-size: 14px;
+    line-height: 1.45;
   }
 
   .gallery-link {
+    grid-column: 2;
+    justify-self: start;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
+    margin-top: 8px;
     color: var(--cream);
-    font-size: 11.5px;
-    letter-spacing: 0.04em;
-    border-bottom: 1px solid rgba(255,255,255,0.28);
-    padding-bottom: 2px;
-    transition: transform 0.2s;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
   }
-  .gallery-link span { color: var(--signal); transition: transform 0.2s; }
-  .gallery-item:hover .gallery-link span { transform: translateX(3px); }
+  .gallery-link span { color: var(--acc); transition: transform 0.25s; }
+  .gallery-item:hover .gallery-link span,
+  .gallery-item:focus-visible .gallery-link span { transform: translateX(4px); }
+
+  /* the link to the whole Work page, right under the three projects */
+  .gallery-all { flex-basis: 100%; display: flex; justify-content: center; }
+  .gallery-all a {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    color: var(--cream);
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255,255,255,0.35);
+    pointer-events: none;
+    transition: border-color 0.25s;
+  }
+  .gallery-all a span { color: var(--signal); transition: transform 0.25s; }
+  .gallery-all a:hover { border-color: rgba(255,255,255,0.8); }
+  .gallery-all a:hover span, .gallery-all a:focus-visible span { transform: translateX(4px); }
+  .gallery-all a:focus-visible { outline: 1px solid var(--signal); outline-offset: 6px; }
 
   @media (max-width: 780px) {
-    .gallery-projects { flex-direction: column; gap: 28px; overflow-y: auto; padding: 6vh 24px; }
-    .gallery-item { width: min(70vw, 300px); max-width: 300px; }
-    .gallery-item:nth-child(1) .gallery-laptop,
-    .gallery-item:nth-child(2) .gallery-laptop,
-    .gallery-item:nth-child(3) .gallery-laptop { transform: none; }
+    /* phones and tablets: one compact row per project (screen left, text
+       right) under the shrunken heading, so all three fit at a readable size
+       and keep their description */
+    .gallery-projects { flex-direction: column; flex-wrap: nowrap; justify-content: flex-start; align-items: stretch; align-content: stretch;
+      gap: 0; overflow-y: auto; padding: 24vh 20px 4vh; }
+    .gallery-item { width: 100%; flex-direction: row; align-items: center; gap: 16px; padding: 14px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.12); }
+    .gallery-item:first-child { border-top: 1px solid rgba(255,255,255,0.12); }
+    .gallery-item--unite { margin-top: 0; }
+    .gallery-laptop { width: 44%; max-width: 300px; flex: none; }
+    .gallery-laptop-shell { padding: 4px 4px 0; border-radius: 5px 5px 2px 2px; box-shadow: 0 12px 24px rgba(0,0,0,0.5); }
+    .gallery-laptop-base { height: 5px; }
+    .gallery-info { margin-top: 0; grid-template-columns: 1fr; row-gap: 4px; }
+    .gallery-desc, .gallery-link { grid-column: 1; }
+    .gallery-desc { font-size: 13px; }
+    .gallery-link { margin-top: 4px; }
+    /* in the column, a 100% basis would mean 100% height */
+    .gallery-all { flex-basis: auto; margin-top: 18px; }
   }
 
-  /* ---- View all work: the clear close of the curated gallery ---- */
-  .work-close {
-    position: fixed;
-    z-index: 9;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    pointer-events: none;
+  /* short phones (e.g. 375 × 667): a little less room above and between */
+  @media (max-width: 780px) and (max-height: 740px) {
+    .gallery-projects { padding-top: 21vh; }
+    .gallery-item { padding: 10px 0; }
+    .gallery-laptop { width: 38%; }
   }
-  .work-close.is-live { pointer-events: auto; }
-  .work-close a {
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    color: var(--cream);
-    font-size: clamp(1.5rem, 4vw, 2.4rem);
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    text-decoration: none;
-    border-bottom: 1px solid rgba(255,255,255,0.3);
-    padding-bottom: 6px;
-  }
-  .work-close a span { color: var(--signal); }
 
+  /* very wide screens: the gallery grows with the screen, type along */
+  @media (min-width: 2200px) {
+    .gallery-item { width: min(29vw, 44vh, 620px); }
+    .gallery-index { font-size: 13px; }
+    .gallery-name { font-size: 1.6rem; }
+    .gallery-desc { font-size: 15px; }
+    .gallery-link, .gallery-all a { font-size: 14px; }
+  }
   /* ==========================================================
      STORY, continued — after 04 IMPROVEMENT the introduction is
      done but Akif's story is not. This plays out on the same dark
@@ -870,6 +925,9 @@
     text-decoration: none;
     pointer-events: auto;
     cursor: pointer;
+    /* touch area of 44px, without moving the mark */
+    padding: 14px 8px;
+    margin: -14px -8px;
   }
 
   body.subpage {
@@ -948,99 +1006,113 @@
     margin: 0 0 clamp(48px, 6vw, 84px);
   }
 
+  /* the heading row: title left, the count right */
+  .work-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin: 0 0 clamp(36px, 5vw, 64px); }
+  #workView .work-head .subpage-title { margin: 0; }
+  .work-count { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.45); white-space: nowrap; padding-bottom: 10px; }
+
+  /* ---- the index: three large rows, the preview of the project in focus
+     beside them. Each project carries its own accent (the one its case
+     study already uses), only on the number and the rule under the row. */
   .work-overview {
-    display: flex;
-    align-items: flex-start;
-    gap: clamp(32px, 5vw, 100px);
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: clamp(24px, 4vw, 64px);
+    align-items: stretch;
   }
 
-  .work-list-col {
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 min(36vw, 460px);
-    min-width: 0;
-  }
+  .work-list-col { min-width: 0; }
 
   .work-list {
     display: flex;
     flex-direction: column;
     border-top: 1px solid rgba(255,255,255,0.14);
+    container-type: inline-size;
   }
 
   .work-entry {
-    display: flex;
-    align-items: baseline;
-    gap: 22px;
-    padding: clamp(28px, 3.4vw, 46px) 16px;
-    margin: 0 -16px;
+    --acc: var(--signal);
+    position: relative;
+    display: grid;
+    grid-template-columns: 3.2ch 1fr auto;
+    column-gap: clamp(14px, 2vw, 28px);
+    row-gap: 12px;
+    padding: clamp(22px, 2.6vw, 34px) 0;
     border-bottom: 1px solid rgba(255,255,255,0.14);
-    border-top: none;
-    border-left: none;
-    border-right: none;
     text-decoration: none;
     color: var(--cream);
     cursor: pointer;
-    background: transparent;
-    border-radius: 4px;
-    width: 100%;
-    text-align: left;
-    font: inherit;
-    -webkit-appearance: none;
-    appearance: none;
-    transition: background 0.25s ease;
   }
+  /* the accent rule grows under the row in focus */
+  .work-entry::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: -1px;
+    height: 1px;
+    background: var(--acc);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.5s cubic-bezier(.2,.7,.2,1);
+  }
+  .work-entry.is-active::after { transform: scaleX(1); }
 
-  .work-entry:hover,
-  .work-entry:focus-visible,
-  .work-entry.is-active {
-    background: rgba(255,255,255,0.05);
-  }
-
-  .work-entry:focus-visible {
-    outline: 1px solid var(--signal);
-    outline-offset: -1px;
-  }
+  .work-entry:focus-visible { outline: 1px solid var(--signal); outline-offset: 6px; }
 
   .work-entry .work-index {
-    font-size: 15px;
-    color: rgba(255,255,255,0.35);
+    grid-column: 1; grid-row: 1;
+    align-self: start;
+    padding-top: 0.55em;
+    font-size: 14px;
+    color: rgba(255,255,255,0.55);
     font-variant-numeric: tabular-nums;
-    flex: none;
-    width: 2.4ch;
-    transition: color 0.25s ease;
+    transition: color 0.3s ease;
   }
+  .work-entry.is-active .work-index { color: var(--acc); }
 
-  .work-entry.is-active .work-index { color: var(--signal); }
-
-  .work-entry .work-body { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+  .work-entry .work-body { display: contents; }
 
   .work-entry .work-name {
-    font-size: clamp(1.3rem, 2.6vw, 1.95rem);
+    grid-column: 2 / 4; grid-row: 1;
+    font-size: clamp(2rem, 8cqi, 4.6rem);
     font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    white-space: nowrap;
+    transition: opacity 0.35s ease, transform 0.45s cubic-bezier(.2,.7,.2,1);
   }
 
   .work-entry .work-meta {
-    font-size: clamp(13px, 1vw, 15px);
-    color: rgba(255,255,255,0.5);
+    grid-column: 2; grid-row: 2;
+    font-size: 14px;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.55);
+    transition: opacity 0.35s ease;
   }
-
-  .work-list-col .back-link { margin-top: clamp(28px, 4vw, 44px); align-self: flex-start; }
+  .work-meta .work-sep { color: rgba(255,255,255,0.3); }
 
   .work-entry .work-arrow {
-    color: var(--signal);
-    font-size: 22px;
-    flex: none;
+    grid-column: 3; grid-row: 2;
+    align-self: center;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--cream);
     opacity: 0;
-    transform: translateX(-4px);
-    transition: opacity 0.25s ease, transform 0.25s ease;
+    transform: translateX(-6px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
   }
+  .work-arrow b { color: var(--acc); font-weight: 400; font-size: 20px; }
 
-  .work-entry:hover .work-arrow,
-  .work-entry:focus-visible .work-arrow,
-  .work-entry.is-active .work-arrow {
-    opacity: 1;
-    transform: translateX(0);
-  }
+  /* one project in focus, the others step back — only while the pointer or
+     the keyboard is in the list (at rest, nothing is dimmed) */
+  .work-list.has-focus .work-entry:not(.is-active) .work-name { opacity: 0.3; }
+  .work-list.has-focus .work-entry:not(.is-active) .work-meta { opacity: 0.45; }
+  .work-list.has-focus .work-entry.is-active .work-name { transform: translateX(12px); }
+  .work-entry.is-active .work-arrow { opacity: 1; transform: none; }
 
   .work-entry--soon { display: none; } /* legacy — no longer used */
 
@@ -1050,21 +1122,21 @@
      stack (computed from their real widths/margins below) plus a little
      room for the reflection beneath it. */
   .work-preview {
-    position: relative;
-    flex: 1.7 1 480px;
-    min-width: min(50vw, 620px);
-    max-width: 920px;
-    aspect-ratio: 3 / 2;
+    position: sticky;
+    top: 22vh;
+    align-self: center;
+    min-width: 0;
+    aspect-ratio: 16 / 10;
     overflow: visible;
     background: transparent;
-    align-self: center;
   }
 
   .work-preview-frame {
     position: absolute;
     inset: 0;
     opacity: 0;
-    transition: opacity 0.35s ease;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
   }
 
   .work-preview-frame.is-shown { opacity: 1; }
@@ -1238,9 +1310,39 @@
 
   @media (max-width: 780px) {
     #workView.page-view.subpage { padding-top: 100px; padding-bottom: 60px; }
-    .work-overview { flex-direction: column; }
-    .work-list-col { flex: none; width: 100%; }
-    .work-preview { width: 100%; min-width: 0; max-width: none; align-self: flex-start; }
+    /* phones: no hover, so instead of one preview under the list (always the
+       first project) every project gets its own devices right under its
+       row. The list and preview wrappers step aside (display: contents) and
+       `order` interleaves row, devices, row, devices… */
+    .work-head { display: block; margin-bottom: 30px; }
+    .work-count { display: block; padding: 12px 0 0; }
+    .work-overview { display: flex; flex-direction: column; gap: 0; }
+    .work-list-col, .work-list, .work-preview { display: contents; }
+    .work-entry { order: 1; }
+    #preview-vdh { order: 2; }
+    .work-entry[data-preview="preview-unite"] { order: 3; }
+    #preview-unite { order: 4; }
+    .work-entry[data-preview="preview-talia"] { order: 5; }
+    #preview-talia { order: 6; }
+    .work-entry:first-child { border-top: 1px solid rgba(255,255,255,0.14); }
+    /* number, name, facts, then "Bekijk case" — the devices follow below */
+    .work-entry { grid-template-columns: 1fr; padding: 26px 0 18px; row-gap: 10px; border-bottom: none; }
+    .work-entry::after { display: none; }
+    .work-entry .work-index { grid-column: 1; grid-row: 1; padding: 0; color: var(--acc); font-size: 13px; letter-spacing: 0.1em; }
+    .work-entry .work-name { grid-column: 1; grid-row: 2; font-size: clamp(2.1rem, 9.6vw, 3.4rem); white-space: normal; }
+    .work-entry .work-meta { grid-column: 1; grid-row: 3; }
+    .work-entry .work-arrow { grid-column: 1; grid-row: 4; justify-self: start; min-height: 44px; opacity: 1; transform: none; }
+    .work-list.has-focus .work-entry:not(.is-active) .work-name,
+    .work-list.has-focus .work-entry:not(.is-active) .work-meta { opacity: 1; }
+    .work-list.has-focus .work-entry.is-active .work-name { transform: none; }
+    /* the devices are part of the project block, and tapping them opens the case */
+    .work-preview-frame { position: relative; inset: auto; opacity: 1; margin: 4px 0 0; padding-bottom: 34px;
+      border-bottom: 1px solid rgba(255,255,255,0.14); pointer-events: auto; cursor: pointer; }
+    .work-preview-frame .mini-device { opacity: 1; transform: none; }
+    /* the shared footer already opens with generous space: no extra rule
+       and padding after the last project */
+    #preview-talia { border-bottom: none; padding-bottom: 0; }
+    #workView.page-view.subpage { padding-bottom: 0; }
   }
 
   /* ---- Van der Hammen case study: own art direction, same type/spacing system ---- */
@@ -1290,7 +1392,7 @@
 
   .page-vdh .visual-label {
     color: rgba(255,255,255,0.4);
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     line-height: 1.9;
@@ -1319,7 +1421,7 @@
 
   .vdh-testing {
     margin-top: 10px;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.06em;
     color: rgba(255,255,255,0.4);
     text-transform: uppercase;
@@ -1353,7 +1455,7 @@
 
   .vdh-showcase-eyebrow {
     display: block;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--vdh-accent);
@@ -1371,7 +1473,7 @@
   }
 
   .vdh-showcase-sub {
-    font-size: 10px;
+    font-size: 12px;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: rgba(255,255,255,0.4);
@@ -1536,7 +1638,7 @@
 
   .vdh-next-label {
     display: block;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: rgba(255,255,255,0.4);
@@ -1709,7 +1811,7 @@
   }
   .cs-facts > div:last-child { border-bottom: 1px solid rgba(255,255,255,0.11); }
   .cs-facts dt {
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: rgba(255,255,255,0.42);
@@ -1739,7 +1841,7 @@
     gap: 12px;
     align-items: center;
     margin-top: 14px;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: rgba(255,255,255,0.4);
@@ -1817,7 +1919,7 @@
   .cs-process.cs-in li::before { background: var(--vdh-accent); border-color: var(--vdh-accent); }
   .cs-step-num {
     display: block;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.14em;
     color: rgba(255,255,255,0.4);
     margin-bottom: 10px;
@@ -1840,7 +1942,7 @@
     display: inline-flex;
     align-items: center;
     gap: 9px;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: rgba(255,255,255,0.8);
@@ -1854,7 +1956,7 @@
     flex: none;
     width: 22px; height: 22px;
     border-radius: 50%;
-    font-size: 10.5px;
+    font-size: 12px;
     font-weight: 600;
     letter-spacing: 0;
     color: #0b0a09;
@@ -1891,7 +1993,7 @@
     transition: opacity 0.45s ease, transform 0.6s cubic-bezier(.2,.9,.3,1.3);
     transition-delay: calc(0.5s + var(--i, 0) * 0.18s);
   }
-  .cs-pin .cs-marker { width: 26px; height: 26px; font-size: 11.5px; box-shadow: 0 0 0 6px rgba(247,243,234,0.16), 0 6px 18px rgba(0,0,0,0.5); }
+  .cs-pin .cs-marker { width: 26px; height: 26px; font-size: 12px; box-shadow: 0 0 0 6px rgba(247,243,234,0.16), 0 6px 18px rgba(0,0,0,0.5); }
   .cs-in .cs-pin { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 
   .cs-swatches {
@@ -1900,7 +2002,7 @@
     gap: 10px 26px;
     margin-top: 18px;
     align-items: center;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: rgba(255,255,255,0.45);
@@ -1962,7 +2064,7 @@
   .cs-flow-node small {
     display: block;
     margin-bottom: 6px;
-    font-size: 10px;
+    font-size: 12px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: rgba(255,255,255,0.4);
@@ -1994,7 +2096,7 @@
   .cs-big-label {
     display: block;
     margin-top: 12px;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: rgba(255,255,255,0.5);
@@ -2028,7 +2130,7 @@
   .cs-next-text { grid-column: 1 / span 7; }
   .cs-next-label {
     display: block;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: rgba(255,255,255,0.45);
@@ -2152,7 +2254,7 @@
     .cs-process { grid-template-columns: 1fr; row-gap: 28px; }
 
     .cs-design-figure { margin-left: 0; }
-    .cs-pin .cs-marker { width: 22px; height: 22px; font-size: 10px; box-shadow: 0 0 0 4px rgba(247,243,234,0.16), 0 4px 12px rgba(0,0,0,0.5); }
+    .cs-pin .cs-marker { width: 22px; height: 22px; font-size: 12px; box-shadow: 0 0 0 4px rgba(247,243,234,0.16), 0 4px 12px rgba(0,0,0,0.5); }
 
     .cs-flow { grid-template-columns: 1fr; gap: 6px; }
     .cs-flow-arrow { justify-self: start; padding-left: 14px; transform: rotate(90deg); }
@@ -2214,7 +2316,7 @@
   .u-palette-labels {
     display: flex;
     margin-top: 10px;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: rgba(255,255,255,0.5);
@@ -2240,7 +2342,7 @@
     letter-spacing: -0.015em;
     color: var(--cream);
   }
-  .u-screen-name .cs-num { font-size: 11px; font-weight: 600; letter-spacing: 0.14em; color: var(--vdh-accent); }
+  .u-screen-name .cs-num { font-size: 12px; font-weight: 600; letter-spacing: 0.14em; color: var(--vdh-accent); }
   .u-screens p { margin: 0; font-size: 15px; line-height: 1.65; color: rgba(255,255,255,0.64); }
 
   .u-ux .cs-label { grid-column: 1 / -1; }
@@ -2299,7 +2401,7 @@
     justify-content: space-between;
     gap: 10px 24px;
     margin-top: 16px;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: rgba(255,255,255,0.42);
@@ -2566,7 +2668,7 @@
     position: absolute;
     top: clamp(16px, 1.6vw, 22px);
     left: 0;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.16em;
     color: var(--signal);
     font-variant-numeric: tabular-nums;
@@ -2669,7 +2771,7 @@
     align-items: center;
     gap: 12px;
     margin: 0 0 clamp(10px, 2vw, 30px);
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: rgba(247,243,234,0.66);
@@ -2726,7 +2828,7 @@
     margin: clamp(22px, 2.6vw, 32px) 0 0;
     padding: 14px 0 0;
     border-top: 1px solid rgba(255,255,255,0.14);
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: rgba(255,255,255,0.52);
@@ -2911,7 +3013,7 @@
     align-items: center;
     gap: 8px 18px;
     margin: clamp(18px, 2vw, 26px) 0 0;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: rgba(255,255,255,0.6);
@@ -2943,14 +3045,19 @@
   .ab-tl-copy p + p { margin-top: 1em; }
   .ab-tl-close { color: var(--cream); font-weight: 500; }
 
-  /* ---------- 04 — outside IT: one composed spread ----------
-     A 12-column stage with three rows (1fr / auto / 1fr). The photo spans
-     all three rows as a compact 4:5 portrait (cols 4–8). VOETBAL sits in
-     the middle row and cuts from the left margin across the photo's dark
-     middle; BOKSEN runs vertically up the photo's right edge; the intro
-     text takes the top of the right column and FITNESS with the sport
-     story its bottom. Everything shown here is the finished state — the
-     script only arms the entrances (.is-armed / .is-in) when motion is
+  /* ---------- 04 — outside IT: one editorial spread, no photo ----------
+     Each sport its own place, its own type and its own graphic language,
+     drawn in hairlines from the sport itself (aria-hidden, illustrative):
+       VOETBAL — heavy, edge to edge, across a pitch (halfway line, centre
+                 circle, the two boxes) that draws as the word rises
+       BOKSEN  — vertical between the three ropes of a ring; it comes in
+                 fast along its own axis, like a jab
+       FITNESS — light and widely tracked; the tracking tightens and five
+                 reps fill one after another
+     then the sport story as one large statement. The stage has its own
+     width (centred, like the rest of /about on wide screens) and sizes its
+     words to itself (cqi). Everything shown here is the finished state —
+     the script only arms the entrances (.is-armed / .is-in) when motion is
      allowed. */
   .ab-out-head {
     display: grid;
@@ -2972,40 +3079,17 @@
   }
 
   .ab-out-stage {
+    container-type: inline-size;
     position: relative;
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
-    grid-template-rows: 1fr auto 1fr;
     column-gap: var(--ab-gap);
+    align-items: start;
   }
-
-  /* the photo: a portrait crop of the original, never scaled or filtered;
-     the image is a little taller than its frame so it can drift (parallax) */
-  .ab-out-photo {
-    grid-column: 4 / span 5;
-    grid-row: 1 / -1;
-    align-self: start;
-    position: relative;
-    margin: 0;
-    aspect-ratio: 4 / 5;
-    overflow: hidden;
-    background: #141210;
-    clip-path: inset(0 0 0 0);
-    transition: clip-path 1.5s cubic-bezier(.65,0,.25,1);
+  @media (min-width: 1101px) {
+    /* 1360px, and on very wide screens a little more with the content */
+    .ab-out-stage { max-width: max(1360px, calc(var(--ab-w) * 0.82)); margin-inline: auto; }
   }
-  .ab-out-photo img {
-    position: absolute;
-    left: 0;
-    top: -5%;
-    width: 100%;
-    height: 110%;
-    object-fit: cover;
-    /* the photo is cut 4:5 already; the extra height for the drift trims a
-       little from the sides — mostly from the left, Akif stands right */
-    object-position: 78% 50%;
-    display: block;
-  }
-  .ab-out-stage.is-armed:not(.is-in) .ab-out-photo { clip-path: inset(100% 0 0 0); }
 
   .ab-out-word {
     position: relative;
@@ -3016,25 +3100,58 @@
     white-space: nowrap;
   }
   .ab-out-num {
-    font-size: 11px;
-    font-weight: 400;
+    font-size: 12px;
+    font-weight: 600;
     letter-spacing: 0.16em;
     color: var(--signal);
   }
+  /* the drawn lines of all three sports */
+  .ab-out-pitch, .ab-out-pitch i, .ab-out-ropes i, .ab-out-reps i { display: block; }
 
-  /* VOETBAL — heavy and very large, across the photo's middle */
-  .ab-out-voetbal {
+  /* ---- i — VOETBAL, across a pitch ---- */
+  .ab-out-pitch-row {
     grid-column: 1 / -1;
-    grid-row: 2;
-    align-self: center;
-    justify-self: start;
-    font-size: clamp(3.4rem, 11.5vw, 12.5rem);
-    font-weight: 800;
-    line-height: 0.86;
-    letter-spacing: -0.045em;
-    text-shadow: 0 2px 30px rgba(0,0,0,0.25);
+    grid-row: 1;
+    position: relative;
+    padding: clamp(28px, 3.6cqi, 56px) 0;
   }
-  .ab-out-voetbal .ab-out-num { position: absolute; left: 0.08em; top: -1.6em; font-size: 11px; letter-spacing: 0.16em; }
+  .ab-out-pitch {
+    position: absolute;
+    inset: 0;
+    border: 1px solid rgba(247,243,234,0.12);
+    pointer-events: none;
+    transition: clip-path 1.4s cubic-bezier(.65,0,.25,1) 0.1s;
+    clip-path: inset(0 0 0 0);
+  }
+  .ab-out-pitch-half { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: rgba(247,243,234,0.12); transform-origin: 50% 0; transition: transform 1.2s cubic-bezier(.65,0,.25,1) 0.5s; }
+  .ab-out-pitch-circle {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    height: 62%;
+    aspect-ratio: 1 / 1;
+    border: 1px solid rgba(247,243,234,0.12);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: transform 1.2s cubic-bezier(.2,.75,.15,1) 0.8s, opacity 0.8s ease 0.8s;
+  }
+  .ab-out-pitch-box { position: absolute; top: 24%; bottom: 24%; width: 8%; border: 1px solid rgba(247,243,234,0.12); transition: transform 1s cubic-bezier(.65,0,.25,1) 1s; }
+  .ab-out-pitch-box--l { left: -1px; border-left: 0; transform-origin: 0 50%; }
+  .ab-out-pitch-box--r { right: -1px; border-right: 0; transform-origin: 100% 50%; }
+  .ab-out-stage.is-armed:not(.is-in) .ab-out-pitch { clip-path: inset(0 100% 0 0); }
+  .ab-out-stage.is-armed:not(.is-in) .ab-out-pitch-half { transform: scaleY(0); }
+  .ab-out-stage.is-armed:not(.is-in) .ab-out-pitch-circle { transform: translate(-50%, -50%) scale(0.4); opacity: 0; }
+  .ab-out-stage.is-armed:not(.is-in) .ab-out-pitch-box { transform: scaleX(0); }
+
+  .ab-out-voetbal {
+    padding-left: 3cqi;
+    font-size: 20cqi;
+    font-weight: 800;
+    line-height: 0.84;
+    letter-spacing: -0.05em;
+  }
+  :root[lang="en"] .ab-out-voetbal { font-size: 17.5cqi; }
+  .ab-out-voetbal .ab-out-num { position: absolute; left: 3cqi; top: -1.9em; }
   .ab-out-split { display: inline-block; }
   .ab-out-letter {
     display: inline-block;
@@ -3045,180 +3162,161 @@
   .ab-out-letters { display: inline-block; clip-path: inset(-0.4em -0.2em 0 -0.2em); padding-bottom: 0.02em; }
   .ab-out-stage.is-armed:not(.is-in) .ab-out-letter { transform: translateY(105%); }
 
-  /* BOKSEN — vertical, reading upwards along the photo's right edge */
-  .ab-out-boksen {
-    grid-column: 9;
-    grid-row: 1 / -1;
-    align-self: end;
-    justify-self: start;
+  /* ---- ii — BOKSEN, vertical between the ropes ---- */
+  .ab-out-ring {
+    grid-column: 1 / span 3;
+    grid-row: 2 / span 3;
+    position: relative;
     display: flex;
-    flex-direction: column-reverse;
+    justify-content: center;
+    align-self: stretch;
+    min-height: 100%;
+    padding: clamp(40px, 5cqi, 72px) 0 0;
+  }
+  .ab-out-ropes {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: clamp(40px, 5cqi, 72px);
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    pointer-events: none;
+  }
+  .ab-out-ropes i { height: 1px; background: rgba(247,243,234,0.16); transform-origin: 0 50%; transition: transform 0.9s cubic-bezier(.65,0,.25,1); }
+  .ab-out-ropes i:nth-child(2) { background: rgba(175,45,83,0.7); transition-delay: 0.12s; }
+  .ab-out-ropes i:nth-child(3) { transition-delay: 0.24s; }
+  .ab-out-stage.is-armed:not(.is-in) .ab-out-ropes i { transform: scaleX(0); }
+  .ab-out-boksen {
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 14px;
-    margin-left: calc(-0.4 * var(--ab-gap));
+    gap: 16px;
   }
   .ab-out-boksen .ab-out-mask {
     display: block;
     writing-mode: vertical-rl;
     transform: rotate(180deg);
     overflow: hidden;
-    font-size: clamp(2.2rem, 4.6vw, 5.2rem);
-    font-weight: 700;
-    line-height: 0.9;
-    letter-spacing: -0.02em;
+    padding: 0 0.04em;
+    background: #0b0a09;
+    /* cqw, not cqi: in vertical writing the inline axis is the height */
+    font-size: 9.6cqw;
+    font-weight: 800;
+    line-height: 0.92;
+    letter-spacing: -0.03em;
   }
+  /* the jab: in fast along its own axis, a short overshoot, then still */
   .ab-out-slide {
     display: block;
-    color: rgba(247,243,234,0.5);
-    transition: transform 1.2s cubic-bezier(.2,.75,.15,1) 0.6s;
+    color: var(--cream);
+    transition: transform 0.62s cubic-bezier(.3,1.45,.5,1) 0.75s;
   }
-  .ab-out-stage.is-armed:not(.is-in) .ab-out-slide { transform: translateY(-102%); }
+  .ab-out-stage.is-armed:not(.is-in) .ab-out-slide { transform: translateY(-104%); }
 
-  /* the right column: intro on top, FITNESS + story at the bottom */
-  .ab-out-intro {
-    grid-column: 10 / -1;
-    grid-row: 1;
-    align-self: start;
-    max-width: 30ch;
-    margin: 0;
-    font-size: clamp(0.98rem, 1.15vw, 1.08rem);
-    line-height: 1.6;
-    color: rgba(255,255,255,0.78);
+  /* ---- iii — FITNESS, light, five reps (beside the ring) ---- */
+  .ab-out-fit {
+    grid-column: 5 / -1;
+    grid-row: 2;
+    margin-top: clamp(48px, 6cqi, 88px);
   }
-  .ab-out-fit { grid-column: 10 / -1; grid-row: 3; align-self: end; }
-
-  /* FITNESS — light and widely tracked: the quiet one of the three */
   .ab-out-fitness {
     display: flex;
     align-items: baseline;
-    gap: 14px;
-    font-size: clamp(1.6rem, 2.6vw, 2.8rem);
-    font-weight: 400;
+    gap: 18px;
+    font-size: 6.4cqi;
+    font-weight: 300;
     line-height: 1;
   }
   .ab-out-track {
     display: inline-block;
-    letter-spacing: 0.22em;
-    transition: letter-spacing 1.4s cubic-bezier(.2,.75,.15,1) 0.8s, opacity 1s ease 0.8s;
+    letter-spacing: 0.26em;
+    transition: letter-spacing 1.4s cubic-bezier(.2,.75,.15,1) 0.9s, opacity 1s ease 0.9s;
   }
   .ab-out-stage.is-armed:not(.is-in) .ab-out-track { letter-spacing: 0.7em; opacity: 0; }
-  .ab-out-copy {
+  .ab-out-reps { display: flex; gap: 8px; margin: clamp(18px, 2cqi, 28px) 0 0; }
+  .ab-out-reps i {
+    width: clamp(26px, 3.2cqi, 46px);
+    height: 3px;
+    background: var(--signal);
+    transition: background-color 0.4s ease;
+    transition-delay: calc(1.4s + var(--r) * 0.16s);
+  }
+  .ab-out-stage.is-armed:not(.is-in) .ab-out-reps i { background-color: rgba(255,255,255,0.14); }
+
+  /* ---- the sport story, as one statement ---- */
+  .ab-out-statement {
+    grid-column: 5 / -1;
+    grid-row: 3;
     max-width: 30ch;
-    margin: clamp(16px, 1.6vw, 22px) 0 0;
-    padding-top: clamp(14px, 1.4vw, 18px);
-    border-top: 1px solid rgba(255,255,255,0.14);
-    font-size: clamp(0.95rem, 1.05vw, 1.02rem);
-    line-height: 1.6;
-    color: rgba(255,255,255,0.68);
-  }
-
-  /* a later sport photo takes the open top-left of the spread */
-  .ab-out-extra {
-    grid-column: 1 / span 3;
-    grid-row: 1;
-    align-self: start;
-    margin: 0;
-    aspect-ratio: 3 / 4;
-    overflow: hidden;
-  }
-  .ab-out-extra img { display: block; width: 100%; height: 100%; object-fit: cover; }
-
-  /* the quiet ending: gaming & reading inside one sentence */
-  .ab-out-end {
-    display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    column-gap: var(--ab-gap);
-    align-items: baseline;
-    margin-top: clamp(96px, 11vw, 168px);
-    padding-top: clamp(22px, 2.4vw, 32px);
-    border-top: 1px solid rgba(255,255,255,0.12);
-  }
-  .ab-out-end-label {
-    grid-column: 1 / span 3;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin: 0;
-    font-size: 11px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.45);
-  }
-  .ab-out-end-words { color: rgba(247,243,234,0.8); }
-  .ab-out-end-copy {
-    grid-column: 4 / span 8;
-    max-width: 36ch;
-    margin: 0;
-    font-size: clamp(1.35rem, 2.3vw, 2.3rem);
+    margin: clamp(56px, 7cqi, 104px) 0 0;
+    font-size: clamp(1.4rem, 2.9cqi, 2.9rem);
     font-weight: 500;
-    line-height: 1.28;
-    letter-spacing: -0.015em;
+    line-height: 1.24;
+    letter-spacing: -0.02em;
     color: rgba(247,243,234,0.86);
   }
-  /* the two interests are underlined in the accent, drawn once in view */
-  .ab-out-end-copy em {
+  .ab-out-statement em {
+    font-style: normal;
+    color: var(--cream);
+    background: linear-gradient(var(--signal), var(--signal)) 0 94% / 100% 2px no-repeat;
+    transition: background-size 1s cubic-bezier(.65,0,.25,1) 0.6s;
+  }
+  .ab-out-statement:not(.about-reveal--in) em { background-size: 0 2px; }
+
+  /* later sport photos: each has a reserved place next to its word; nothing
+     shows until such a <figure class="ab-out-shot ab-out-shot--…"> exists */
+  .ab-out-shot { margin: 0; overflow: hidden; background: #141210; }
+  .ab-out-shot img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .ab-out-shot--voetbal { grid-column: 9 / -1; grid-row: 2; aspect-ratio: 4 / 5; margin-top: clamp(48px, 6cqi, 88px); }
+  .ab-out-shot--boksen { grid-column: 1 / span 3; grid-row: 5; aspect-ratio: 3 / 4; margin-top: 32px; }
+  .ab-out-shot--fitness { grid-column: 9 / -1; grid-row: 5; aspect-ratio: 4 / 3; margin-top: 32px; }
+
+  /* the rest, in one quiet line under the statement: gaming, reading and
+     friends, the two interests underlined in the accent once in view */
+  .ab-out-also {
+    grid-column: 5 / -1;
+    grid-row: 4;
+    max-width: 44ch;
+    margin: clamp(28px, 3cqi, 44px) 0 0;
+    font-size: clamp(1.02rem, 1.35cqi, 1.25rem);
+    line-height: 1.5;
+    color: rgba(247,243,234,0.62);
+  }
+  .ab-out-also em {
     font-style: normal;
     color: var(--cream);
     background: linear-gradient(var(--signal), var(--signal)) 0 92% / 100% 1px no-repeat;
     transition: background-size 1s cubic-bezier(.65,0,.25,1) 0.5s;
   }
-  .ab-out-end:not(.about-reveal--in) .ab-out-end-copy em { background-size: 0 1px; }
+  .ab-out-also:not(.about-reveal--in) em { background-size: 0 1px; }
 
-  /* desktop only (> 1100px): a tighter spread. Instead of the 12 columns the
-     stage gets its own five tracks — a narrow lead-in, the photo, BOKSEN
-     (auto, tight against the photo), the text column, a small margin — and
-     a maximum width, centred, so on wide screens the pieces stay together.
-     VOETBAL is sized to the stage (cqi), not the screen, so it always ends
-     just inside the photo's right edge; the longer English FOOTBALL a step
-     smaller. Below 1101px none of this applies. */
-  @media (min-width: 1101px) {
-    .ab-out-stage {
-      /* 1360px, and on very wide screens a little more with the content */
-      max-width: max(1360px, calc(var(--ab-w) * 0.82));
-      margin-inline: auto;
-      grid-template-columns: minmax(0, 1.5fr) minmax(0, 5.6fr) auto minmax(0, 3fr) minmax(0, 0.5fr);
-      container-type: inline-size;
-    }
-    .ab-out-photo { grid-column: 2; }
-    .ab-out-voetbal { grid-column: 1 / -1; font-size: clamp(3.4rem, 12.9cqi, 12.5rem); }
-    :root[lang="en"] .ab-out-voetbal { font-size: clamp(3.4rem, 11.4cqi, 11rem); }
-    .ab-out-boksen { grid-column: 3; margin-left: 0; }
-    .ab-out-intro { grid-column: 4; }
-    .ab-out-fit { grid-column: 4; }
-    .ab-out-extra { grid-column: 1; }
-  }
-
-  /* laptop / tablet: the right column gets too narrow — the photo moves
-     towards the middle, the two texts go side by side under the spread */
+  /* laptop / tablet: the statement and the line take the full width under
+     the ring and FITNESS */
   @media (max-width: 1100px) {
     .ab-out-head .ab-h2, .ab-out-lead { grid-column: 1 / -1; }
     .ab-out-lead { margin-top: 24px; }
-    .ab-out-stage { grid-template-rows: 1fr auto 1fr auto; }
-    /* photo and BOKSEN keep to the spread's three rows; the texts follow below */
-    .ab-out-photo { grid-column: 3 / span 6; grid-row: 1 / 4; }
-    .ab-out-boksen { grid-column: 9 / span 2; grid-row: 1 / 4; }
-    .ab-out-intro { grid-column: 1 / span 6; grid-row: 4; margin-top: clamp(44px, 6vw, 64px); }
-    .ab-out-fit { grid-column: 8 / -1; grid-row: 4; align-self: start; margin-top: clamp(44px, 6vw, 64px); }
-    .ab-out-extra { grid-column: 1 / span 2; }
-    .ab-out-end-label { grid-column: 1 / -1; flex-direction: row; gap: 18px; margin-bottom: 18px; }
-    .ab-out-end-copy { grid-column: 1 / -1; }
+    .ab-out-ring { grid-row: 2; }
+    .ab-out-statement { grid-column: 1 / -1; grid-row: 3; max-width: 34ch; font-size: clamp(1.35rem, 3.6vw, 2.2rem); }
+    .ab-out-also { grid-column: 1 / -1; grid-row: 4; }
   }
 
-  /* phone: the photo takes most of the width with BOKSEN still climbing
-     beside it; VOETBAL crosses the photo; the texts follow one by one */
+  /* phone: VOETBAL fills the width over its pitch; the ring and FITNESS sit
+     side by side; the statement and the line follow at full width */
   @media (max-width: 680px) {
-    .ab-out-stage { grid-template-rows: 1fr auto 1fr auto auto auto; }
-    .ab-out-photo { grid-column: 1 / span 9; }
-    .ab-out-boksen { grid-column: 10 / -1; margin-left: 0; }
-    .ab-out-boksen .ab-out-mask { font-size: clamp(1.9rem, 10vw, 2.8rem); }
-    /* ends before BOKSEN's column (cols 10–12) — also as the longer
-       English FOOTBALL — so the two never touch */
-    .ab-out-voetbal { font-size: 12.4vw; }
-    .ab-out-intro { grid-column: 1 / -1; max-width: 40ch; margin-top: 40px; }
-    .ab-out-fit { grid-column: 1 / -1; grid-row: 5; margin-top: 36px; padding-left: 12%; }
-    .ab-out-copy { max-width: 40ch; }
-    .ab-out-extra { grid-column: 1 / span 8; grid-row: 6; margin-top: 36px; }
-    .ab-out-end-copy { font-size: clamp(1.25rem, 5.6vw, 1.5rem); }
+    .ab-out-voetbal { font-size: 19cqi; padding-left: 2cqi; }
+    :root[lang="en"] .ab-out-voetbal { font-size: 17cqi; }
+    .ab-out-voetbal .ab-out-num { left: 2cqi; }
+    .ab-out-pitch-box { width: 10%; }
+    .ab-out-ring { grid-column: 1 / span 4; grid-row: 2; padding-top: 32px; }
+    .ab-out-ropes { top: 32px; }
+    .ab-out-boksen .ab-out-mask { font-size: 15cqw; }
+    .ab-out-fit { grid-column: 5 / -1; grid-row: 2; align-self: center; margin-top: 32px; }
+    .ab-out-fitness { font-size: 8.4cqi; gap: 10px; }
+    .ab-out-statement { grid-column: 1 / -1; grid-row: 3; margin-top: 40px; font-size: clamp(1.3rem, 6.2vw, 1.6rem); }
+    .ab-out-also { margin-top: 22px; font-size: 1rem; }
+    .ab-out-shot--voetbal, .ab-out-shot--boksen, .ab-out-shot--fitness { grid-column: 1 / -1; grid-row: auto; margin-top: 32px; }
   }
 
   /* ---------- 02 on every desktop width: each description stays next to its
@@ -3341,7 +3439,7 @@
     .ab-tl-step--now .ab-tl-node::after { animation: none; transform: scale(1.1); opacity: 0.5; }
     .ab-chapter-num::after,
     .ab-trait::before, .ab-trait-word, .ab-trait-copy,
-    .ab-out-photo, .ab-out-letter, .ab-out-slide, .ab-out-track, .ab-out-end-copy em { transition: none; }
+    .ab-out-pitch, .ab-out-pitch i, .ab-out-ropes i, .ab-out-reps i, .ab-out-letter, .ab-out-slide, .ab-out-track, .ab-out-statement em, .ab-out-also em { transition: none; }
     .about-reveal:not(.about-reveal--in) .ab-chapter-num::after { transform: none; }
   }
 
@@ -3406,7 +3504,7 @@
   }
   @media (max-width: 480px) {
     .nav { font-size: 14px; }
-    .nav a { margin-right: 15px; }
+    .nav a { margin-right: 9px; } /* + 6px touch padding = the old 15px gap */
   }
 
   /* ==========================================================
@@ -3428,7 +3526,7 @@
     padding-bottom: clamp(40px, 5vw, 72px);
     --xa-gap: clamp(16px, 2.4vw, 40px);
     --xa-line: rgba(255,255,255,0.12);
-    --xa-soft: rgba(247,243,234,0.34);
+    --xa-soft: rgba(247,243,234,0.42); /* large text only; 0.42 keeps it at 3:1 contrast */
     --xa-gutter: clamp(20px, 6vw, 90px);
     --xa-ease: cubic-bezier(.2,.7,.2,1);
     --xa-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
@@ -3456,7 +3554,7 @@
   .xa-pink { color: var(--signal); }
   .xa-sub {
     margin: 0 0 16px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     letter-spacing: 0.16em;
     text-transform: uppercase;
@@ -3475,7 +3573,7 @@
     container-type: inline-size;
     display: flex;
     flex-direction: column;
-    min-height: clamp(560px, calc(100vh - 150px), 1100px);
+    min-height: clamp(480px, calc(100vh - 240px), 960px);
   }
   .xa-hero-top {
     display: flex;
@@ -3488,7 +3586,7 @@
     display: flex;
     gap: 10px;
     margin: 0;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: rgba(255,255,255,0.45);
@@ -3555,7 +3653,7 @@
   .xa-rule-ticks li {
     position: relative;
     padding: 12px 0 0 10px;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.14em;
     color: rgba(255,255,255,0.42);
     font-variant-numeric: tabular-nums;
@@ -3601,7 +3699,7 @@
   .xa-jump:focus-visible, .xa-link:focus-visible { outline: 1px solid var(--signal); outline-offset: 5px; }
 
   /* ================= the archive index ================= */
-  .xa-index { margin-top: clamp(110px, 13vw, 220px); scroll-margin-top: 110px; }
+  .xa-index { margin-top: clamp(72px, 8vw, 140px); scroll-margin-top: 110px; }
   .xa-index:focus { outline: none; }
   .xa-index-head {
     display: flex;
@@ -3611,7 +3709,7 @@
     gap: 10px 32px;
     margin-bottom: clamp(24px, 3vw, 44px);
   }
-  .xa-index-hint { margin: 0; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.4); }
+  .xa-index-hint { margin: 0; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.4); }
   .xa-index-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr) clamp(220px, 23%, 360px);
@@ -3668,7 +3766,7 @@
     white-space: nowrap;
   }
   .xa-row-period { font-size: 13px; font-weight: 500; color: rgba(247,243,234,0.8); font-variant-numeric: tabular-nums; }
-  .xa-row-theme { font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.42); }
+  .xa-row-theme { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.42); }
   .xa-row-desc { display: none; }
   .xa-row--now .xa-row-num { display: inline-flex; align-items: center; gap: 9px; }
   .xa-row--now .xa-row-num::after,
@@ -3701,12 +3799,12 @@
   .xa-preview.is-shown { opacity: 1; }
   .xa-preview p { margin: 0; }
   .xa-preview-num { font-size: clamp(2.6rem, 4vw, 4.4rem); font-weight: 800; line-height: 0.9; letter-spacing: -0.05em; color: var(--signal); font-variant-numeric: tabular-nums; }
-  .xa-preview-theme { margin-top: 12px !important; font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--cream); }
+  .xa-preview-theme { margin-top: 12px !important; font-size: 12px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--cream); }
   .xa-preview-desc { margin-top: 14px !important; font-size: 15px; line-height: 1.55; color: rgba(255,255,255,0.72); }
-  .xa-preview-open { margin-top: 18px !important; font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(247,243,234,0.8); }
+  .xa-preview-open { margin-top: 18px !important; font-size: 12px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(247,243,234,0.8); }
 
   /* ================= a file (chapter) ================= */
-  .xa-ch { margin-top: clamp(90px, 11vw, 180px); scroll-margin-top: 90px; }
+  .xa-ch { margin-top: clamp(64px, 7.5vw, 120px); scroll-margin-top: 90px; }
   .xa-ch:focus { outline: none; }
   /* the card: the file opens. --p: 0 (entering) → 1 (open) */
   .xa-card {
@@ -3716,7 +3814,7 @@
     flex-direction: column;
     justify-content: space-between;
     gap: 40px;
-    min-height: clamp(360px, 70vh, 860px);
+    min-height: clamp(300px, 54vh, 660px);
     padding: 20px 0 clamp(28px, 4vh, 56px);
     border-top: 1px solid var(--xa-line);
     overflow: hidden;
@@ -3729,7 +3827,7 @@
     align-items: center;
     gap: 8px 28px;
     margin: 0;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     letter-spacing: 0.16em;
     text-transform: uppercase;
@@ -3782,8 +3880,8 @@
     display: flex;
     align-items: center;
     gap: 18px;
-    margin: clamp(64px, 8vw, 128px) 0 0;
-    font-size: 10.5px;
+    margin: clamp(40px, 5vw, 80px) 0 0;
+    font-size: 12px;
     font-weight: 600;
     letter-spacing: 0.16em;
     text-transform: uppercase;
@@ -3795,7 +3893,7 @@
   /* ---- shared parts of a file ---- */
   .xa-facts { margin: 0; border-top: 1px solid var(--xa-line); }
   .xa-facts > div { display: grid; grid-template-columns: minmax(0, 7.5em) minmax(0, 1fr); gap: 16px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.07); }
-  .xa-facts dt { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.45); padding-top: 3px; }
+  .xa-facts dt { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.45); padding-top: 3px; }
   .xa-facts dd { margin: 0; font-size: 15px; font-weight: 500; color: rgba(255,255,255,0.88); }
   .xa-facts time { white-space: nowrap; }
   /* a row of facts (label over value) */
@@ -3841,7 +3939,7 @@
     border-top: 1px solid var(--xa-line);
   }
   .xa-col .xa-tech { margin-top: 0; align-self: stretch; }
-  .xa-tech-label { margin: 0; font-size: 10.5px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.45); }
+  .xa-tech-label { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.45); }
   .xa-tech-list { display: flex; flex-wrap: wrap; gap: 6px 0; margin: 0; padding: 0; list-style: none; font-size: 15px; font-weight: 600; color: var(--cream); }
   .xa-tech-list li:not(:last-child)::after { content: '/'; margin: 0 0.6em; font-weight: 400; color: var(--signal); }
 
@@ -3851,7 +3949,7 @@
     flex-wrap: wrap;
     gap: 4px 12px;
     margin-top: 16px;
-    font-size: 11px;
+    font-size: 12px;
     line-height: 1.5;
     color: rgba(255,255,255,0.42);
   }
@@ -3896,54 +3994,7 @@
   .xa-ch--2 .xa-card-num { right: auto; left: -0.03em; }
   .xa-ch--2 .xa-card-meta { justify-content: flex-end; }
   .xa-ch--2 { --xa-from-a: 12cqi; --xa-from-b: -12cqi; }
-  .xa-ch--2 .xa-body {
-    display: grid;
-    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-    gap: 48px var(--xa-gap);
-    align-items: start;
-  }
-  .xa-flow-steps {
-    position: relative;
-    margin: 0;
-    padding: 0 0 0 28px;
-    list-style: none;
-  }
-  /* the line the steps hang on, with one pink pulse travelling down */
-  .xa-flow-steps::before { content: ''; position: absolute; left: 5px; top: 10px; bottom: 10px; width: 1px; background: rgba(255,255,255,0.18); }
-  .xa-flow-steps::after {
-    content: '';
-    position: absolute;
-    left: 2px;
-    top: 10px;
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--signal);
-    animation: xaFlow 4.8s cubic-bezier(.65,0,.25,1) infinite;
-  }
-  @keyframes xaFlow {
-    0% { top: 10px; opacity: 0; }
-    8% { opacity: 1; }
-    85% { opacity: 1; }
-    100% { top: calc(100% - 17px); opacity: 0; }
-  }
-  .xa-flow-steps li {
-    position: relative;
-    display: flex;
-    align-items: baseline;
-    gap: 18px;
-    padding: 16px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.07);
-    font-size: clamp(1.25rem, 2.2vw, 2.1rem);
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    text-transform: uppercase;
-    color: rgba(247,243,234,0.82);
-  }
-  .xa-flow-steps li::before { content: ''; position: absolute; left: -27px; top: 50%; width: 9px; height: 9px; margin-top: -4.5px; border: 1px solid rgba(247,243,234,0.5); border-radius: 50%; background: var(--ink); }
-  .xa-flow-steps li:last-child { color: var(--cream); }
-  .xa-flow-steps li:last-child::before { background: var(--signal); border-color: var(--signal); }
-  .xa-flow-k { font: 500 12px/1 var(--xa-mono); letter-spacing: 0; color: rgba(255,255,255,0.4); }
+  .xa-ch--2 .xa-body { max-width: 860px; }
 
   /* ---- 03 Infotech — development: the tasks as lines in an editor ---- */
   .xa-ch--3 .xa-name > span { display: inline-block; }
@@ -3977,7 +4028,7 @@
   .xa-editor-dots i { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,0.14); }
   .xa-editor-dots i:first-child { background: var(--signal); }
   .xa-editor-tab { padding: 3px 10px; border-radius: 4px; background: rgba(255,255,255,0.06); color: var(--cream); }
-  .xa-editor-note { margin-left: auto; font-family: "Instrument Sans", sans-serif; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.35); }
+  .xa-editor-note { margin-left: auto; font-family: "Instrument Sans", sans-serif; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.35); }
   .xa-editor-title { margin: 18px 0 6px; padding: 0 18px 0 62px; font: 500 13px/1.5 var(--xa-mono); color: rgba(255,255,255,0.45); }
   .xa-editor-title::before { content: '/** '; }
   .xa-editor-title::after { content: ' */'; }
@@ -3999,7 +4050,9 @@
     text-align: right;
     color: rgba(255,255,255,0.28);
   }
-  .xa-editor-lines li::after { content: '//'; position: absolute; left: 62px; color: var(--signal); }
+  /* pinned to the first line (top = the li's top padding): without a top it
+     fell to the last line whenever a task wrapped */
+  .xa-editor-lines li::after { content: '//'; position: absolute; top: 7px; left: 62px; color: var(--signal); }
   .xa-editor-lines li:hover { background: rgba(255,255,255,0.04); }
   .xa-editor-caret {
     display: block;
@@ -4017,7 +4070,7 @@
   .xa-ch--4 { --xa-from-a: 0cqi; --xa-from-b: 30cqi; }
   .xa-ch--4 .xa-name { font-size: 12cqi; }
   .xa-lead--wide { max-width: 44ch; margin-bottom: clamp(48px, 6vw, 96px); }
-  .xa-stream { position: relative; margin-bottom: clamp(56px, 7vw, 110px); }
+  .xa-stream { position: relative; margin-bottom: clamp(40px, 5vw, 72px); }
   .xa-stream-nodes {
     position: relative;
     z-index: 1;
@@ -4031,8 +4084,8 @@
   .xa-stream-nodes li {
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    padding: 18px;
+    gap: 12px;
+    padding: 14px 16px;
     border: 1px solid rgba(255,255,255,0.14);
     border-radius: 8px;
     background: var(--ink);
@@ -4044,7 +4097,7 @@
     hyphens: manual;
   }
   .xa-stream-nodes li:last-child { border-color: rgba(175,45,83,0.7); }
-  .xa-stream-k { font: 500 11px/1 var(--xa-mono); color: var(--signal); }
+  .xa-stream-k { font: 500 12px/1 var(--xa-mono); color: var(--signal); }
   /* the line behind the nodes, with data travelling along it */
   .xa-stream-line {
     position: absolute;
@@ -4100,8 +4153,8 @@
   .xa-ch--5 .xa-body > .xa-sub,
   .xa-ch--5 .xa-rowlist,
   .xa-ch--5 .xa-body > .xa-tech { grid-column: 1 / -1; }
-  .xa-ch--5 .xa-body > .xa-sub { margin: clamp(40px, 5vw, 80px) 0 0; }
-  .xa-hub { position: relative; width: min(100%, 440px); aspect-ratio: 1 / 1; }
+  .xa-ch--5 .xa-body > .xa-sub { margin: clamp(32px, 4vw, 56px) 0 0; }
+  .xa-hub { position: relative; width: min(100%, 380px); aspect-ratio: 1 / 1; }
   .xa-hub-lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
   .xa-hub-lines line {
     stroke: rgba(247,243,234,0.28);
@@ -4118,7 +4171,7 @@
     border: 1px solid rgba(255,255,255,0.18);
     border-radius: 999px;
     background: var(--ink);
-    font-size: clamp(11px, 1vw, 13px);
+    font-size: clamp(12px, 1vw, 13px);
     font-weight: 600;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -4141,9 +4194,9 @@
     grid-template-columns: 3.4rem minmax(0, 1fr);
     align-items: baseline;
     gap: clamp(12px, 1.6vw, 28px);
-    padding: clamp(14px, 1.6vw, 22px) 0;
+    padding: clamp(10px, 1.1vw, 16px) 0;
     border-bottom: 1px solid var(--xa-line);
-    font-size: clamp(1.1rem, 1.9vw, 1.8rem);
+    font-size: clamp(1.05rem, 1.45vw, 1.4rem);
     font-weight: 600;
     line-height: 1.25;
     letter-spacing: -0.015em;
@@ -4151,7 +4204,7 @@
   }
 
   /* ================= appendix: the toolkit ================= */
-  .xa-appendix { margin-top: clamp(130px, 15vw, 240px); }
+  .xa-appendix { margin-top: clamp(96px, 10vw, 160px); }
   .xa-app-head {
     display: grid;
     grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
@@ -4183,7 +4236,7 @@
   /* ================= outro: on to Work ================= */
   .xa-outro {
     container-type: inline-size;
-    margin-top: clamp(140px, 16vw, 260px);
+    margin-top: clamp(96px, 11vw, 180px);
     padding-top: 22px;
     border-top: 1px solid var(--signal);
   }
@@ -4225,7 +4278,7 @@
     flex-direction: column;
     align-items: center;
     gap: 14px;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 600;
     letter-spacing: 0.16em;
     text-transform: uppercase;
@@ -4263,6 +4316,18 @@
     .xa-ind-bar i { width: 10px; height: 2px; }
   }
 
+  /* ---- 01 / 02 — the service desk years: two separate, compact files.
+     No opening card (no tall card, no outlined number): the name, the meta
+     line and straight into the content. Infotech, ADC and Baril keep the
+     cinematic card. ---- */
+  .xa-ch--compact .xa-card { min-height: 0; gap: 16px; padding-bottom: 0; }
+  .xa-ch--compact .xa-name { font-size: 7.5cqi; }
+  .xa-ch--compact .xa-card-num { display: none; }
+  .xa-ch--compact .xa-body { padding-top: clamp(24px, 3vw, 44px); }
+  .xa-ch--compact .xa-ledger { margin-bottom: clamp(32px, 4vw, 56px); }
+  .xa-ch--compact .xa-cells li { min-height: 0; gap: 18px; }
+  .xa-ch--compact .xa-end { margin-top: clamp(32px, 4vw, 56px); }
+
   /* ================= responsive ================= */
   @media (max-width: 1100px) {
     .xa-trio { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
@@ -4298,7 +4363,10 @@
     .xa-tier { grid-template-columns: minmax(0, 1fr); }
     .xa-ledger .xa-lead { justify-self: start; }
     .xa-ch--3 .xa-tech { grid-column: 1; }
-    .xa-card { min-height: clamp(300px, 52vh, 560px); }
+    .xa-card { min-height: clamp(240px, 38vh, 420px); }
+    /* the index on phones: name, period, theme and role; the longer line is
+       what the file itself says */
+    .xa-row-more { display: none; }
     .xa-hub { margin: 0 auto; }
   }
   @media (max-width: 680px) {
@@ -4322,10 +4390,11 @@
     .xa-rowlist li, .xa-row { grid-template-columns: 2.6rem minmax(0, 1fr); }
     .xa-outro-title { font-size: 12cqi; }
     /* the files: larger names in a lower card */
-    .xa-card { min-height: clamp(260px, 44vh, 420px); }
+    .xa-card { min-height: clamp(200px, 30vh, 300px); }
     .xa-name { font-size: 17cqi; }
     .xa-ch--4 .xa-name { font-size: 14cqi; }
     .xa-ch--5 .xa-name { font-size: 13cqi; }
+    .xa-ch--compact .xa-name { font-size: 11cqi; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -4385,9 +4454,9 @@
   .oc-armed .oc-hero:not(.is-in) .oc-fade { opacity: 0; transform: translateY(18px); }
 
   /* ================= hero ================= */
-  .oc-hero { container-type: inline-size; display: flex; flex-direction: column; min-height: clamp(520px, calc(100vh - 150px), 980px); }
+  .oc-hero { container-type: inline-size; display: flex; flex-direction: column; min-height: clamp(440px, calc(100vh - 260px), 820px); }
   .oc-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 32px; }
-  .oc-clock { margin: 0; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.45); font-variant-numeric: tabular-nums; }
+  .oc-clock { margin: 0; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.45); font-variant-numeric: tabular-nums; }
   .oc-clock time { color: rgba(247,243,234,0.8); }
 
   .oc-title {
@@ -4422,7 +4491,7 @@
     align-items: center;
     gap: 6px 14px;
     margin: 0;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     letter-spacing: 0.16em;
     text-transform: uppercase;
@@ -4451,7 +4520,7 @@
   .oc-intro { max-width: 40ch; margin: 0; font-size: clamp(1.05rem, 1.4vw, 1.3rem); line-height: 1.55; color: rgba(255,255,255,0.78); }
 
   /* the direct ways in: always visible, plain links */
-  .oc-direct-title { margin: 0 0 10px; font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.45); }
+  .oc-direct-title { margin: 0 0 10px; font-size: 12px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.45); }
   .oc-direct-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--oc-line); }
   .oc-direct-row {
     position: relative;
@@ -4476,7 +4545,7 @@
     transition: transform 0.7s cubic-bezier(.65,0,.25,1);
   }
   .oc-direct-row:hover::after, .oc-direct-row:focus-within::after { transform: scaleX(1); }
-  .oc-direct-k { font-size: 10.5px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.45); }
+  .oc-direct-k { font-size: 12px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.45); }
   .oc-direct-link {
     display: inline-flex;
     align-items: baseline;
@@ -4501,7 +4570,7 @@
     border-radius: 999px;
     background: none;
     color: rgba(247,243,234,0.85);
-    font: 600 10.5px/1.2 "Instrument Sans", sans-serif;
+    font: 600 12px/1.2 "Instrument Sans", sans-serif;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     white-space: nowrap;
@@ -4615,7 +4684,7 @@
   }
   .oc-textarea:focus { background-size: 100% 2px, auto; }
   .oc-step.is-invalid .oc-input, .oc-step.is-invalid .oc-textarea { border-bottom-color: var(--signal); }
-  .oc-count { margin: 10px 0 0; font-size: 11px; letter-spacing: 0.12em; color: rgba(255,255,255,0.38); text-align: right; font-variant-numeric: tabular-nums; }
+  .oc-count { margin: 10px 0 0; font-size: 12px; letter-spacing: 0.12em; color: rgba(255,255,255,0.38); text-align: right; font-variant-numeric: tabular-nums; }
   .oc-error { margin: 12px 0 0; font-size: 14px; line-height: 1.45; color: #e66b8d; }
   .oc-error::before { content: '— '; }
 
@@ -4641,10 +4710,10 @@
   .oc-comp-bar i { height: 2px; background: rgba(255,255,255,0.14); transition: background-color 0.5s ease; }
   .oc-comp-bar i.is-active { background: rgba(247,243,234,0.6); }
   .oc-comp-bar i.is-done { background: var(--signal); }
-  .oc-comp-label { grid-column: 1 / -1; font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--cream); }
+  .oc-comp-label { grid-column: 1 / -1; font-size: 12px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--cream); }
   .oc-comp-meta { margin: 0; }
   .oc-comp-meta > div { display: grid; grid-template-columns: 8.5em minmax(0, 1fr); gap: 12px; padding: 11px 0; border-bottom: 1px solid rgba(255,255,255,0.07); }
-  .oc-comp-meta dt { font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.42); padding-top: 2px; }
+  .oc-comp-meta dt { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.42); padding-top: 2px; }
   .oc-comp-meta dd { margin: 0; font-size: 14.5px; font-weight: 600; color: var(--cream); overflow-wrap: anywhere; }
   .oc-comp .is-empty { color: rgba(247,243,234,0.28); font-weight: 500; }
   .oc-comp-letter { padding: clamp(20px, 2vw, 30px) 0 6px; }
@@ -4665,7 +4734,7 @@
   .oc-comp-sign { margin: 22px 0 0; font-size: 15px; line-height: 1.5; color: rgba(255,255,255,0.6); }
   .oc-comp-sign span:last-child { font-size: clamp(1.15rem, 1.5vw, 1.45rem); font-weight: 700; color: var(--cream); }
   .oc-comp-foot { display: flex; justify-content: space-between; gap: 12px; margin: 20px 0 0; padding-top: 14px; border-top: 1px solid var(--oc-line); }
-  .oc-comp-draft { display: inline-flex; align-items: center; gap: 8px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.45); }
+  .oc-comp-draft { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.45); }
   .oc-comp-draft::before { content: ''; width: 6px; height: 6px; border-radius: 50%; border: 1px solid var(--signal); }
   /* a new letter in the composition: a short settle */
   .oc-comp .is-fresh { animation: ocSettle 0.5s var(--oc-ease); }
@@ -4708,20 +4777,6 @@
   .oc-status-msg strong { color: var(--cream); font-weight: 600; }
   .oc-status-msg a { color: var(--cream); text-decoration-color: var(--signal); text-underline-offset: 4px; overflow-wrap: anywhere; }
 
-  /* the channel ends here: one dot, just above the footer */
-  .oc-end {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin: clamp(90px, 10vw, 160px) 0 0 calc(-1 * var(--oc-rail));
-    font-size: 10.5px;
-    font-weight: 600;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.45);
-  }
-  .oc-end-dot { flex: none; width: 11px; height: 11px; border-radius: 50%; background: var(--signal); }
 
   /* ================= responsive ================= */
   @media (max-width: 1100px) {
@@ -4750,6 +4805,7 @@
     .oc-direct-link { padding: 4px 0 12px; }
     /* the composition, compact: the progress and the letter itself */
     .oc-comp-meta, .oc-comp-sign { display: none; }
+    .oc-comp-body { max-height: 4.8em; }
     .oc-comp-in { padding: 20px; }
   }
 
@@ -4864,7 +4920,7 @@
     margin-top: clamp(72px, 9vw, 140px);
     padding-top: 22px;
     border-top: 1px solid rgba(255,255,255,0.12);
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.16em;
     text-transform: uppercase;
     transition: opacity 0.9s ease 0.7s;
@@ -4927,6 +4983,41 @@
   @media (prefers-reduced-motion: reduce) {
     .sf-rise, .sf-cta .sf-rise, .sf-arrow, .sf-sub, .sf-bottom, .sf-ext, .sf-top-arrow { transition: none; }
   }
+
+  /* ==========================================================
+     FINISHING — accessibility: touch areas and contrast, kept in one
+     place so the design rules above stay as they were.
+     ========================================================== */
+  /* touch areas of at least 44px tall: an invisible hit area centred on
+     the element (only where the element itself is lower), so nothing
+     moves or changes size */
+  .back-link, .xa-jump, .xa-link, .sf-links a, .sf-top, .final-socials a, .final-nav a,
+  .oc-direct-link, .oc-copy, .oc-send { position: relative; }
+  .back-link::after, .xa-jump::after, .xa-link::after, .sf-links a::after, .sf-top::after,
+  .final-socials a::after, .final-nav a::after, .oc-direct-link::after, .oc-copy::after, .oc-send::after {
+    content: "";
+    position: absolute;
+    left: -4px;
+    right: -4px;
+    top: min(0px, calc(50% - 22px));
+    bottom: min(0px, calc(50% - 22px));
+  }
+  /* the fields: 10px more room inside, 10px less margin above — the text
+     and the line under it stay exactly where they were */
+  .oc-input { padding-top: 10px; margin-top: calc(clamp(16px, 1.8vw, 26px) - 10px); }
+  /* stacked footer links on phones: enough space between them that their
+     touch areas don't overlap */
+  @media (max-width: 680px) { .sf-links { gap: 16px; } }
+
+  /* small grey text at 4.5:1 contrast (was 3.1–4.1:1): the same grey
+     hierarchy, a little lighter */
+  .cs-caption, .cs-step-num, .vdh-showcase-sub, .cs-flow-node small, .cs-facts dt, .xa-facts dt,
+  .xa-index-hint, .xa-row-theme, .oc-count, .sf-meta, .t-hero-meta, .final-baseline span { color: rgba(255,255,255,0.55); }
+  /* on phones the grey "Niet alleen" in the Experience hero is below 24px,
+     so it needs the small-text contrast */
+  @media (max-width: 780px) { .xa-hero { --xa-soft: rgba(247,243,234,0.55); } }
+  /* the same on Talia's light chapter */
+  .t-light .cs-label, .t-light .cs-caption, .t-light .cs-swatches { color: rgba(25,22,17,0.7); }
 </style>
 </head>
 <body>
@@ -4945,6 +5036,10 @@
 
 <div id="homeView" class="page-view">
 
+<!-- the page's heading for screen readers and search engines; the visible
+     name below is the same name, drawn vertically -->
+<h1 class="sr-only">Akif Albayrak — Software Development</h1>
+
 <section class="scene">
   <div class="photo-frame" id="photoFrame">
     <img
@@ -4961,7 +5056,7 @@
 
 <div class="chapter-veil" id="chapterVeil"></div>
 
-<div class="name-vertical-group" id="nameGroup">
+<div class="name-vertical-group" id="nameGroup" aria-hidden="true">
   <span class="v-word" id="albayrakSpan">ALBAYRAK</span>
   <span class="v-word" id="akifSpan">AKIF</span>
 </div>
@@ -5050,22 +5145,13 @@
 <p class="annotation" id="annotTrouble"><span class="a-dot"></span><span class="a-label">TROUBLESHOOTING</span></p>
 <p class="annotation" id="annotEndUsers"><span class="a-dot"></span><span class="a-label">END USERS</span></p>
 
-<p class="teaser" id="teaser">Uitgelicht werk <span>→</span></p>
+<a class="teaser" id="teaser" href="#/work">Uitgelicht werk <span aria-hidden="true">→</span></a>
 
-<div class="story-stage" id="nextChapter"><h2 class="story-giant">OPLEIDING</h2></div>
-
+<!-- the chapter break: OPLEIDING is now the eyebrow of this one scene -->
 <div class="story-stage" id="storyCurrent">
-  <div class="story-eyebrow">NU</div>
+  <div class="story-eyebrow">OPLEIDING — NU</div>
   <h2 class="story-headline">MBO 4<br />Software Development</h2>
   <p class="story-sub">Koning Willem I College</p>
-</div>
-
-<div class="story-stage" id="keepExploring"><h2 class="story-giant">Waar ik meer over wil leren</h2></div>
-
-<div class="keep-words" id="keepWords">
-  <span class="keep-word">SOFTWARE</span>
-  <span class="keep-word">SYSTEMEN</span>
-  <span class="keep-word">AUTOMATISERING</span>
 </div>
 
 <div class="final-statement" id="stillBuilding">
@@ -5083,10 +5169,9 @@
     </div>
     <div class="gallery-info">
       <div class="gallery-index">01</div>
-      <div class="gallery-name">VD HAMMEN GYM</div>
+      <div class="gallery-name">VAN DER HAMMEN GYM</div>
       <div class="gallery-desc">Website voor een fitness- en bokschool in Waalwijk.</div>
-      <div class="gallery-tech">HTML &middot; CSS &middot; JAVASCRIPT</div>
-      <span class="gallery-link">VIEW CASE <span>&rarr;</span></span>
+      <span class="gallery-link">Bekijk case <span aria-hidden="true">&rarr;</span></span>
     </div>
   </a>
   <a class="gallery-item gallery-item--unite" id="galleryUnite" href="#/work/unite-reintegratie">
@@ -5100,7 +5185,7 @@
       <div class="gallery-index">02</div>
       <div class="gallery-name">UNITE RE-INTEGRATIE</div>
       <div class="gallery-desc">Website voor re-integratiecoaching in Waalwijk en omgeving.</div>
-      <span class="gallery-link">VIEW CASE <span>&rarr;</span></span>
+      <span class="gallery-link">Bekijk case <span aria-hidden="true">&rarr;</span></span>
     </div>
   </a>
   <a class="gallery-item gallery-item--talia" id="galleryTalia" href="#/work/talia">
@@ -5114,18 +5199,17 @@
       <div class="gallery-index">03</div>
       <div class="gallery-name">TALIA</div>
       <div class="gallery-desc">Website voor een make-up artist uit Drunen.</div>
-      <span class="gallery-link">VIEW CASE <span>&rarr;</span></span>
+      <span class="gallery-link">Bekijk case <span aria-hidden="true">&rarr;</span></span>
     </div>
   </a>
-</div>
-
-<div class="work-close" id="workAllLink">
-  <a href="#/work">VIEW ALL WORK <span>&rarr;</span></a>
+  <!-- the whole Work page, right under the three projects (it used to have
+       a scene of its own) -->
+  <div class="gallery-all"><a href="#/work">Bekijk al het werk <span aria-hidden="true">&rarr;</span></a></div>
 </div>
 
 <div class="final-nav" id="finalNav">
-  <a href="#/about">ABOUT ME <span>&rarr;</span></a>
-  <a href="#/contact">LET'S TALK <span>&rarr;</span></a>
+  <a href="#/about">OVER MIJ <span aria-hidden="true">&rarr;</span></a>
+  <a href="#/contact">LATEN WE PRATEN <span aria-hidden="true">&rarr;</span></a>
 </div>
 
 <div class="final-footer" id="finalFooter">
@@ -5140,48 +5224,54 @@
 </div>
 
 <!-- scroll room: phase 1+2 (opening -> introduction) + phase 3 (introduction -> story continues: next chapter -> current -> next -> keep exploring) + close (canvas clears -> STILL BUILDING. -> transforms into three-project gallery -> view all work -> final actions -> footer). +100vh buffer at the end: max scrollY is always (documentHeight - viewportHeight), so the spacer must exceed the final breakpoint (S6=2120vh) by a full viewport height or the last state is never fully reachable. -->
-<div style="height: 2140vh;"></div>
+<div style="height: 1450vh;"></div>
 
 </div><!-- /homeView -->
 
 <!-- ================= WORK OVERVIEW ================= -->
 <div id="workView" class="page-view subpage" hidden>
   <div class="work-overview-inner">
-    <p class="subpage-tag"><span class="tag-line"></span>WORK</p>
-    <h1 class="subpage-title">Geselecteerd werk</h1>
+    <div class="work-head">
+      <div>
+        <p class="subpage-tag"><span class="tag-line"></span>WORK</p>
+        <h1 class="subpage-title">Geselecteerd werk</h1>
+      </div>
+      <span class="work-count">03 projecten</span>
+    </div>
 
     <div class="work-overview">
       <div class="work-list-col">
+      <!-- facts per row come from each case study (Rol, Technieken, Type); Unite
+           has none of those yet, so it shows only sector and region -->
       <div class="work-list" id="workList">
-        <a class="work-entry is-active" href="#/work/van-der-hammen" data-preview="preview-vdh" aria-current="true">
+        <a class="work-entry is-active" href="#/work/van-der-hammen" data-preview="preview-vdh" style="--acc:#C0392B">
           <span class="work-index">01</span>
           <span class="work-body">
-            <span class="work-name">Van der Hammen</span>
-            <span class="work-meta">Fitness- en bokschool — Waalwijk</span>
+            <span class="work-name">Van der Hammen Gym</span>
+            <span class="work-meta"><span>Fitness- en bokschool — Waalwijk</span><span class="work-sep"> · </span><span>Design &amp; Development</span><span class="work-sep"> · </span><span>HTML · CSS · JavaScript</span></span>
           </span>
-          <span class="work-arrow">→</span>
+          <span class="work-arrow"><span>Bekijk case</span> <b aria-hidden="true">→</b></span>
         </a>
 
-        <a class="work-entry" href="#/work/unite-reintegratie" data-preview="preview-unite">
+        <a class="work-entry" href="#/work/unite-reintegratie" data-preview="preview-unite" style="--acc:#3B82F6">
           <span class="work-index">02</span>
           <span class="work-body">
             <span class="work-name">Unite Re-integratie</span>
-            <span class="work-meta">Re-integratiecoaching — Waalwijk e.o.</span>
+            <span class="work-meta"><span>Re-integratiecoaching — Waalwijk e.o.</span></span>
           </span>
-          <span class="work-arrow">→</span>
+          <span class="work-arrow"><span>Bekijk case</span> <b aria-hidden="true">→</b></span>
         </a>
 
-        <a class="work-entry" href="#/work/talia" data-preview="preview-talia">
+        <a class="work-entry" href="#/work/talia" data-preview="preview-talia" style="--acc:#C98A5D">
           <span class="work-index">03</span>
           <span class="work-body">
             <span class="work-name">Talia</span>
-            <span class="work-meta">Beauty &amp; make-up — Drunen</span>
+            <span class="work-meta"><span>Beauty &amp; make-up — Drunen</span><span class="work-sep"> · </span><span>Websiteconcept</span></span>
           </span>
-          <span class="work-arrow">→</span>
+          <span class="work-arrow"><span>Bekijk case</span> <b aria-hidden="true">→</b></span>
         </a>
       </div>
 
-      <a class="back-link" href="#/">← Terug naar home</a>
       </div>
 
       <div class="work-preview" id="workPreview">
@@ -5297,7 +5387,7 @@
         <div class="cs-hero-text">
           <div class="cs-hero-intro cs-reveal" style="--d:.24s">
             <p>Voor Van der Hammen Gym heb ik een nieuwe website ontwikkeld die past bij de uitstraling van de sportschool.</p>
-            <p>Het doel was om een moderne en krachtige website te maken waarop bezoekers snel informatie kunnen vinden over de sportschool, trainingen en mogelijkheden om zich aan te melden. De website bestaat uit negen pagina's, is beschikbaar in het Nederlands en Engels en bevat een koppeling met het bestaande boekingssysteem.</p>
+            <p>De uitdaging: de sportschool heeft een duidelijke eigen identiteit, die ook online herkenbaar moest zijn. Tegelijk moest de site praktisch zijn: trainingen bekijken, informatie vinden en doorgaan naar het bestaande boekingssysteem, op elk scherm en in het Nederlands en Engels.</p>
           </div>
           <dl class="cs-facts cs-reveal" style="--d:.34s">
             <div><dt>Rol</dt><dd>Design &amp; Development</dd></div>
@@ -5316,18 +5406,6 @@
       </div>
     </header>
 
-    <!-- 01 — the challenge: compact, one statement carries it -->
-    <section class="cs-chapter cs-grid cs-challenge">
-      <h2 class="cs-label cs-reveal"><span class="cs-num">01</span>De uitdaging</h2>
-      <p class="cs-lead cs-reveal" style="--d:.08s">Van der Hammen Gym heeft een duidelijke eigen identiteit. Die uitstraling wilde ik ook online herkenbaar maken.</p>
-      <div class="cs-body cs-col-a cs-reveal" style="--d:.16s">
-        <p>De website moest niet alleen visueel bij de sportschool passen, maar ook praktisch zijn. Bezoekers moeten eenvoudig trainingen kunnen bekijken, informatie kunnen vinden en vanuit de website verder kunnen naar het boekingssysteem.</p>
-      </div>
-      <div class="cs-body cs-col-b cs-reveal" style="--d:.24s">
-        <p>Daarnaast moest de website goed werken op verschillende schermformaten en in zowel het Nederlands als Engels beschikbaar zijn.</p>
-      </div>
-    </section>
-
     <!-- responsive interlude: the existing laptop / tablet / phone showcase (unchanged), on its own full-bleed stage -->
     <section class="cs-chapter cs-stage">
       <div class="cs-stage-inner">
@@ -5335,7 +5413,7 @@
           <div class="vdh-showcase-header">
             <div>
               <span class="vdh-showcase-eyebrow">Responsive design</span>
-              <h3 class="vdh-showcase-heading">Built for every screen</h3>
+              <h2 class="vdh-showcase-heading">Built for every screen</h2>
             </div>
             <span class="vdh-showcase-sub">Zelfde ervaring.<br>Elk apparaat.</span>
           </div>
@@ -5368,7 +5446,7 @@
         <div class="cs-grid cs-stage-text">
           <p class="cs-lead cs-reveal">De website is ontworpen voor desktop, tablet en mobiel.</p>
           <div class="cs-body cs-reveal" style="--d:.12s">
-            <p>Op ieder formaat blijft dezelfde identiteit herkenbaar, terwijl de indeling wordt aangepast aan het apparaat. Hierdoor blijft de belangrijkste informatie duidelijk zichtbaar en bruikbaar, ongeacht het scherm waarop de website wordt bezocht.</p>
+            <p>Desktop, tablet en mobiel zijn geen kleinere versies van elkaar: navigatie, tekst, beelden en knoppen veranderen per scherm van positie en formaat.</p>
           </div>
         </div>
       </div>
@@ -5376,11 +5454,10 @@
 
     <!-- 02 — role: offset text, then the way of working as a short process line -->
     <section class="cs-chapter cs-grid cs-role">
-      <h2 class="cs-label cs-reveal"><span class="cs-num">02</span>Mijn rol</h2>
+      <h2 class="cs-label cs-reveal"><span class="cs-num">01</span>Mijn rol</h2>
       <p class="cs-lead cs-lead--m cs-reveal" style="--d:.08s">Binnen dit project heb ik gewerkt aan zowel het ontwerp als de ontwikkeling van de website.</p>
       <div class="cs-body cs-reveal" style="--d:.16s">
-        <p>Ik heb nagedacht over de structuur van de pagina's, de visuele uitstraling en hoe bezoekers door de website navigeren. Vervolgens heb ik het ontwerp uitgewerkt tot een responsive website met HTML, CSS en JavaScript.</p>
-        <p>Tijdens de ontwikkeling heb ik de website op verschillende schermformaten getest en waar nodig aanpassingen gemaakt.</p>
+        <p>Ik heb de structuur van de pagina's, de visuele stijl en de navigatie bedacht en het ontwerp uitgewerkt tot een responsive website met HTML, CSS en JavaScript. Tijdens het bouwen heb ik op verschillende schermformaten getest en bijgestuurd waar de gebruikerservaring tekortschoot.</p>
       </div>
       <ol class="cs-process cs-reveal" aria-label="Werkwijze">
         <li style="--i:0"><span class="cs-step-num">01</span><span class="cs-step-name">Structuur</span><span class="cs-step-note">Opbouw van de pagina's</span></li>
@@ -5393,7 +5470,7 @@
     <!-- 03 — design: text left, an annotated detail of the real homepage on the right -->
     <section class="cs-chapter cs-grid cs-design">
       <div class="cs-design-text">
-        <h2 class="cs-label cs-reveal"><span class="cs-num">03</span>Ontwerp</h2>
+        <h2 class="cs-label cs-reveal"><span class="cs-num">02</span>Ontwerp</h2>
         <p class="cs-lead cs-lead--m cs-reveal" style="--d:.08s">Voor het ontwerp heb ik gekozen voor een donkere en krachtige uitstraling die past bij fitness en boksen.</p>
         <ul class="cs-keys">
           <li class="cs-reveal" style="--d:.14s">
@@ -5401,13 +5478,13 @@
               <span class="cs-key-tag"><span class="cs-marker">1</span>Fotografie</span>
               <span class="cs-key-tag"><span class="cs-marker">2</span>Typografie</span>
             </div>
-            <p>Grote foto's spelen een belangrijke rol in het ontwerp en geven bezoekers direct een beeld van de sportschool. De duidelijke typografie zorgt ervoor dat belangrijke teksten snel opvallen.</p>
+            <p>Grote foto's laten direct de sportschool zien; duidelijke typografie laat belangrijke tekst snel opvallen.</p>
           </li>
           <li class="cs-reveal" style="--d:.22s">
             <div class="cs-key-tags">
               <span class="cs-key-tag"><span class="cs-marker">3</span>Goudkleurige accenten</span>
             </div>
-            <p>Goudkleurige accenten worden gebruikt voor belangrijke onderdelen, zoals knoppen en kleine details. Hierdoor ontstaat contrast met de donkere achtergrond en blijft de uitstraling herkenbaar door de hele website.</p>
+            <p>Goudkleurige accenten op knoppen en details geven contrast met de donkere achtergrond en houden de stijl herkenbaar.</p>
           </li>
         </ul>
       </div>
@@ -5427,17 +5504,6 @@
       </figure>
     </section>
 
-    <!-- 04 — development: a pull-quote carries the idea, the full text sits beside it -->
-    <section class="cs-chapter cs-grid cs-dev">
-      <h2 class="cs-label cs-reveal"><span class="cs-num">04</span>Development</h2>
-      <p class="cs-quote cs-reveal" style="--d:.08s" aria-hidden="true">Desktop, tablet en mobiel zijn niet simpelweg kleinere versies <em>van elkaar.</em></p>
-      <div class="cs-body cs-reveal" style="--d:.16s">
-        <p>De website is ontwikkeld met HTML, CSS en JavaScript en is volledig responsive opgebouwd.</p>
-        <p>Desktop, tablet en mobiel zijn niet simpelweg kleinere versies van elkaar. De indeling past zich aan het beschikbare scherm aan. Navigatie, tekst, afbeeldingen en knoppen veranderen waar nodig van positie en formaat.</p>
-        <p>Tijdens het ontwikkelen heb ik verschillende schermformaten getest en onderdelen aangepast wanneer de gebruikerservaring niet goed genoeg werkte.</p>
-      </div>
-    </section>
-
     <!-- 05 — booking: the real sign-up button + the route to the existing booking system, text right -->
     <section class="cs-chapter cs-chapter--tight cs-grid cs-booking">
       <div class="cs-booking-visual cs-reveal">
@@ -5454,35 +5520,31 @@
         </ol>
       </div>
       <div class="cs-booking-text">
-        <h2 class="cs-label cs-reveal"><span class="cs-num">05</span>Boekingsintegratie</h2>
+        <h2 class="cs-label cs-reveal"><span class="cs-num">03</span>Boekingsintegratie</h2>
         <div class="cs-body cs-reveal" style="--d:.1s">
-          <p>Een belangrijk onderdeel van de website is de mogelijkheid om vanuit de website verder te gaan naar het bestaande boekingssysteem.</p>
-          <p>Hierdoor kan de website zich richten op het presenteren van de sportschool en de trainingen, terwijl bezoekers vanuit dezelfde ervaring eenvoudig verder kunnen naar het boeken of aanmelden.</p>
+          <p>Vanuit de website gaan bezoekers door naar het bestaande boekingssysteem. Zo richt de website zich op het presenteren van de sportschool en de trainingen, en blijft boeken of aanmelden één stap verder.</p>
         </div>
       </div>
     </section>
 
     <!-- 06 — result: the project's real scope in large numbers, then the summary -->
     <section class="cs-chapter cs-grid cs-result">
-      <h2 class="cs-label cs-reveal"><span class="cs-num">06</span>Resultaat</h2>
+      <h2 class="cs-label cs-reveal"><span class="cs-num">04</span>Resultaat</h2>
       <ul class="cs-numbers">
         <li class="cs-reveal" style="--d:.06s"><span class="cs-big">9</span><span class="cs-big-label">Pagina's</span></li>
         <li class="cs-reveal" style="--d:.16s"><span class="cs-big">2</span><span class="cs-big-label">Talen — NL · EN</span></li>
         <li class="cs-reveal" style="--d:.26s"><span class="cs-big">3</span><span class="cs-big-label">Schermformaten</span></li>
       </ul>
       <p class="cs-lead cs-reveal">Het eindresultaat is een website van negen pagina's waarin de identiteit van Van der Hammen Gym centraal staat.</p>
-      <div class="cs-body cs-reveal" style="--d:.12s">
-        <p>De combinatie van een donkere uitstraling, fotografie, duidelijke navigatie, twee talen en de boekingsmogelijkheid zorgt voor een website die niet alleen visueel bij de sportschool past, maar ook praktisch te gebruiken is.</p>
-      </div>
     </section>
 
     <!-- 07 — learned: quiet, shifted right, a calm landing before the next project -->
     <section class="cs-chapter cs-grid cs-learned">
       <div class="cs-learned-inner">
-        <h2 class="cs-label cs-reveal"><span class="cs-num">07</span>Wat ik heb geleerd</h2>
+        <h2 class="cs-label cs-reveal"><span class="cs-num">05</span>Wat ik heb geleerd</h2>
         <p class="cs-lead cs-lead--m cs-reveal" style="--d:.08s">Dit project heeft mij vooral meer ervaring gegeven met het uitwerken van een groter websiteproject.</p>
         <div class="cs-body cs-reveal" style="--d:.16s">
-          <p>Ik heb geleerd om niet alleen naar één pagina te kijken, maar ervoor te zorgen dat meerdere pagina's samen één consistente website vormen. Daarnaast heb ik meer ervaring opgedaan met responsive development, het testen van verschillende schermformaten en het verwerken van een extern boekingssysteem in een website.</p>
+          <p>Ik heb geleerd om meerdere pagina's als één consistente website te ontwerpen, en om een extern boekingssysteem in een website te verwerken.</p>
         </div>
       </div>
     </section>
@@ -5523,7 +5585,6 @@
         <p class="cs-lead cs-lead--m u-hero-lead cs-reveal" style="--d:.2s">Voor Unite Re-integratie heb ik gewerkt aan een website waarbij duidelijkheid en toegankelijkheid centraal staan.</p>
         <div class="cs-body u-hero-body cs-reveal" style="--d:.28s">
           <p>De website presenteert de dienstverlening op een rustige en professionele manier en helpt bezoekers om snel de juiste informatie te vinden.</p>
-          <p>De interface is ontworpen voor verschillende schermformaten, waarbij desktop, tablet en mobiel ieder een passende indeling krijgen.</p>
         </div>
         <dl class="cs-facts u-hero-facts cs-reveal" style="--d:.36s">
           <div><dt>Sector</dt><dd>Re-integratiebegeleiding</dd></div>
@@ -5578,7 +5639,7 @@
         <div class="vdh-showcase-header">
           <div>
             <span class="vdh-showcase-eyebrow">Responsive design</span>
-            <h3 class="vdh-showcase-heading">Built for every screen</h3>
+            <h2 class="vdh-showcase-heading">Built for every screen</h2>
           </div>
           <span class="vdh-showcase-sub">Zelfde ervaring.<br>Elk apparaat.</span>
         </div>
@@ -5611,15 +5672,15 @@
         <ol class="u-screens">
           <li class="cs-reveal">
             <span class="u-screen-name"><span class="cs-num">01</span>Desktop</span>
-            <p>Op desktop bestaat de hero uit twee duidelijke delen: content aan de linkerkant en fotografie aan de rechterkant.</p>
+            <p>Content links, fotografie rechts.</p>
           </li>
           <li class="cs-reveal" style="--d:.1s">
             <span class="u-screen-name"><span class="cs-num">02</span>Tablet</span>
-            <p>Op tablet blijft deze verdeling grotendeels herkenbaar, maar worden de verhoudingen aangepast aan de beschikbare ruimte.</p>
+            <p>Dezelfde verdeling, met verhoudingen die passen bij de ruimte.</p>
           </li>
           <li class="cs-reveal" style="--d:.2s">
             <span class="u-screen-name"><span class="cs-num">03</span>Mobiel</span>
-            <p>Op mobiel verandert de structuur sterker. De navigatie wordt vereenvoudigd naar een mobiel menu en de belangrijkste tekst en call-to-actions krijgen voorrang. Hierdoor blijft de pagina overzichtelijk op een veel smaller scherm.</p>
+            <p>Een mobiel menu; tekst en call-to-actions krijgen voorrang.</p>
           </li>
         </ol>
       </div>
@@ -5637,15 +5698,6 @@
       </figure>
       <div class="cs-body u-ux-body cs-reveal" style="--d:.2s">
         <p>Daarom zijn de belangrijkste acties duidelijk zichtbaar, waaronder het plannen van een gesprek en het bekijken van de diensten.</p>
-      </div>
-    </section>
-
-    <!-- 03 — result: a calm, wide closing statement -->
-    <section class="cs-chapter cs-grid u-result">
-      <h2 class="cs-label cs-reveal"><span class="cs-num">03</span>Resultaat</h2>
-      <p class="cs-lead u-result-lead cs-reveal" style="--d:.08s">Het resultaat is een rustige en professionele interface waarin informatie, fotografie en duidelijke call-to-actions samenkomen.</p>
-      <div class="cs-body u-result-body cs-reveal" style="--d:.16s">
-        <p>De responsive uitwerking zorgt ervoor dat de belangrijkste inhoud ook op kleinere schermen overzichtelijk blijft.</p>
       </div>
     </section>
 
@@ -5716,7 +5768,7 @@
           <p class="cs-lead cs-lead--m cs-reveal" style="--d:.08s">De website gebruikt een lichte, warme achtergrond in combinatie met grote fotografie.</p>
           <div class="cs-body cs-reveal" style="--d:.16s">
             <p>Voor de belangrijkste koppen wordt een elegante serif-typografie gebruikt. Dit geeft de website een heel ander karakter dan mijn andere projecten en sluit aan bij de beauty- en make-upwereld.</p>
-            <p>De interface gebruikt bewust weinig kleuren en decoratieve elementen. Hierdoor blijven de fotografie en inhoud het belangrijkste onderdeel van de pagina.</p>
+            <p>Weinig kleuren en decoratie, zodat fotografie en inhoud het belangrijkste blijven.</p>
           </div>
           <div class="cs-swatches cs-reveal" style="--d:.24s">
             <span class="cs-swatch"><i style="background:#FAF7F2"></i>Warm wit</span>
@@ -5735,7 +5787,7 @@
         <div class="vdh-showcase-header">
           <div>
             <span class="vdh-showcase-eyebrow">Responsive design</span>
-            <h3 class="vdh-showcase-heading">Built for every screen</h3>
+            <h2 class="vdh-showcase-heading">Built for every screen</h2>
           </div>
           <span class="vdh-showcase-sub">Zelfde ervaring.<br>Elk apparaat.</span>
         </div>
@@ -5768,15 +5820,15 @@
         <ol class="t-rows">
           <li class="cs-reveal">
             <span class="t-row-name">Desktop</span>
-            <p>Op desktop is de hero verdeeld in twee grote delen. De tekst staat links en de fotografie neemt de rechterkant van het scherm in.</p>
+            <p>Tekst links, fotografie rechts.</p>
           </li>
           <li class="cs-reveal">
             <span class="t-row-name">Tablet</span>
-            <p>Op tablet blijft deze verdeling zichtbaar, maar wordt de content smaller zodat beide onderdelen voldoende ruimte behouden.</p>
+            <p>Dezelfde verdeling, met smallere content.</p>
           </li>
           <li class="cs-reveal">
             <span class="t-row-name">Mobiel</span>
-            <p>Op mobiel verandert de compositie. De grote afbeelding krijgt eerst ruimte en de tekst volgt daaronder. Hierdoor wordt het ontwerp niet simpelweg verkleind, maar daadwerkelijk aangepast aan het kleinere scherm.</p>
+            <p>Eerst de grote afbeelding, daaronder de tekst: aangepast, niet verkleind.</p>
           </li>
         </ol>
       </div>
@@ -5794,23 +5846,16 @@
       </div>
     </section>
 
-    <!-- 03 — result -->
-    <section class="cs-chapter cs-grid t-result">
-      <h2 class="cs-label cs-reveal"><span class="cs-num">03</span>Resultaat</h2>
-      <p class="cs-lead t-result-lead cs-reveal" style="--d:.08s">Het resultaat is een lichte, rustige websitepresentatie waarin fotografie en typografie de visuele identiteit bepalen.</p>
-      <div class="cs-body t-result-body cs-reveal" style="--d:.16s">
-        <p>Door de verschillende responsive layouts blijft die uitstraling behouden op desktop, tablet en mobiel.</p>
-      </div>
-    </section>
-
-    <!-- closing: last project, back to the overview -->
-    <nav class="cs-next t-next" aria-label="Terug naar Work">
-      <a class="cs-next-link cs-reveal" href="#/work" style="--cs-next-accent:#C98A5D">
+    <!-- next project: the last case leads round to the first, like the
+         others (with its thumbnail); "← Work" at the top stays the way back -->
+    <nav class="cs-next" aria-label="Volgend project">
+      <a class="cs-next-link cs-reveal" href="#/work/van-der-hammen" style="--cs-next-accent:#C0392B">
         <span class="cs-next-text">
-          <span class="cs-next-label">Alle projecten</span>
-          <span class="cs-next-name">Terug naar <span class="cs-nowrap">Work<span class="cs-arrow">→</span></span></span>
-          <span class="cs-next-meta">Van der Hammen · Unite Re-integratie · Talia</span>
+          <span class="cs-next-label">Volgend project — 01</span>
+          <span class="cs-next-name">Van der Hammen <span class="cs-nowrap">Gym<span class="cs-arrow">→</span></span></span>
+          <span class="cs-next-meta">Fitness- en bokschool — Waalwijk</span>
         </span>
+        <span class="cs-next-thumb"><img data-cs-clone="vdhHeroShot" alt="" /></span>
       </a>
     </nav>
 
@@ -5843,7 +5888,6 @@
           <li data-i18n="fact1">21 jaar</li>
           <li data-i18n="fact2">Nederland</li>
           <li>Software Development</li>
-          <li data-i18n="fact4">MBO 4 — laatste jaar</li>
         </ul>
       </div>
     </section>
@@ -5864,17 +5908,17 @@
         <li class="ab-trait ab-trait--1">
           <span class="ab-trait-num" aria-hidden="true">01</span>
           <span class="ab-trait-mask"><span class="ab-trait-word" data-i18n="trait1">Nieuwsgierig</span></span>
-          <p class="ab-trait-copy" data-i18n="traitCopy1">Als iets mijn interesse heeft, wil ik weten hoe het werkt en wat ik ermee kan doen. Ik leer graag nieuwe dingen en blijf mezelf uitdagen.</p>
+          <p class="ab-trait-copy" data-i18n="traitCopy1">Als iets mijn interesse heeft, wil ik weten hoe het werkt en wat ik ermee kan doen.</p>
         </li>
         <li class="ab-trait ab-trait--2">
           <span class="ab-trait-num" aria-hidden="true">02</span>
           <span class="ab-trait-mask"><span class="ab-trait-word" data-i18n="trait2">Sociaal</span></span>
-          <p class="ab-trait-copy" data-i18n="traitCopy2">Ik werk graag samen, wissel ideeën uit en zet samen iets moois neer. Maar ik kan ook prima zelfstandig op zoek naar een oplossing.</p>
+          <p class="ab-trait-copy" data-i18n="traitCopy2">Ik werk graag samen, maar zoek ook prima zelfstandig naar een oplossing.</p>
         </li>
         <li class="ab-trait ab-trait--3">
           <span class="ab-trait-num" aria-hidden="true">03</span>
           <span class="ab-trait-mask"><span class="ab-trait-word" data-i18n="trait3">Gedreven</span></span>
-          <p class="ab-trait-copy" data-i18n="traitCopy3">Ik wil mezelf blijven ontwikkelen en steeds een stap verder komen.</p>
+          <!-- no copy of its own: the quote below says it -->
         </li>
       </ol>
 
@@ -5922,8 +5966,8 @@
               <h3 class="ab-tl-word">Software<br>Development</h3>
               <p class="ab-tl-meta"><span>MBO 4</span><span>2023–2027</span><span class="ab-tl-status" data-i18n="tlNow">Huidige opleiding</span></p>
               <div class="ab-tl-copy">
-                <p data-i18n="route2">Na een tijdje merkte ik dat ik meer wilde dan alleen problemen oplossen. Ik wilde ook zelf dingen bouwen en begrijpen hoe software achter de schermen werkt.</p>
-                <p data-i18n="route3">Daarom ben ik verdergegaan met Software Development. Inmiddels zit ik in mijn laatste jaar en merk ik dat mijn interesse steeds breder wordt. Van websites bouwen tot systemen koppelen en processen automatiseren.</p>
+                <p data-i18n="route2">Na een tijdje wilde ik meer dan alleen problemen oplossen: ik wilde zelf dingen bouwen en begrijpen hoe software werkt.</p>
+                <p data-i18n="route3">Inmiddels zit ik in mijn laatste jaar en wordt mijn interesse steeds breder: van websites bouwen tot systemen koppelen en processen automatiseren.</p>
                 <p class="ab-tl-close" data-i18n="route4">Juist die afwisseling maakt IT voor mij interessant.</p>
               </div>
             </div>
@@ -5946,23 +5990,25 @@
       </div>
     </section>
 
-    <!-- 04 — OUTSIDE IT: one composed spread instead of rows. The photo is a
-         compact portrait just left of centre; around it each sport gets its
-         own place and its own typographic character:
-           VOETBAL — heavy, very large, cutting across the dark middle of the
-                     photo (arms / jacket, never the face);
-           BOKSEN  — set vertically, climbing the photo's right edge;
-           FITNESS — light and widely tracked, with the sport story under it.
-         The section then closes quietly on gaming & reading inside one
-         sentence. Motion (set up by the script, off with reduced motion):
-         the frame opens, VOETBAL rises letter by letter, BOKSEN slides along
-         its own axis, FITNESS tracks in; while scrolling the photo, VOETBAL
-         and BOKSEN move at slightly different speeds for a little depth.
-         Later photos (football / boxing / gym): add
-           <figure class="ab-out-extra"><img src="…" alt="…"></figure>
-         as the first child of .ab-out-stage — it takes the open space at the
-         top left of the spread (below the text on phones). Nothing is shown
-         until such a photo exists. -->
+    <!-- 04 — OUTSIDE IT: one editorial spread, no photo. Each sport gets its
+         own place, its own type and its own graphic language, drawn in
+         hairlines from the sport itself (aria-hidden):
+           VOETBAL — heavy, edge to edge, across a pitch; the halfway line,
+                     the centre circle and the boxes draw as it rises letter
+                     by letter
+           BOKSEN  — vertical between the three ropes of a ring; it comes in
+                     fast along its own axis, like a jab
+           FITNESS — light and widely tracked; the tracking tightens, then
+                     five reps fill one after another
+         Then the sport story as one statement ("competitief" underlined),
+         and the quiet ending on gaming & reading before the footer. Motion
+         is set up by the script (off with reduced motion); while scrolling,
+         VOETBAL and BOKSEN drift a little at different speeds.
+         Later sport photos: add
+           <figure class="ab-out-shot ab-out-shot--voetbal"><img src="…" alt="…"></figure>
+         (or --boksen / --fitness) as a child of .ab-out-stage — each has a
+         reserved place next to its word. Nothing shows until such a photo
+         exists. -->
     <section class="ab-section ab-outside" id="aboutOutside" aria-labelledby="abOutsideTitle">
       <div class="ab-out-head">
         <p class="ab-chapter about-reveal"><span class="ab-chapter-num">04</span><span data-i18n="ch4">Buiten IT</span></p>
@@ -5971,29 +6017,28 @@
       </div>
 
       <div class="ab-out-stage" id="aboutOutStage">
-        <figure class="ab-out-photo" id="aboutOutsidePhoto">
-          <img src="about-photos/akif-rotterdam-1506.jpg"
-               srcset="about-photos/akif-rotterdam-960.jpg 960w, about-photos/akif-rotterdam-1506.jpg 1506w"
-               sizes="(max-width: 680px) 72vw, (max-width: 1100px) 48vw, 39vw"
-               width="1506" height="1882" loading="lazy" decoding="async"
-               alt="Akif 's avonds aan het water in Rotterdam, met de verlichte skyline achter hem"
-               data-i18n-alt="outPhotoAlt">
-        </figure>
+        <!-- i — VOETBAL, across a pitch -->
+        <div class="ab-out-pitch-row">
+          <span class="ab-out-pitch" aria-hidden="true"><i class="ab-out-pitch-half"></i><i class="ab-out-pitch-circle"></i><i class="ab-out-pitch-box ab-out-pitch-box--l"></i><i class="ab-out-pitch-box ab-out-pitch-box--r"></i></span>
+          <p class="ab-out-word ab-out-voetbal"><span class="ab-out-num" aria-hidden="true">i</span><span class="ab-out-split" data-i18n="sport1">Voetbal</span></p>
+        </div>
 
-        <p class="ab-out-word ab-out-voetbal"><span class="ab-out-num" aria-hidden="true">i</span><span class="ab-out-split" data-i18n="sport1">Voetbal</span></p>
-        <p class="ab-out-word ab-out-boksen"><span class="ab-out-mask"><span class="ab-out-slide" data-i18n="sport2">Boksen</span></span><span class="ab-out-num" aria-hidden="true">ii</span></p>
+        <!-- ii — BOKSEN, between the ropes -->
+        <div class="ab-out-ring">
+          <span class="ab-out-ropes" aria-hidden="true"><i></i><i></i><i></i></span>
+          <p class="ab-out-word ab-out-boksen"><span class="ab-out-num" aria-hidden="true">ii</span><span class="ab-out-mask"><span class="ab-out-slide" data-i18n="sport2">Boksen</span></span></p>
+        </div>
 
-        <p class="ab-out-intro about-reveal" data-i18n="outside1">Naast school en programmeren ben ik graag actief bezig. Ik voetbal, ga naar de sportschool en vind boksen ook leuk.</p>
-
+        <!-- iii — FITNESS, five reps -->
         <div class="ab-out-fit">
           <p class="ab-out-word ab-out-fitness"><span class="ab-out-num" aria-hidden="true">iii</span><span class="ab-out-track">Fitness</span></p>
-          <p class="ab-out-copy about-reveal" data-i18n="outside2">Sport is voor mij een manier om mijn hoofd leeg te maken, mezelf uit te dagen en steeds beter te worden. Ik ben best competitief en vind het leuk om ergens naartoe te werken.</p>
+          <span class="ab-out-reps" aria-hidden="true"><i style="--r:0"></i><i style="--r:1"></i><i style="--r:2"></i><i style="--r:3"></i><i style="--r:4"></i></span>
         </div>
-      </div>
 
-      <div class="ab-out-end about-reveal">
-        <p class="ab-out-end-label"><span data-i18n="also">En verder</span><span class="ab-out-end-words"><span data-i18n="gaming">Gamen</span> &middot; <span data-i18n="reading">Lezen</span></span></p>
-        <p class="ab-out-end-copy" data-i18n="outside3">Maar ik ben niet altijd aan het sporten. Ik <em>game</em> ook graag, lees af en toe een <em>boek</em> en vind het gezellig om tijd met vrienden door te brengen.</p>
+        <p class="ab-out-statement about-reveal" data-i18n="outside2">Sport is voor mij een manier om mijn hoofd leeg te maken, mezelf uit te dagen en steeds beter te worden. Ik ben best <em>competitief</em> en vind het leuk om ergens naartoe te werken.</p>
+
+        <!-- the rest, in one line: no section of its own -->
+        <p class="ab-out-also about-reveal" data-i18n="outside3">Verder: <em>gamen</em>, af en toe een <em>boek</em> en tijd met vrienden.</p>
       </div>
     </section>
 
@@ -6060,7 +6105,6 @@
         <button type="button" class="xa-jump" data-target="xaIndex"><span data-i18n="toIndex">Naar de index</span><span class="xa-jump-arrow" aria-hidden="true">&darr;</span></button>
         <div class="xa-hero-copy">
           <p data-i18n="intro1">Tijdens mijn stages heb ik verschillende kanten van IT leren kennen. Ik heb ervaring opgedaan met IT-support, softwareontwikkeling en het onderzoeken van automatiseringsmogelijkheden.</p>
-          <p data-i18n="intro2">Van technische problemen oplossen tot werken aan software en systemen. Hieronder zie je waar ik heb gewerkt en met welke technieken ik ervaring heb opgedaan.</p>
         </div>
       </div>
     </header>
@@ -6073,11 +6117,11 @@
       </div>
       <div class="xa-index-grid">
         <ol class="xa-rows" id="xaRows">
-          <li class="xa-reveal"><button type="button" class="xa-row" data-ch="1" data-target="xaCh1"><span class="xa-row-num">01</span><span class="xa-row-name">Ceva Logistics</span><span class="xa-row-side"><span class="xa-row-period">2022</span><span class="xa-row-theme" data-i18n="th1">Fundament</span></span><span class="xa-row-desc"><span class="xa-row-role">IT Support Intern</span> — <span data-i18n="ix1">IT-support op de ICT Service Desk: laptops, monitoren en werkplekken.</span></span></button></li>
-          <li class="xa-reveal" style="--d:.06s"><button type="button" class="xa-row" data-ch="2" data-target="xaCh2"><span class="xa-row-num">02</span><span class="xa-row-name">Hydro Extrusion</span><span class="xa-row-side"><span class="xa-row-period">2022 – 2023</span><span class="xa-row-theme" data-i18n="th2">Systemen</span></span><span class="xa-row-desc"><span class="xa-row-role">IT Support Intern</span> — <span data-i18n="ix2">Opnieuw de ICT Service Desk: werkplekken inrichten en het ticketingsysteem bijhouden.</span></span></button></li>
-          <li class="xa-reveal" style="--d:.12s"><button type="button" class="xa-row" data-ch="3" data-target="xaCh3"><span class="xa-row-num">03</span><span class="xa-row-name">Infotech BV</span><span class="xa-row-side"><span class="xa-row-period">2024 – 2025</span><span class="xa-row-theme" data-i18n="th3">Ontwikkeling</span></span><span class="xa-row-desc"><span class="xa-row-role">Software Development Intern</span> — <span data-i18n="ix3">Mijn eerste stage binnen softwareontwikkeling: werken aan de UniWeb-client.</span></span></button></li>
-          <li class="xa-reveal" style="--d:.18s"><button type="button" class="xa-row" data-ch="4" data-target="xaCh4"><span class="xa-row-num">04</span><span class="xa-row-name">ADC Nederland</span><span class="xa-row-side"><span class="xa-row-period">2026</span><span class="xa-row-theme" data-i18n="th4">Automatisering</span></span><span class="xa-row-desc"><span class="xa-row-role">Software Development Intern</span> — <span data-i18n="ix4">Gegevens uit productiemachines verzamelen en verwerken, met Python en Microsoft SQL Server.</span></span></button></li>
-          <li class="xa-reveal" style="--d:.24s"><button type="button" class="xa-row xa-row--now" data-ch="5" data-target="xaCh5"><span class="xa-row-num">05</span><span class="xa-row-name">Baril Coatings</span><span class="xa-row-side"><span class="xa-row-period">2026 – <span data-i18n="now">nu</span></span><span class="xa-row-theme" data-i18n="th5">Integratie</span></span><span class="xa-row-desc"><span class="xa-row-role" data-i18n="barilRole">IT &amp; Automatisering</span> — <span data-i18n="ix5">IT-processen onderzoeken en verbeteren, met automatisering en API-koppelingen.</span></span></button></li>
+          <li class="xa-reveal"><button type="button" class="xa-row" data-ch="1" data-target="xaCh1"><span class="xa-row-num">01</span><span class="xa-row-name">Ceva Logistics</span><span class="xa-row-side"><span class="xa-row-period">2022</span><span class="xa-row-theme" data-i18n="th1">Fundament</span></span><span class="xa-row-desc"><span class="xa-row-role">IT Support Intern</span><span class="xa-row-more"> — <span data-i18n="ix1">IT-support op de ICT Service Desk: laptops, monitoren en werkplekken.</span></span></span></button></li>
+          <li class="xa-reveal" style="--d:.06s"><button type="button" class="xa-row" data-ch="2" data-target="xaCh2"><span class="xa-row-num">02</span><span class="xa-row-name">Hydro Extrusion</span><span class="xa-row-side"><span class="xa-row-period">2022 – 2023</span><span class="xa-row-theme" data-i18n="th2">Systemen</span></span><span class="xa-row-desc"><span class="xa-row-role">IT Support Intern</span><span class="xa-row-more"> — <span data-i18n="ix2">Opnieuw de ICT Service Desk: werkplekken inrichten en het ticketingsysteem bijhouden.</span></span></span></button></li>
+          <li class="xa-reveal" style="--d:.12s"><button type="button" class="xa-row" data-ch="3" data-target="xaCh3"><span class="xa-row-num">03</span><span class="xa-row-name">Infotech BV</span><span class="xa-row-side"><span class="xa-row-period">2024 – 2025</span><span class="xa-row-theme" data-i18n="th3">Ontwikkeling</span></span><span class="xa-row-desc"><span class="xa-row-role">Software Development Intern</span><span class="xa-row-more"> — <span data-i18n="ix3">Mijn eerste stage binnen softwareontwikkeling: werken aan de UniWeb-client.</span></span></span></button></li>
+          <li class="xa-reveal" style="--d:.18s"><button type="button" class="xa-row" data-ch="4" data-target="xaCh4"><span class="xa-row-num">04</span><span class="xa-row-name">ADC Nederland</span><span class="xa-row-side"><span class="xa-row-period">2026</span><span class="xa-row-theme" data-i18n="th4">Automatisering</span></span><span class="xa-row-desc"><span class="xa-row-role">Software Development Intern</span><span class="xa-row-more"> — <span data-i18n="ix4">Gegevens uit productiemachines verzamelen en verwerken, met Python en Microsoft SQL Server.</span></span></span></button></li>
+          <li class="xa-reveal" style="--d:.24s"><button type="button" class="xa-row xa-row--now" data-ch="5" data-target="xaCh5"><span class="xa-row-num">05</span><span class="xa-row-name">Baril Coatings</span><span class="xa-row-side"><span class="xa-row-period">2026 – <span data-i18n="now">nu</span></span><span class="xa-row-theme" data-i18n="th5">Integratie</span></span><span class="xa-row-desc"><span class="xa-row-role" data-i18n="barilRole">IT &amp; Automatisering</span><span class="xa-row-more"> — <span data-i18n="ix5">IT-processen onderzoeken en verbeteren, met automatisering en API-koppelingen.</span></span></span></button></li>
         </ol>
         <!-- wide screens: the hovered / focused file, next to its row -->
         <div class="xa-preview" id="xaPreview" aria-hidden="true">
@@ -6090,7 +6134,7 @@
     </section>
 
     <!-- ===== 01 — Ceva Logistics: the foundation, a calm ruled ledger ===== -->
-    <section class="xa-ch xa-ch--1" id="xaCh1" data-ch="1" data-name="Ceva Logistics" tabindex="-1" aria-labelledby="xaName1">
+    <section class="xa-ch xa-ch--1 xa-ch--compact" id="xaCh1" data-ch="1" data-name="Ceva Logistics" tabindex="-1" aria-labelledby="xaName1">
       <div class="xa-card">
         <p class="xa-card-meta"><span><span data-i18n="file">Dossier</span> 01 / 05</span><span class="xa-card-theme" data-i18n="th1">Fundament</span><span>2022</span></p>
         <h2 class="xa-name" id="xaName1"><span class="xa-name-a">Ceva</span> <span class="xa-name-b">Logistics</span></h2>
@@ -6118,29 +6162,20 @@
     </section>
 
     <!-- ===== 02 — Hydro Extrusion: systems, the ticket flow ===== -->
-    <section class="xa-ch xa-ch--2" id="xaCh2" data-ch="2" data-name="Hydro Extrusion" tabindex="-1" aria-labelledby="xaName2">
+    <section class="xa-ch xa-ch--2 xa-ch--compact" id="xaCh2" data-ch="2" data-name="Hydro Extrusion" tabindex="-1" aria-labelledby="xaName2">
       <div class="xa-card">
         <p class="xa-card-meta"><span><span data-i18n="file">Dossier</span> 02 / 05</span><span class="xa-card-theme" data-i18n="th2">Systemen</span><span>2022 – 2023</span></p>
         <h2 class="xa-name" id="xaName2"><span class="xa-name-a">Hydro</span> <span class="xa-name-b">Extrusion</span></h2>
         <span class="xa-card-num" aria-hidden="true">02</span>
       </div>
       <div class="xa-body">
-        <figure class="xa-fig xa-flow xa-reveal" aria-hidden="true">
-          <ol class="xa-flow-steps">
-            <li><span class="xa-flow-k">01</span><span data-i18n="flow1">Melding</span></li>
-            <li><span class="xa-flow-k">02</span><span data-i18n="flow2">Ticket</span></li>
-            <li><span class="xa-flow-k">03</span><span data-i18n="flow3">In behandeling</span></li>
-            <li><span class="xa-flow-k">04</span><span data-i18n="flow4">Opgelost</span></li>
-          </ol>
-          <figcaption class="xa-cap"><span>Fig. 02</span> <span data-i18n="cap2">Het ticketingsysteem als werkproces. Illustratie.</span></figcaption>
-        </figure>
         <div class="xa-col">
           <dl class="xa-facts xa-facts--row xa-reveal">
             <div><dt data-i18n="period">Periode</dt><dd><time datetime="2022-10" data-i18n="oct2022">Okt 2022</time> — <time datetime="2023-02">Feb 2023</time></dd></div>
             <div><dt data-i18n="role">Functie</dt><dd>IT Support Intern</dd></div>
             <div><dt data-i18n="dept">Afdeling</dt><dd>ICT Service Desk</dd></div>
           </dl>
-          <p class="xa-lead xa-reveal" style="--d:.08s" data-i18n="hydroLead">Mijn tweede stage op de ICT Service Desk. Dezelfde werkzaamheden als bij Ceva Logistics: laptops configureren, monitoren plaatsen, werkplekken inrichten en het ticketingsysteem beheren en bijhouden, nu bij Hydro Extrusion.</p>
+          <p class="xa-lead xa-reveal" style="--d:.08s" data-i18n="hydroLead">Mijn tweede stage op de ICT Service Desk, nu bij Hydro Extrusion: dezelfde werkzaamheden als bij Ceva Logistics.</p>
           <button type="button" class="xa-link xa-reveal" data-target="xaTasks1"><span data-i18n="seeTasks">De werkzaamheden in dossier 01</span><span class="xa-pink" aria-hidden="true">&uarr;</span></button>
           <div class="xa-tech xa-reveal"><h3 class="xa-tech-label" data-i18n="skillsSub">Vaardigheden</h3><ul class="xa-tech-list"><li>IT Support</li><li data-i18n="skWorkplace">Werkplekbeheer</li><li data-i18n="skTicketing">Ticketsystemen</li></ul></div>
         </div>
@@ -6159,7 +6194,6 @@
         <div class="xa-col">
           <p class="xa-lead xa-reveal" data-i18n="ch2Lead">Mijn eerste stage binnen softwareontwikkeling: bij Infotech BV werkte ik aan de UniWeb-client, in een bestaande codebase.</p>
           <div class="xa-desc xa-reveal" style="--d:.08s">
-            <p data-i18n="infoDesc1">Bij Infotech BV heb ik stagegelopen binnen softwareontwikkeling en gewerkt aan de UniWeb-client.</p>
             <p data-i18n="infoDesc2">Tijdens deze stage heb ik praktijkervaring opgedaan met het ontwikkelen van software en het werken aan een bestaande applicatie.</p>
           </div>
           <dl class="xa-facts xa-reveal">
@@ -6193,7 +6227,6 @@
         <span class="xa-card-num" aria-hidden="true">04</span>
       </div>
       <div class="xa-body">
-        <p class="xa-lead xa-lead--wide xa-reveal" data-i18n="ch3Lead">Data uit productiemachines verzamelen, systemen aan elkaar koppelen en processen automatiseren. Mijn laatste twee stages draaien om hoe systemen samenwerken.</p>
         <figure class="xa-fig xa-stream xa-reveal" aria-hidden="true">
           <ol class="xa-stream-nodes">
             <li><span class="xa-stream-k">in</span><span data-i18n="node1">Productie&shy;machines</span></li>
@@ -6207,7 +6240,6 @@
         <div class="xa-trio">
           <div class="xa-desc xa-reveal">
             <p data-i18n="adcDesc1">Bij ADC Nederland heb ik gewerkt aan een oplossing voor het verzamelen en verwerken van gegevens uit productiemachines.</p>
-            <p data-i18n="adcDesc2">Hierbij heb ik ervaring opgedaan met Python, databases en het verwerken van gegevens uit verschillende systemen.</p>
           </div>
           <div class="xa-reveal" style="--d:.06s">
             <h3 class="xa-sub" id="xaTasks4" data-i18n="tasks">Werkzaamheden</h3>
@@ -6279,7 +6311,6 @@
     <section class="xa-appendix" id="xaAppendix" aria-labelledby="xaAppTitle">
       <div class="xa-app-head xa-reveal">
         <h2 class="xa-tag" id="xaAppTitle"><span class="xa-tag-num" data-i18n="appNum">Bijlage</span><span data-i18n="appTitle">Gereedschap</span></h2>
-        <p class="xa-app-lead" data-i18n="skillsIntro">Door mijn opleidingen, projecten en stages heb ik met verschillende programmeertalen, tools en systemen gewerkt. Ik blijf nieuwe technieken ontdekken en mijn kennis verder uitbreiden.</p>
       </div>
       <dl class="xa-tiers">
         <div class="xa-tier xa-tier--core xa-reveal">
@@ -6461,9 +6492,6 @@
           <div class="oc-status-msg" id="ocStatusMsg" role="status" aria-live="polite" tabindex="-1" hidden></div>
         </div>
       </form>
-
-      <!-- the channel ends here, just above the shared site footer -->
-      <p class="oc-end" aria-hidden="true"><span class="oc-end-dot"></span><span data-i18n="ocEnd">Het kanaal blijft open</span></p>
     </section>
 
   </div>
@@ -6584,44 +6612,49 @@
     };
   }
 
-  // scroll boundaries, in viewport-heights, for each state change
-  var B1 = 160; // opening -> 01 support settled
-  var B2 = 290; // 01 -> 02 software
-  var B3 = 420; // 02 -> 03 systems
-  var B4 = 550; // 03 -> 04 improvement settled
-  var B5 = 700; // introduction fully closed, chapter break
+  // scroll boundaries, in viewport-heights, for each state change. Every
+  // scene keeps its own motion; the windows between them are tighter, so
+  // less scrolling passes without anything new (the page used to be 2140vh)
+  var B1 = 140; // opening -> 01 support settled
+  var B2 = 240; // 01 -> 02 software
+  var B3 = 340; // 02 -> 03 systems
+  var B4 = 440; // 03 -> 04 improvement settled
+  var B5 = 560; // introduction fully closed, chapter break
 
-  // ---- story continues: NEXT CHAPTER -> CURRENT -> KEEP EXPLORING,
-  // all staged on the same dark veil that already closes the introduction
-  var N1 = 820;  // NEXT CHAPTER settles
-  var N2 = 940;  // CURRENT: MBO 4 / Software Development
-  var N4 = 1060; // KEEP EXPLORING + interest words
-  var N5 = 1180; // KEEP EXPLORING resolves -> canvas clears
+  // ---- the chapter break: one scene, OPLEIDING — NU / MBO 4, on the same
+  // dark veil that already closes the introduction
+  var NC = 670;  // education settled
+  var N5 = 730;  // education exits -> canvas clears
 
   // ---- STILL BUILDING. is the bridge: its own clean state first, then it
-  // transforms into the three-project gallery (the evidence), then closes
-  // through VIEW ALL WORK into the final actions and footer.
-  var S1 = 1300; // STILL BUILDING. settled, on its own
-  var S2 = 1500; // transform complete: heading shrunk, gallery fully composed
-  var S3 = 1700; // gallery hold ends
-  var S4 = 1820; // gallery cleared, VIEW ALL WORK settled
-  var S5 = 1940; // VIEW ALL WORK cleared, final actions settled
-  var S6 = 2000; // footer settled
+  // transforms into the three-project gallery (the evidence, with the link
+  // to all work right under it), then closes into the final actions and
+  // footer. VIEW ALL WORK no longer has a scene of its own (that was 80vh).
+  var S1 = 830;  // STILL BUILDING. settled, on its own
+  var S2 = 990;  // transform complete: heading shrunk, gallery fully composed
+  var S3 = 1130; // gallery hold ends
+  var S4 = 1200; // gallery cleared
+  var S5 = 1250; // final actions settled
+  var S6 = 1310; // footer settled
 
-  var nextChapter = document.getElementById("nextChapter");
   var storyCurrent = document.getElementById("storyCurrent");
-  var keepExploring = document.getElementById("keepExploring");
-  var keepWords = document.getElementById("keepWords");
-  var keepWordEls = keepWords ? Array.prototype.slice.call(keepWords.querySelectorAll(".keep-word")) : [];
 
   var stillBuilding = document.getElementById("stillBuilding");
   var stillBuildingHeading = document.getElementById("stillBuildingHeading");
   var stillBuildingSub = document.getElementById("stillBuildingSub");
   var galleryProjects = document.getElementById("galleryProjects");
   var galleryItems = galleryProjects ? Array.prototype.slice.call(galleryProjects.querySelectorAll(".gallery-item")) : [];
-  var workAllLink = document.getElementById("workAllLink");
   var finalNav = document.getElementById("finalNav");
   var finalFooter = document.getElementById("finalFooter");
+
+  // a layer that can't be seen can't be reached either: no clicks, no Tab
+  // stop, not read out. All Home layers are in the page from the start
+  // (transparent), so without this Tab visited them before the opening.
+  function live(el, on) {
+    if (!el) return;
+    el.classList.toggle("is-live", on);
+    if (el.inert !== !on) el.inert = !on;
+  }
 
   function apply(scrollVh) {
 
@@ -6666,7 +6699,9 @@
       if (albayrakSpan) albayrakSpan.style.fontSize = lerp(mobile ? 22 : 32, mobile ? 16 : 20, nameProgress) + "px";
     }
 
-    if (identityMark) identityMark.style.opacity = String(clamp01((e0 - 0.4) / 0.2));
+    var markOpacity = clamp01((e0 - 0.4) / 0.2);
+    if (identityMark) identityMark.style.opacity = String(markOpacity);
+    live(identityMark, markOpacity > 0.6);
 
     var supportEnter = clamp01((e0 - 0.32) / 0.28);
     var w1 = stageWindows(e1);
@@ -6697,33 +6732,16 @@
       el.classList.toggle("structured", structured);
     });
 
-    if (teaser) teaser.style.opacity = String((e3 > 0.85 ? (e3 - 0.85) / 0.15 : 0) * (1 - e4));
+    var teaserOpacity = (e3 > 0.85 ? (e3 - 0.85) / 0.15 : 0) * (1 - e4);
+    if (teaser) teaser.style.opacity = String(teaserOpacity);
+    live(teaser, teaserOpacity > 0.6);
 
-    // ---- the story continues on the same dark veil that already closed
-    // the introduction: NEXT CHAPTER -> CURRENT -> KEEP EXPLORING.
-    // Same crossfade() hand-off logic as 01-04, just a later stretch of
-    // the same canvas — Work has not entered yet.
-    var eN1 = easeInOutCubic(clamp01((scrollVh - B5) / (N1 - B5)));  // chapter break -> NEXT CHAPTER
-    var eN2 = easeInOutCubic(clamp01((scrollVh - N1) / (N2 - N1)));  // NEXT CHAPTER -> CURRENT
-    var eN4mid = N2 + (N4 - N2) * 0.5; // splits the CURRENT->KEEP EXPLORING window: CURRENT exits first, then keep-words enter
-    var eN4exit = easeInOutCubic(clamp01((scrollVh - N2) / (eN4mid - N2)));   // CURRENT fully exits
-    var eN4mid2 = eN4mid + (N4 - eN4mid) * 0.5; // splits KEEP EXPLORING's own window: text enters/holds, then exits as the interest words take over
-    var eKeepEnter = easeInOutCubic(clamp01((scrollVh - eN4mid) / (eN4mid2 - eN4mid))); // "Keep exploring" enters and holds
-    var eKeepExit = easeInOutCubic(clamp01((scrollVh - eN4mid2) / (N4 - eN4mid2)));      // "Keep exploring" exits as interest words enter
-    var eN5 = easeInOutCubic(clamp01((scrollVh - N4) / (N5 - N4)));  // KEEP EXPLORING resolves
-
-    crossfade(nextChapter, eN1, eN2);
-    crossfade(storyCurrent, eN2, eN4exit);
-    crossfade(keepExploring, eKeepEnter, eKeepExit);
-
-    var keepWordsOpacity = clamp01(eKeepExit) * (1 - eN5);
-    if (keepWords) keepWords.style.opacity = String(keepWordsOpacity);
-    keepWordEls.forEach(function (el, i) {
-      if (!el) return;
-      var t = clamp01(eKeepExit * 4 - i);
-      el.style.opacity = String(t * (1 - eN5));
-      el.style.transform = "translateY(" + lerp(16, 0, t) + "px)";
-    });
+    // ---- the chapter break on the same dark veil that already closed the
+    // introduction: OPLEIDING — NU / MBO 4 enters once 04 has gone (e4
+    // ends at B5), holds, then leaves the canvas clear for STILL BUILDING.
+    var eNC = easeInOutCubic(clamp01((scrollVh - B5) / (NC - B5)));  // chapter break -> education
+    var eN5 = easeInOutCubic(clamp01((scrollVh - NC) / (N5 - NC)));  // education exits
+    crossfade(storyCurrent, eNC, eN5);
 
     // ---- STILL BUILDING. is the bridge between story and work. The canvas
     // is already clear (the same veil that closed the introduction); the
@@ -6732,8 +6750,8 @@
     // Statement -> evidence, one continuous composition, not a hard cut.
     var eA = easeInOutCubic(clamp01((scrollVh - N5) / (S1 - N5))); // clear canvas -> STILL BUILDING. enters
     var eB = easeInOutCubic(clamp01((scrollVh - S1) / (S2 - S1))); // STILL BUILDING. transforms -> gallery composed
-    var eC = easeInOutCubic(clamp01((scrollVh - S3) / (S4 - S3))); // gallery hold ends -> clears, VIEW ALL WORK settles
-    var eD = easeInOutCubic(clamp01((scrollVh - S4) / (S5 - S4))); // VIEW ALL WORK clears -> final actions
+    var eC = easeInOutCubic(clamp01((scrollVh - S3) / (S4 - S3))); // gallery hold ends -> clears
+    var eD = easeInOutCubic(clamp01((scrollVh - S4) / (S5 - S4))); // canvas clear -> final actions
     var eE = easeInOutCubic(clamp01((scrollVh - S5) / (S6 - S5))); // final actions -> footer
 
     var sbOpacity = clamp01(eA);
@@ -6748,10 +6766,10 @@
 
     // the three-project gallery: staggered entrance as the statement
     // shrinks, held static (and interactive) through the S2-S3 window,
-    // then clears together as VIEW ALL WORK takes over
+    // then clears together, link to all work included
     var galleryOpacity = clamp01(eB) * (1 - eC);
     if (galleryProjects) galleryProjects.style.opacity = String(galleryOpacity);
-    if (galleryProjects) galleryProjects.classList.toggle("is-live", galleryOpacity > 0.6);
+    live(galleryProjects, galleryOpacity > 0.6);
     galleryItems.forEach(function (el, i) {
       if (!el) return;
       var t = clamp01(eB * 3 - i);
@@ -6759,31 +6777,29 @@
       el.style.transform = "translateY(" + lerp(16, 0, t) + "px)";
     });
 
-    var workAllOpacity = clamp01(eC) * (1 - eD);
-    if (workAllLink) {
-      workAllLink.style.opacity = String(workAllOpacity);
-      workAllLink.classList.toggle("is-live", workAllOpacity > 0.6);
-    }
-
     // the persistent "Software Development · IT — Nederland · 2026" label
     // lives in the same bottom-left corner the footer's "AKIF ALBAYRAK" line
     // lands in. It stays visible through the whole story, but clears well
     // ahead of the final actions/footer — never overlapping — and returns
     // the same way when scrolling back up, since it's recomputed every frame.
-    if (infoLabel) infoLabel.style.opacity = String(0.88 * (1 - clamp01(eD / 0.6)));
+    // On phones the gallery fills the screen down to that corner, so there
+    // the label steps aside as soon as the gallery comes in. It also steps
+    // aside for "Uitgelicht werk", which shares the bottom edge and ran
+    // into it on narrow screens.
+    if (infoLabel) infoLabel.style.opacity = String(0.88 * (1 - clamp01(eD / 0.6)) * (mobile ? (1 - clamp01(eB)) * (1 - teaserOpacity) : 1));
 
     // final actions: About me / Let's talk, then the minimal footer joins
     var navOpacity = clamp01(eD);
     if (finalNav) {
       finalNav.style.opacity = String(navOpacity);
       finalNav.style.transform = "translateY(" + lerp(14, 0, navOpacity) + "px)";
-      finalNav.classList.toggle("is-live", navOpacity > 0.6);
+      live(finalNav, navOpacity > 0.6);
     }
 
     var footerOpacity = clamp01(eE);
     if (finalFooter) {
       finalFooter.style.opacity = String(footerOpacity);
-      finalFooter.classList.toggle("is-live", footerOpacity > 0.6);
+      live(finalFooter, footerOpacity > 0.6);
     }
   }
 
@@ -6894,7 +6910,7 @@
     });
 
     if (document.body.classList.contains("subpage")) {
-      if (identityMark) identityMark.style.opacity = "1";
+      if (identityMark) { identityMark.style.opacity = "1"; identityMark.inert = false; }
     }
 
     window.scrollTo(0, 0);
@@ -6922,34 +6938,40 @@
   var entries = list.querySelectorAll('.work-entry');
   var frames = document.querySelectorAll('.work-preview-frame');
 
-  function showPreview(targetId) {
+  // one project in focus: its preview shows, its row lights up; while the
+  // pointer or the keyboard is in the list the other rows step back
+  function showPreview(targetId, inList) {
     frames.forEach(function (frame) {
       frame.classList.toggle('is-shown', frame.id === targetId);
     });
     entries.forEach(function (entry) {
       entry.classList.toggle('is-active', entry.getAttribute('data-preview') === targetId);
     });
+    list.classList.toggle('has-focus', !!inList);
   }
 
   entries.forEach(function (entry) {
     var targetId = entry.getAttribute('data-preview');
     if (!targetId) return;
-
-    // Hover = preview only, never navigates.
-    entry.addEventListener('mouseenter', function () { showPreview(targetId); });
+    // Hover = preview only; a click follows the link to the case study.
+    entry.addEventListener('mouseenter', function () { showPreview(targetId, true); });
     // Keyboard focus mirrors hover, so Tab-ing through the list previews too.
-    entry.addEventListener('focus', function () { showPreview(targetId); });
+    entry.addEventListener('focus', function () { showPreview(targetId, true); });
 
-    // Rows without a real case study yet (buttons) still respond to a tap,
-    // since touch devices have no hover state.
-    if (entry.tagName === 'BUTTON') {
-      entry.addEventListener('click', function () { showPreview(targetId); });
+    // On phones every project shows its own devices under its row; tapping
+    // them opens the same case study as the row.
+    var frame = document.getElementById(targetId);
+    if (frame) {
+      frame.setAttribute('aria-hidden', 'true');
+      frame.addEventListener('click', function () { window.location.hash = entry.getAttribute('href'); });
     }
-    // Real links (Van der Hammen) keep default click behaviour = navigate.
   });
 
-  // If the mouse leaves the whole list, keep the last active preview
-  // visible rather than clearing it.
+  // Leaving the list keeps the last preview, but nothing stays dimmed.
+  list.addEventListener('mouseleave', function () { list.classList.remove('has-focus'); });
+  list.addEventListener('focusout', function (e) {
+    if (!list.contains(e.relatedTarget)) list.classList.remove('has-focus');
+  });
 })();
 </script>
 
@@ -7026,7 +7048,6 @@
 
   // ---- 04: the outside-IT spread ----
   var outStage = document.getElementById('aboutOutStage');
-  var outImg = outStage ? outStage.querySelector('.ab-out-photo img') : null;
   var outVoetbal = outStage ? outStage.querySelector('.ab-out-voetbal') : null;
   var outBoksen = outStage ? outStage.querySelector('.ab-out-boksen') : null;
   var outSplit = outStage ? outStage.querySelector('.ab-out-split') : null;
@@ -7048,8 +7069,9 @@
   splitVoetbal();
 
   // ---- 02 / 04: one-time reveals — each trait row (rule draws, word rises,
-  // sentence follows) and the outside-IT spread (frame opens, then VOETBAL,
-  // BOKSEN and FITNESS enter one after another, timed in the CSS). ----
+  // sentence follows) and the outside-IT spread (the pitch draws while
+  // VOETBAL rises, then the ropes and BOKSEN's jab, then FITNESS and its
+  // reps — one after another, timed in the CSS). ----
   if ('IntersectionObserver' in window) {
     var revealIo = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
@@ -7116,15 +7138,13 @@
       });
     }
 
-    // 04: a little depth while the spread crosses the screen — the photo
-    // drifts inside its frame (no zoom), VOETBAL slides slightly sideways and
-    // BOKSEN moves a touch faster than the page. Only translate, never scale.
+    // 04: a little depth while the spread crosses the screen — VOETBAL
+    // slides slightly sideways over its pitch and BOKSEN moves a touch faster
+    // than the page. Only translate, never scale.
     if (outStage) {
       var sr = outStage.getBoundingClientRect();
       if (sr.bottom > -100 && sr.top < vh + 100) {
         var k = (clamp01((vh - sr.top) / (vh + sr.height)) - 0.5) * 2; // -1 … 1
-        // whole pixels: a fractional offset makes the browser resample the photo
-        if (outImg) outImg.style.transform = 'translateY(' + Math.round(-k * outImg.offsetHeight * 0.04) + 'px)';
         if (outVoetbal) outVoetbal.style.translate = (k * Math.min(28, vw * 0.022)).toFixed(1) + 'px 0';
         if (outBoksen) outBoksen.style.translate = '0 ' + (-k * Math.min(36, vh * 0.045)).toFixed(1) + 'px';
       }
@@ -7390,13 +7410,11 @@
     trait2: 'Social',
     trait3: 'Driven',
     traitsLead: 'Three words that show what kind of person I am.',
-    traitCopy1: "When something catches my interest, I want to know how it works and what I can do with it. I like learning new things and keep challenging myself.",
-    traitCopy2: "I like working together, sharing ideas and building something good as a team. But I'm just as happy looking for a solution on my own.",
-    traitCopy3: 'I want to keep developing myself and keep taking the next step.',
+    traitCopy1: "When something catches my interest, I want to know how it works and what I can do with it.",
+    traitCopy2: "I like working together, but I'm just as happy finding a solution on my own.",
     quote: "I don't need to be able to do everything right away. As long as I keep taking another step forward, I'm happy.",
     photoCap: 'Bosphorus Bridge, Istanbul',
     outsideBig: 'Active, and quite competitive.',
-    outPhotoAlt: 'Akif in the evening by the water in Rotterdam, with the lit-up skyline behind him',
     ch3: 'My route',
     routeTitle: 'From support<br>to software.',
     routeLead: 'Three steps: where I started, where I am now and where I want to go.',
@@ -7406,16 +7424,16 @@
     tlPlan: 'Future plan',
     tlMaybeSr: ', possible direction: ',
     route1: 'My interest in IT started with ICT Support. That is where I learned how systems work, how you solve problems and how you help people when something isn’t working.',
-    route2: 'After a while I noticed I wanted more than just fixing problems. I wanted to build things myself and understand how software works behind the scenes.',
-    route3: "That's why I moved on to Software Development. I'm now in my final year and notice my interests getting broader: from building websites to connecting systems and automating processes.",
+    route2: 'After a while I wanted more than fixing problems: I wanted to build things myself and understand how software works.',
+    route3: "I'm now in my final year, and my interests keep getting broader: from building websites to connecting systems and automating processes.",
     route4: 'That variety is exactly what makes IT interesting to me.',
     ch4: 'Outside IT',
     outsideTitle: 'Outside IT.',
     sport1: 'Football',
     sport2: 'Boxing',
     outside1: 'Besides school and programming, I like to stay active. I play football, go to the gym and also enjoy boxing.',
-    outside2: "For me, sport is a way to clear my head, challenge myself and keep getting better. I'm quite competitive and like having something to work towards.",
-    outside3: "But I'm not always doing sport. I also like <em>gaming</em>, read a <em>book</em> now and then, and enjoy spending time with friends.",
+    outside2: "For me, sport is a way to clear my head, challenge myself and keep getting better. I'm quite <em>competitive</em> and like having something to work towards.",
+    outside3: 'Also: <em>gaming</em>, a <em>book</em> now and then, and time with friends.',
     also: 'Also',
     gaming: 'Gaming',
     reading: 'Reading',
@@ -7567,7 +7585,7 @@
     flow3: 'In progress',
     flow4: 'Resolved',
     cap2: 'The ticketing system as a work process. Illustration.',
-    hydroLead: 'My second internship at the ICT Service Desk. The same activities as at Ceva Logistics: configuring laptops, setting up monitors, setting up workstations and managing and maintaining the ticketing system, now at Hydro Extrusion.',
+    hydroLead: 'My second internship at the ICT Service Desk, now at Hydro Extrusion: the same activities as at Ceva Logistics.',
     seeTasks: 'The activities in file 01',
     ch2Lead: 'My first internship in software development: at Infotech BV I worked on the UniWeb client, in an existing codebase.',
     infoDesc1: 'At Infotech BV I did my internship in software development, working on the UniWeb client.',
@@ -8234,6 +8252,264 @@
     io.unobserve(footer);
     io.observe(footer);
   });
+})();
+</script>
+<script>
+(function () {
+  "use strict";
+  // NL / EN for the pages without a switch of their own: Home, Work and the
+  // three case studies. /about, /experience and /contact keep their own
+  // switch (each takes the NL · EN link while it is open); everywhere else
+  // this script takes it, so the link never navigates (it used to follow its
+  // href "#lang" and land on Home) and the choice ("akif-lang") is the same
+  // on every page, also after moving between pages. It runs last, so on a
+  // page change it has the final word on <html lang>.
+  // Dutch stays in the markup; the English is matched per text fragment
+  // (and per alt / aria-label) below, so no markup had to change.
+  var KEY = 'akif-lang';
+  var OWN = ['#/about', '#/experience', '#/contact'];
+  var ROOTS = ['homeView', 'workView', 'vdhView', 'uniteView', 'taliaView'];
+
+  var EN = {
+    // ---- Home ----
+    'Software Development · IT — Nederland · 2026': 'Software Development · IT — The Netherlands · 2026',
+    'Hier begon het voor mij.': 'This is where it started for me.',
+    'Tijdens mijn eerste stages werkte ik vooral met werkplekken, hardware en IT-support. Problemen oplossen en gebruikers helpen was mijn eerste echte ervaring binnen IT.': 'During my first internships I mainly worked with workstations, hardware and IT support. Solving problems and helping users was my first real experience in IT.',
+    'Daarna wilde ik zelf dingen gaan bouwen.': 'Then I wanted to start building things myself.',
+    'Tijdens mijn opleiding Software Development ben ik steeds meer gaan programmeren en websites en applicaties gaan maken.': 'During my Software Development course I started programming more and more, and building websites and applications.',
+    'Niet alles draait om wat je aan de voorkant ziet.': "Not everything is about what you see on the front end.",
+    'Tijdens mijn stage bij ADC werkte ik met Python en SQL om gegevens van machines te verzamelen en te verwerken.': 'During my internship at ADC I worked with Python and SQL to collect and process data from machines.',
+    'Nu kijk ik ook naar hoe dingen beter kunnen.': 'Now I also look at how things can be done better.',
+    'Bij Baril kijk ik naar IT-processen die slimmer of makkelijker kunnen en onderzoek ik waar automatisering kan helpen.': 'At Baril I look at IT processes that could be smarter or simpler, and research where automation can help.',
+    'Uitgelicht werk': 'Featured work',
+    'Bekijk al het werk': 'View all work',
+    'OVER MIJ': 'ABOUT ME',
+    'LATEN WE PRATEN': "LET'S TALK",
+    'OPLEIDING': 'EDUCATION',
+    'NU': 'NOW',
+    'Waar ik meer over wil leren': 'What I want to learn more about',
+    'SYSTEMEN': 'SYSTEMS',
+    'AUTOMATISERING': 'AUTOMATION',
+    'Nog veel te leren.': 'Still plenty to learn.',
+    'Website voor een fitness- en bokschool in Waalwijk.': 'Website for a fitness and boxing school in Waalwijk.',
+    'Website voor re-integratiecoaching in Waalwijk en omgeving.': 'Website for reintegration coaching in and around Waalwijk.',
+    'Website voor een make-up artist uit Drunen.': 'Website for a make-up artist from Drunen.',
+    // ---- Work ----
+    'Geselecteerd werk': 'Selected work',
+    'Fitness- en bokschool — Waalwijk': 'Fitness and boxing school — Waalwijk',
+    'Re-integratiecoaching — Waalwijk e.o.': 'Reintegration coaching — Waalwijk area',
+    '03 projecten': '03 projects',
+    'Bekijk case': 'View case',
+    '← Terug naar home': '← Back to home',
+    // ---- case studies: shared ----
+    'Zelfde ervaring.': 'Same experience.',
+    'Elk apparaat.': 'Every device.',
+    'Focus': 'Focus',
+    'Sector': 'Sector',
+    'Schermen': 'Screens',
+    'Desktop · Tablet · Mobiel': 'Desktop · Tablet · Mobile',
+    'Mobiel': 'Mobile',
+    'Ontwerprichting': 'Design direction',
+    'Gebruikservaring': 'User experience',
+    'Resultaat': 'Result',
+    'Fotografie': 'Photography',
+    'Typografie': 'Typography',
+    'Kleuren uit de homepage': 'Colours from the homepage',
+    // ---- Van der Hammen Gym ----
+    'Fitness- en boksschool': 'Fitness and boxing school',
+    'Voor Van der Hammen Gym heb ik een nieuwe website ontwikkeld die past bij de uitstraling van de sportschool.': 'For Van der Hammen Gym I developed a new website that matches the character of the gym.',
+    "Het doel was om een moderne en krachtige website te maken waarop bezoekers snel informatie kunnen vinden over de sportschool, trainingen en mogelijkheden om zich aan te melden. De website bestaat uit negen pagina's, is beschikbaar in het Nederlands en Engels en bevat een koppeling met het bestaande boekingssysteem.": 'The goal was a modern, powerful website where visitors can quickly find information about the gym, its training sessions and how to sign up. The website has nine pages, is available in Dutch and English and links to the existing booking system.',
+    'Rol': 'Role',
+    'Technieken': 'Technologies',
+    'Responsive design · Gebruiksvriendelijkheid · Boekingsintegratie · Meertalig': 'Responsive design · Usability · Booking integration · Multilingual',
+    'Omvang': 'Scope',
+    "Negen pagina's · Nederlands & Engels": 'Nine pages · Dutch & English',
+    'De uitdaging': 'The challenge',
+    'Van der Hammen Gym heeft een duidelijke eigen identiteit. Die uitstraling wilde ik ook online herkenbaar maken.': 'Van der Hammen Gym has a clear identity of its own. I wanted to make that character recognisable online too.',
+    'De website moest niet alleen visueel bij de sportschool passen, maar ook praktisch zijn. Bezoekers moeten eenvoudig trainingen kunnen bekijken, informatie kunnen vinden en vanuit de website verder kunnen naar het boekingssysteem.': 'The website had to fit the gym visually, but also be practical. Visitors should be able to browse training sessions, find information and continue from the website to the booking system with ease.',
+    'Daarnaast moest de website goed werken op verschillende schermformaten en in zowel het Nederlands als Engels beschikbaar zijn.': 'It also had to work well on different screen sizes and be available in both Dutch and English.',
+    'De website is ontworpen voor desktop, tablet en mobiel.': 'The website is designed for desktop, tablet and mobile.',
+    'Op ieder formaat blijft dezelfde identiteit herkenbaar, terwijl de indeling wordt aangepast aan het apparaat. Hierdoor blijft de belangrijkste informatie duidelijk zichtbaar en bruikbaar, ongeacht het scherm waarop de website wordt bezocht.': 'On every size the same identity stays recognisable, while the layout adapts to the device. That keeps the most important information clearly visible and usable, whatever screen the website is visited on.',
+    'Mijn rol': 'My role',
+    'Binnen dit project heb ik gewerkt aan zowel het ontwerp als de ontwikkeling van de website.': 'In this project I worked on both the design and the development of the website.',
+    "Ik heb nagedacht over de structuur van de pagina's, de visuele uitstraling en hoe bezoekers door de website navigeren. Vervolgens heb ik het ontwerp uitgewerkt tot een responsive website met HTML, CSS en JavaScript.": 'I thought about the structure of the pages, the visual style and how visitors move through the website. I then turned the design into a responsive website with HTML, CSS and JavaScript.',
+    'Tijdens de ontwikkeling heb ik de website op verschillende schermformaten getest en waar nodig aanpassingen gemaakt.': 'During development I tested the website on different screen sizes and made adjustments where needed.',
+    'Structuur': 'Structure',
+    "Opbouw van de pagina's": 'How the pages are built',
+    'Uitstraling': 'Look & feel',
+    'Visuele stijl en navigatie': 'Visual style and navigation',
+    'HTML, CSS en JavaScript': 'HTML, CSS and JavaScript',
+    'Testen': 'Testing',
+    'Verschillende schermformaten': 'Different screen sizes',
+    'Ontwerp': 'Design',
+    'Voor het ontwerp heb ik gekozen voor een donkere en krachtige uitstraling die past bij fitness en boksen.': 'For the design I chose a dark, powerful look that suits fitness and boxing.',
+    "Grote foto's spelen een belangrijke rol in het ontwerp en geven bezoekers direct een beeld van de sportschool. De duidelijke typografie zorgt ervoor dat belangrijke teksten snel opvallen.": 'Large photos play an important role in the design and immediately give visitors a picture of the gym. The clear typography makes important text stand out quickly.',
+    'Goudkleurige accenten': 'Gold accents',
+    'Goudkleurige accenten worden gebruikt voor belangrijke onderdelen, zoals knoppen en kleine details. Hierdoor ontstaat contrast met de donkere achtergrond en blijft de uitstraling herkenbaar door de hele website.': 'Gold accents are used for important elements, such as buttons and small details. This creates contrast with the dark background and keeps the look recognisable throughout the website.',
+    'Donker': 'Dark',
+    'Goud': 'Gold',
+    'Desktop, tablet en mobiel zijn niet simpelweg kleinere versies': 'Desktop, tablet and mobile are not simply smaller versions',
+    'van elkaar.': 'of each other.',
+    'De website is ontwikkeld met HTML, CSS en JavaScript en is volledig responsive opgebouwd.': 'The website is built with HTML, CSS and JavaScript and is fully responsive.',
+    'Desktop, tablet en mobiel zijn niet simpelweg kleinere versies van elkaar. De indeling past zich aan het beschikbare scherm aan. Navigatie, tekst, afbeeldingen en knoppen veranderen waar nodig van positie en formaat.': 'Desktop, tablet and mobile are not simply smaller versions of each other. The layout adapts to the available screen. Navigation, text, images and buttons change position and size where needed.',
+    'Tijdens het ontwikkelen heb ik verschillende schermformaten getest en onderdelen aangepast wanneer de gebruikerservaring niet goed genoeg werkte.': "While developing, I tested different screen sizes and adjusted parts whenever the user experience didn't work well enough.",
+    'Taalkeuze en inschrijfknop — header': 'Language switch and sign-up button — header',
+    'Sportschool & trainingen': 'Gym & training sessions',
+    'Actie': 'Action',
+    'Boeken of aanmelden': 'Book or sign up',
+    'Extern': 'External',
+    'Bestaand boekingssysteem': 'Existing booking system',
+    'Boekingsintegratie': 'Booking integration',
+    'Een belangrijk onderdeel van de website is de mogelijkheid om vanuit de website verder te gaan naar het bestaande boekingssysteem.': 'An important part of the website is the option to continue from the website to the existing booking system.',
+    'Hierdoor kan de website zich richten op het presenteren van de sportschool en de trainingen, terwijl bezoekers vanuit dezelfde ervaring eenvoudig verder kunnen naar het boeken of aanmelden.': 'That way the website can focus on presenting the gym and its training sessions, while visitors can easily move on to booking or signing up from the same experience.',
+    "Pagina's": 'Pages',
+    'Talen — NL · EN': 'Languages — NL · EN',
+    'Schermformaten': 'Screen sizes',
+    "Het eindresultaat is een website van negen pagina's waarin de identiteit van Van der Hammen Gym centraal staat.": 'The end result is a nine-page website with the identity of Van der Hammen Gym at its centre.',
+    'De combinatie van een donkere uitstraling, fotografie, duidelijke navigatie, twee talen en de boekingsmogelijkheid zorgt voor een website die niet alleen visueel bij de sportschool past, maar ook praktisch te gebruiken is.': 'The combination of a dark look, photography, clear navigation, two languages and the booking option makes a website that not only fits the gym visually, but is also practical to use.',
+    'Wat ik heb geleerd': 'What I learned',
+    'Dit project heeft mij vooral meer ervaring gegeven met het uitwerken van een groter websiteproject.': 'Above all, this project gave me more experience in working out a larger website project.',
+    "Ik heb geleerd om niet alleen naar één pagina te kijken, maar ervoor te zorgen dat meerdere pagina's samen één consistente website vormen. Daarnaast heb ik meer ervaring opgedaan met responsive development, het testen van verschillende schermformaten en het verwerken van een extern boekingssysteem in een website.": 'I learned not to look at one page at a time, but to make sure several pages together form one consistent website. I also gained more experience with responsive development, testing different screen sizes and working an external booking system into a website.',
+    'Volgend project — 01': 'Next project — 01',
+    'Volgend project — 02': 'Next project — 02',
+    // ---- Unite Re-integratie ----
+    'Voor Unite Re-integratie heb ik gewerkt aan een website waarbij duidelijkheid en toegankelijkheid centraal staan.': 'For Unite Re-integratie I worked on a website built around clarity and accessibility.',
+    'De website presenteert de dienstverlening op een rustige en professionele manier en helpt bezoekers om snel de juiste informatie te vinden.': 'The website presents the services in a calm, professional way and helps visitors find the right information quickly.',
+    'De interface is ontworpen voor verschillende schermformaten, waarbij desktop, tablet en mobiel ieder een passende indeling krijgen.': 'The interface is designed for different screen sizes, with desktop, tablet and mobile each getting a fitting layout.',
+    'Re-integratiebegeleiding': 'Reintegration support',
+    'Regio': 'Region',
+    'Waalwijk e.o.': 'Waalwijk area',
+    'Duidelijkheid · Toegankelijkheid': 'Clarity · Accessibility',
+    'Hero — koptekst en accent': 'Hero — heading and accent',
+    'Voor de visuele stijl is gekozen voor een combinatie van donkerblauw, wit en groene accenten.': 'The visual style combines dark blue, white and green accents.',
+    'Donkerblauw': 'Dark blue',
+    'Wit': 'White',
+    'Groen': 'Green',
+    'Het donkerblauw vormt de basis van de hero, terwijl het groen belangrijke woorden en kleine elementen benadrukt. Grote typografie zorgt ervoor dat de belangrijkste boodschap direct zichtbaar is.': 'Dark blue forms the base of the hero, while green highlights key words and small elements. Large typography makes sure the main message is visible right away.',
+    'Fotografie neemt op grotere schermen een prominente plaats in. Hierdoor wordt de pagina persoonlijker zonder dat de tekst aan duidelijkheid verliest.': 'On larger screens photography takes a prominent place. This makes the page more personal without the text losing clarity.',
+    'Op desktop bestaat de hero uit twee duidelijke delen: content aan de linkerkant en fotografie aan de rechterkant.': 'On desktop the hero has two clear parts: content on the left and photography on the right.',
+    'Op tablet blijft deze verdeling grotendeels herkenbaar, maar worden de verhoudingen aangepast aan de beschikbare ruimte.': 'On tablet this split stays largely recognisable, but the proportions adapt to the available space.',
+    'Op mobiel verandert de structuur sterker. De navigatie wordt vereenvoudigd naar een mobiel menu en de belangrijkste tekst en call-to-actions krijgen voorrang. Hierdoor blijft de pagina overzichtelijk op een veel smaller scherm.': 'On mobile the structure changes more. The navigation is simplified into a mobile menu, and the main text and calls to action take priority. That keeps the page clear on a much narrower screen.',
+    'De belangrijkste boodschap staat direct centraal: bezoekers moeten snel kunnen begrijpen wat Unite Re-integratie aanbiedt en wat hun volgende stap kan zijn.': 'The main message comes first: visitors should quickly understand what Unite Re-integratie offers and what their next step could be.',
+    'Hero — call-to-actions': 'Hero — calls to action',
+    'Daarom zijn de belangrijkste acties duidelijk zichtbaar, waaronder het plannen van een gesprek en het bekijken van de diensten.': "That's why the key actions are clearly visible, including scheduling a conversation and viewing the services.",
+    'Het resultaat is een rustige en professionele interface waarin informatie, fotografie en duidelijke call-to-actions samenkomen.': 'The result is a calm, professional interface where information, photography and clear calls to action come together.',
+    'De responsive uitwerking zorgt ervoor dat de belangrijkste inhoud ook op kleinere schermen overzichtelijk blijft.': 'The responsive build keeps the most important content clear on smaller screens too.',
+    'Volgend project — 03': 'Next project — 03',
+    // ---- Talia ----
+    'Voor Talia heb ik gewerkt aan een websiteconcept waarin make-up, fotografie en een rustige uitstraling centraal staan.': 'For Talia I worked on a website concept built around make-up, photography and a calm look.',
+    'In plaats van veel verschillende visuele elementen ligt de nadruk op grote fotografie, typografie en ruimte. Hierdoor krijgt het werk zelf de aandacht en blijft de interface rustig.': 'Instead of many different visual elements, the focus is on large photography, typography and space. That puts the attention on the work itself and keeps the interface calm.',
+    'Websiteconcept': 'Website concept',
+    'Fotografie · Typografie · Ruimte': 'Photography · Typography · Space',
+    'Licht · Warm · Serif': 'Light · Warm · Serif',
+    'Hero — serif-koptekst': 'Hero — serif heading',
+    'De website gebruikt een lichte, warme achtergrond in combinatie met grote fotografie.': 'The website uses a light, warm background combined with large photography.',
+    'Voor de belangrijkste koppen wordt een elegante serif-typografie gebruikt. Dit geeft de website een heel ander karakter dan mijn andere projecten en sluit aan bij de beauty- en make-upwereld.': 'The main headings use an elegant serif typeface. This gives the website a very different character from my other projects and suits the world of beauty and make-up.',
+    'De interface gebruikt bewust weinig kleuren en decoratieve elementen. Hierdoor blijven de fotografie en inhoud het belangrijkste onderdeel van de pagina.': 'The interface deliberately uses few colours and decorative elements. That keeps the photography and content the most important part of the page.',
+    'Warm wit': 'Warm white',
+    'Inkt': 'Ink',
+    'Knop': 'Button',
+    'Op desktop is de hero verdeeld in twee grote delen. De tekst staat links en de fotografie neemt de rechterkant van het scherm in.': 'On desktop the hero is split into two large parts. The text sits on the left and the photography takes up the right side of the screen.',
+    'Op tablet blijft deze verdeling zichtbaar, maar wordt de content smaller zodat beide onderdelen voldoende ruimte behouden.': 'On tablet this split stays visible, but the content gets narrower so both parts keep enough room.',
+    'Op mobiel verandert de compositie. De grote afbeelding krijgt eerst ruimte en de tekst volgt daaronder. Hierdoor wordt het ontwerp niet simpelweg verkleind, maar daadwerkelijk aangepast aan het kleinere scherm.': "On mobile the composition changes. The large image gets room first and the text follows below it. So the design isn't simply scaled down, but actually adapted to the smaller screen.",
+    'De belangrijkste acties zijn bewust eenvoudig gehouden. Vanuit de hero kan een bezoeker bijvoorbeeld verder naar een afspraak of het portfolio.': 'The key actions are deliberately kept simple. From the hero, a visitor can go on to an appointment or the portfolio, for example.',
+    'Door weinig elementen tegelijk te tonen, blijft de aandacht bij de content en wordt de gebruiker niet overspoeld met informatie.': "By showing only a few elements at a time, attention stays on the content and the visitor isn't flooded with information.",
+    'Het resultaat is een lichte, rustige websitepresentatie waarin fotografie en typografie de visuele identiteit bepalen.': 'The result is a light, calm website presentation in which photography and typography define the visual identity.',
+    'Door de verschillende responsive layouts blijft die uitstraling behouden op desktop, tablet en mobiel.': 'Thanks to the different responsive layouts, that look holds up on desktop, tablet and mobile.',
+    // ---- shortened versions (less content, same meaning) ----
+    'OPLEIDING — NU': 'EDUCATION — NOW',
+    'De uitdaging: de sportschool heeft een duidelijke eigen identiteit, die ook online herkenbaar moest zijn. Tegelijk moest de site praktisch zijn: trainingen bekijken, informatie vinden en doorgaan naar het bestaande boekingssysteem, op elk scherm en in het Nederlands en Engels.': 'The challenge: the gym has a clear identity of its own, which had to be recognisable online too. At the same time the site had to be practical: viewing training sessions, finding information and moving on to the existing booking system, on every screen and in Dutch and English.',
+    'Desktop, tablet en mobiel zijn geen kleinere versies van elkaar: navigatie, tekst, beelden en knoppen veranderen per scherm van positie en formaat.': "Desktop, tablet and mobile aren't smaller copies of each other: navigation, text, images and buttons change position and size per screen.",
+    "Ik heb de structuur van de pagina's, de visuele stijl en de navigatie bedacht en het ontwerp uitgewerkt tot een responsive website met HTML, CSS en JavaScript. Tijdens het bouwen heb ik op verschillende schermformaten getest en bijgestuurd waar de gebruikerservaring tekortschoot.": 'I worked out the page structure, the visual style and the navigation, then built the design into a responsive website with HTML, CSS and JavaScript. While building, I tested on different screen sizes and adjusted wherever the user experience fell short.',
+    "Grote foto's laten direct de sportschool zien; duidelijke typografie laat belangrijke tekst snel opvallen.": 'Large photos show the gym right away; clear typography makes important text stand out.',
+    'Goudkleurige accenten op knoppen en details geven contrast met de donkere achtergrond en houden de stijl herkenbaar.': 'Gold accents on buttons and details contrast with the dark background and keep the style recognisable.',
+    'Vanuit de website gaan bezoekers door naar het bestaande boekingssysteem. Zo richt de website zich op het presenteren van de sportschool en de trainingen, en blijft boeken of aanmelden één stap verder.': 'From the website, visitors continue to the existing booking system. That way the website focuses on presenting the gym and its training sessions, and booking or signing up stays one step away.',
+    "Ik heb geleerd om meerdere pagina's als één consistente website te ontwerpen, en om een extern boekingssysteem in een website te verwerken.": 'I learned to design several pages as one consistent website, and to work an external booking system into a website.',
+    'Content links, fotografie rechts.': 'Content on the left, photography on the right.',
+    'Dezelfde verdeling, met verhoudingen die passen bij de ruimte.': 'The same split, with proportions that fit the space.',
+    'Een mobiel menu; tekst en call-to-actions krijgen voorrang.': 'A mobile menu; text and calls to action come first.',
+    'Weinig kleuren en decoratie, zodat fotografie en inhoud het belangrijkste blijven.': 'Few colours and little decoration, so photography and content stay the main thing.',
+    'Tekst links, fotografie rechts.': 'Text on the left, photography on the right.',
+    'Dezelfde verdeling, met smallere content.': 'The same split, with narrower content.',
+    'Eerst de grote afbeelding, daaronder de tekst: aangepast, niet verkleind.': 'The large image first, the text below it: adapted, not scaled down.',
+    'Alle projecten': 'All projects',
+    'Terug naar': 'Back to'
+  };
+  // alt texts and aria-labels
+  var ATTR = {
+    'Akif Albayrak, buiten aan het water bij zonsondergang': 'Akif Albayrak, outside by the water at sunset',
+    'Van der Hammen Gym website — mobiel': 'Van der Hammen Gym website — mobile',
+    'Unite Re-integratie website — mobiel': 'Unite Re-integratie website — mobile',
+    'Glam_ByTalia website — mobiel': 'Glam_ByTalia website — mobile',
+    'Van der Hammen Gym website — desktop weergave': 'Van der Hammen Gym website — desktop view',
+    'Van der Hammen Gym website — tablet weergave': 'Van der Hammen Gym website — tablet view',
+    'Van der Hammen Gym website — mobiele weergave': 'Van der Hammen Gym website — mobile view',
+    'Unite Re-integratie website — desktop weergave': 'Unite Re-integratie website — desktop view',
+    'Unite Re-integratie website — tablet weergave': 'Unite Re-integratie website — tablet view',
+    'Unite Re-integratie website — mobiele weergave': 'Unite Re-integratie website — mobile view',
+    'Glam_ByTalia website — desktop weergave': 'Glam_ByTalia website — desktop view',
+    'Glam_ByTalia website — tablet weergave': 'Glam_ByTalia website — tablet view',
+    'Glam_ByTalia website — mobiele weergave': 'Glam_ByTalia website — mobile view',
+    'Werkwijze': 'Process',
+    'Detail van de homepage: fotografie, koptekst en goudkleurige knoppen': 'Homepage detail: photography, heading and gold buttons',
+    "Taalkeuze NL / EN en de knop 'Schrijf je in' in de header van de website": "The NL / EN language switch and the 'Schrijf je in' (sign up) button in the website's header",
+    'Van website naar boekingssysteem': 'From website to booking system',
+    'Volgend project': 'Next project',
+    'Detail van de homepage: grote koptekst met groene accentwoorden op donkerblauw': 'Homepage detail: large heading with green accent words on dark blue',
+    'Kleuren uit de homepage': 'Colours from the homepage',
+    "De knoppen 'Plan een gesprek' en 'Onze diensten' in de hero": "The 'Plan een gesprek' (schedule a conversation) and 'Onze diensten' (our services) buttons in the hero",
+    "Detail van de homepage: serif-koptekst 'Professionele make-up met oog voor detail.'": "Homepage detail: serif heading 'Professionele make-up met oog voor detail.' (professional make-up with an eye for detail)",
+    "De knoppen 'Boek Afspraak' en 'Bekijk Portfolio' in de hero": "The 'Boek Afspraak' (book appointment) and 'Bekijk Portfolio' (view portfolio) buttons in the hero",
+    'Terug naar Work': 'Back to Work'
+  };
+
+  function norm(s) { return s.replace(/\s+/g, ' ').trim(); }
+  var texts = [], attrs = [];
+  ROOTS.forEach(function (id) {
+    var root = document.getElementById(id);
+    if (!root) return;
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null), node;
+    while ((node = walker.nextNode())) {
+      var key = norm(node.nodeValue);
+      if (!key || !Object.prototype.hasOwnProperty.call(EN, key) || EN[key] === key) continue;
+      var lead = node.nodeValue.match(/^\s*/)[0], trail = node.nodeValue.match(/\s*$/)[0];
+      texts.push({ node: node, nl: node.nodeValue, en: lead + EN[key] + trail });
+    }
+    [].forEach.call(root.querySelectorAll('[alt], [aria-label]'), function (el) {
+      ['alt', 'aria-label'].forEach(function (a) {
+        var v = el.getAttribute(a);
+        if (v && Object.prototype.hasOwnProperty.call(ATTR, v)) attrs.push({ el: el, attr: a, nl: v, en: ATTR[v] });
+      });
+    });
+  });
+
+  function saved() { try { return window.localStorage.getItem(KEY) === 'en' ? 'en' : 'nl'; } catch (e) { return 'nl'; } }
+  function own() { return OWN.indexOf(window.location.hash || '') > -1; }
+  var lang = null;
+
+  function apply() {
+    var l = saved();
+    if (l !== lang) {
+      lang = l;
+      texts.forEach(function (t) { t.node.nodeValue = lang === 'en' ? t.en : t.nl; });
+      attrs.forEach(function (a) { a.el.setAttribute(a.attr, lang === 'en' ? a.en : a.nl); });
+    }
+    if (!own()) document.documentElement.lang = lang;
+  }
+
+  document.addEventListener('click', function (e) {
+    var link = e.target.closest && e.target.closest('.nav .lang');
+    if (!link) return;
+    e.preventDefault();               // never follow "#lang"
+    if (own()) return;                // /about, /experience, /contact switch themselves
+    try { window.localStorage.setItem(KEY, saved() === 'en' ? 'nl' : 'en'); } catch (err) {}
+    apply();
+    document.dispatchEvent(new CustomEvent('akif:langchange'));
+  });
+  // a choice made on /about, /experience or /contact is picked up on the way back
+  window.addEventListener('hashchange', apply);
+  window.addEventListener('pageshow', apply);
+  apply();
 })();
 </script>
 </body>
