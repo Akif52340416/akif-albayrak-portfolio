@@ -1,0 +1,36 @@
+# Geheimen en lokale configuratie (ook voor de latere contact-worker/)
+.env
+.env.*
+*.env
+.dev.vars
+.dev.vars.*
+*.pem
+*.key
+secrets.*
+
+# Cloudflare Worker / Node
+node_modules/
+.wrangler/
+dist/
+
+# Persoonlijke en tijdelijke bestanden die nooit in deze repo horen
+*.zip
+*.mp4
+*.mov
+WhatsApp*
+_backup/
+_bron/
+_prototype-systeem/
+portfolio-interactive-concepts/
+portfolio-vergelijking/
+portfolio-voorstel/
+videos/
+screenshots/
+*.log
+
+# Systeembestanden
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+.idea/

@@ -1,0 +1,43 @@
+# Controle van de site. Deze workflow PUBLICEERT NIETS:
+# geen GitHub Pages-artifact, geen deploy-stap, alleen leesrechten.
+# De website gaat pas online na een expliciete, aparte beslissing (zie DEVELOPMENT.md).
+name: Check
+
+on:
+  push:
+    branches: [main, develop, 'feature/**']
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Site samenstellen (whitelist, alleen lokaal in de runner)
+        run: |
+          mkdir -p _site
+          cp index.html _site/
+          cp -r assets about-sequence _site/
+
+      - name: Verwijzingen controleren
+        run: |
+          cd _site
+          missing=0
+          for ref in $(grep -ohE '(assets/(css|js|img)/[A-Za-z0-9._/-]+)' index.html assets/css/*.css assets/js/*.js | sort -u); do
+            [ -f "$ref" ] || { echo "ONTBREEKT: $ref"; missing=1; }
+          done
+          for w in 960 1200; do for i in $(seq -w 1 24); do
+            [ -f "about-sequence/$w/frame-$i.webp" ] || { echo "ONTBREEKT: about-sequence/$w/frame-$i.webp"; missing=1; }
+          done; done
+          exit $missing
+
+      - name: Zoeken naar geheimen
+        run: |
+          if grep -rInE '(api[_-]?key|secret|password|wachtwoord|bearer)\s*[:=]|re_[A-Za-z0-9]{16,}|-----BEGIN' _site; then
+            echo "Mogelijk geheim gevonden"; exit 1
+          fi
