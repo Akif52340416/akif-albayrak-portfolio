@@ -38,6 +38,8 @@ and no build step. The site is available in Dutch and English.
 - **About intro.** 24 photos are played as a short sequence on a `<canvas>`. Small screens
   load `about-sequence/960/`, larger screens load `about-sequence/1200/`.
 - **Layout.** CSS custom properties, Grid and fluid sizes with `clamp()`. No CSS framework.
+- **Fonts.** Instrument Sans is self-hosted in `assets/fonts/` (variable WOFF2, normal and
+  italic), so the site makes no requests to Google Fonts or other third parties.
 - **Accessibility.** A skip link, a `<main>` landmark, ARIA labels in both languages, and
   `inert` on content that is hidden.
 
@@ -46,7 +48,8 @@ and no build step. The site is available in Dutch and English.
 ```
 index.html
 assets/
-  css/    site.css, motion.css, home-system.css
+  css/    fonts.css, site.css, motion.css, home-system.css
+  fonts/  Instrument Sans (WOFF2) and its license (OFL.txt)
   js/     router, i18n, one script per page plus its motion script
   img/    portrait, home photo, screenshots of the three cases, Open Graph image
   icons/  favicon.svg, favicon.ico, apple-touch-icon.png

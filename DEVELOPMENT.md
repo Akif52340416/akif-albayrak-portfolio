@@ -56,6 +56,10 @@ Work after the import goes through `develop`:
 - Open Graph image (`assets/img/og-image.jpg`, 1200 × 630) and canonical, Open Graph and
   Twitter Card tags in `index.html`.
 - This documentation, in English.
+- Self-hosted Instrument Sans (`assets/fonts/`, `assets/css/fonts.css`): the same WOFF2 files,
+  weight range (400–700) and `unicode-range` subsets that Google Fonts served, so the
+  typography is unchanged and no third-party requests remain. License: SIL OFL 1.1
+  (`assets/fonts/OFL.txt`).
 
 ## Branches
 
@@ -106,8 +110,6 @@ Before launch, check:
 - After publishing, open the LinkedIn Post Inspector
   (<https://www.linkedin.com/post-inspector/>) with the URL to make LinkedIn fetch the
   preview. Social previews cannot work before the site is reachable over HTTPS.
-- The page loads its font from Google Fonts, so visitors' IP addresses go to Google.
-  Hosting the font locally avoids that.
 
 ## Contact form (later)
 
