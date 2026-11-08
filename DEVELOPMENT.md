@@ -97,7 +97,11 @@ once the file is on the default branch). In the runner it assembles a temporary 
 It has read-only permissions, a 5-minute time limit, no Pages artifact and no deploy step.
 
 The workflow only runs if Actions is enabled for the repository (Settings → Actions →
-General → *Actions permissions*).
+General). The repository uses the most restrictive settings that still work:
+
+- *Actions permissions*: allow actions created by GitHub only (Marketplace verified creators
+  off). The workflow uses only `actions/checkout`, so nothing else is needed.
+- *Workflow permissions*: read repository contents and packages.
 
 ## Publishing the website (not yet: only after an explicit decision)
 
