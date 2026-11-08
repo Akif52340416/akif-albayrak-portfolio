@@ -5,9 +5,15 @@
   "description": "Cloudflare Worker for the portfolio contact form (Turnstile + Resend).",
   "scripts": {
     "test": "node --test \"test/*.test.mjs\"",
-    "dev": "node dev/server.mjs"
+    "dev": "node dev/server.mjs",
+    "dev:site": "node dev/server.mjs --site-only",
+    "dev:wrangler": "wrangler dev --local --ip 127.0.0.1 --port 8787 --show-interactive-dev-session=false",
+    "test:wrangler": "node test/wrangler-smoke.mjs"
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "wrangler": "4.153.0"
   }
 }

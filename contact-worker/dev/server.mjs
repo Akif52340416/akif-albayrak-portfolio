@@ -16,6 +16,9 @@
 // Switch the simulated Turnstile result while it runs (for testing):
 //   POST http://localhost:8787/__mock?turnstile=pass|fail|wrong-host|wrong-action|down
 //   POST http://localhost:8787/__mock?reset=1      (clears the rate limiter)
+//
+// With --site-only (npm run dev:site) it only serves the site, so the real
+// Worker can run under `wrangler dev` on :8787 instead (npm run dev:wrangler).
 import { createServer } from 'node:http';
 import { createReadStream, statSync } from 'node:fs';
 import path from 'node:path';
@@ -27,8 +30,9 @@ const SITE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..
 const SITE_PORT = +(process.env.SITE_PORT || 8000);
 const WORKER_PORT = +(process.env.WORKER_PORT || 8787);
 
+const SITE_ONLY = process.argv.includes('--site-only');
 const state = { turnstile: process.env.TURNSTILE || 'pass', resend: 'ok', hostname: 'localhost', allowRepeat: true };
-const net = installFetch(state);
+const net = SITE_ONLY ? null : installFetch(state);
 const limiter = createLimiter(3, 60000);
 const env = {
   ALLOWED_ORIGINS: `http://localhost:${SITE_PORT},http://127.0.0.1:${SITE_PORT}`,
@@ -42,7 +46,7 @@ const env = {
 };
 
 // ---- the Worker ----
-createServer(async (req, res) => {
+if (!SITE_ONLY) createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${WORKER_PORT}`);
   if (url.pathname === '/__mock' && req.method === 'POST') {
     if (url.searchParams.has('turnstile')) state.turnstile = url.searchParams.get('turnstile');
@@ -80,4 +84,6 @@ createServer((req, res) => {
 }).listen(SITE_PORT, '127.0.0.1');
 
 console.log(`Site:   http://localhost:${SITE_PORT}/?contact=local#/contact`);
-console.log(`Worker: http://localhost:${WORKER_PORT}/contact  (DRY_RUN, Turnstile mock: ${state.turnstile}, no outgoing requests)`);
+console.log(SITE_ONLY
+  ? `Worker: not started here; run \`npm run dev:wrangler\` for http://localhost:${WORKER_PORT}/contact`
+  : `Worker: http://localhost:${WORKER_PORT}/contact  (DRY_RUN, Turnstile mock: ${state.turnstile}, no outgoing requests)`);
