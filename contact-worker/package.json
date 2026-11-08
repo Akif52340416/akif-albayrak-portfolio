@@ -1,0 +1,13 @@
+{
+  "name": "akif-portfolio-contact",
+  "private": true,
+  "type": "module",
+  "description": "Cloudflare Worker for the portfolio contact form (Turnstile + Resend).",
+  "scripts": {
+    "test": "node --test \"test/*.test.mjs\"",
+    "dev": "node dev/server.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

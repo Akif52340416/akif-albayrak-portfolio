@@ -1,0 +1,24 @@
+// Cloudflare Worker for the portfolio contact form.
+// NOT deployed yet: deploying is a separate, explicitly approved step (see README.md).
+// Secrets are never in this file: set them with `wrangler secret put` (see README.md).
+{
+  "name": "akif-portfolio-contact",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-01",
+  "workers_dev": true,
+  "preview_urls": false,
+  // invocation logs could include request details; the Worker logs only outcome codes itself
+  "observability": { "enabled": false },
+  "vars": {
+    "ALLOWED_ORIGINS": "https://akif52340416.github.io",
+    "TURNSTILE_HOSTNAMES": "akif52340416.github.io",
+    "TURNSTILE_ACTION": "contact",
+    "CONTACT_FROM": "Akif Albayrak Portfolio <onboarding@resend.dev>",
+    // "1" = check everything, never send. Switch to "0" only after explicit approval.
+    "DRY_RUN": "1"
+  },
+  // about 3 messages per minute per IP address, per Cloudflare location
+  "ratelimits": [
+    { "name": "RATE_LIMITER", "namespace_id": "1001", "simple": { "limit": 3, "period": 60 } }
+  ]
+}

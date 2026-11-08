@@ -1,0 +1,9 @@
+# Example for `wrangler dev` only. Copy to .dev.vars (ignored by Git) and never commit it.
+# These are Cloudflare's public Turnstile TEST keys; they are not secrets.
+TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
+ALLOWED_ORIGINS=http://localhost:8000
+TURNSTILE_HOSTNAMES=localhost
+DRY_RUN=1
+# Only needed when DRY_RUN=0 (real sending, after approval). Leave empty otherwise.
+RESEND_API_KEY=
+CONTACT_TO=
