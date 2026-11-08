@@ -37,6 +37,11 @@ export function installFetch(state) {
       // the dev server allows repeats (state.allowRepeat); the unit tests don't
       const dup = !state.allowRepeat && used.has(token); used.add(token);
       const pass = state.turnstile !== 'fail' && token === DUMMY_TOKEN && !dup;
+      // 'testkey': the exact shape Cloudflare returns for its test secret
+      // 1x0000000000000000000000000000000AA (checked against siteverify)
+      if (state.turnstile === 'testkey') {
+        return Response.json({ success: true, 'error-codes': [], hostname: 'example.com', metadata: { result_with_testing_key: true } });
+      }
       return Response.json({
         success: pass,
         'error-codes': pass ? [] : [dup ? 'timeout-or-duplicate' : 'invalid-input-response'],

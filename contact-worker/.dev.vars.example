@@ -1,9 +1,16 @@
-# Example for `wrangler dev` only. Copy to .dev.vars (ignored by Git) and never commit it.
-# These are Cloudflare's public Turnstile TEST keys; they are not secrets.
+# Local settings for `npm run dev:wrangler` (wrangler dev). Copy to .dev.vars, which Git
+# ignores, and never commit it. Values here override the "vars" in wrangler.jsonc locally.
+#
+# Cloudflare's public Turnstile TEST secrets (not secrets at all):
+#   1x0000000000000000000000000000000AA  always passes
+#   2x0000000000000000000000000000000AA  always fails
+#   3x0000000000000000000000000000000AA  fails with "token already spent"
 TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
-ALLOWED_ORIGINS=http://localhost:8000
-TURNSTILE_HOSTNAMES=localhost
+# Test-key answers carry hostname "example.com" and no action; accept them locally only.
+TURNSTILE_ALLOW_TEST_KEYS=1
+TURNSTILE_HOSTNAMES=example.com
+ALLOWED_ORIGINS=http://localhost:8000,http://127.0.0.1:8000
+# Never send e-mail locally. Leave the Resend key and the recipient empty.
 DRY_RUN=1
-# Only needed when DRY_RUN=0 (real sending, after approval). Leave empty otherwise.
 RESEND_API_KEY=
 CONTACT_TO=

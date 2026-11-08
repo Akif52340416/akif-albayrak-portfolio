@@ -13,6 +13,8 @@
 //   ALLOWED_ORIGINS       comma-separated exact origins, e.g. https://akif52340416.github.io
 //   TURNSTILE_HOSTNAMES   comma-separated hostnames Turnstile must report
 //   TURNSTILE_ACTION      the action the widget is rendered with ("contact")
+//   TURNSTILE_ALLOW_TEST_KEYS  "1" only in a local .dev.vars: accept answers to
+//                         Cloudflare's test keys (no action, hostname example.com)
 //   CONTACT_FROM          sender, e.g. "Portfolio <onboarding@resend.dev>"
 //   CONTACT_TO            recipient (set as a secret, so it stays out of the repo)
 //   DRY_RUN               "1" = check everything but never call Resend
@@ -90,9 +92,16 @@ async function verifyTurnstile(token, ip, env) {
   if (!r.ok) throw new Error('siteverify ' + r.status);
   const d = await r.json();
   const hosts = list(env.TURNSTILE_HOSTNAMES);
+  // Cloudflare's test keys answer with hostname "example.com", no action and
+  // metadata.result_with_testing_key. Such an answer is refused unless local
+  // development explicitly allows it (never set in wrangler.jsonc), so a test
+  // key that ends up configured in production can never let anything through.
+  const testKey = !!(d.metadata && d.metadata.result_with_testing_key === true);
+  if (testKey && env.TURNSTILE_ALLOW_TEST_KEYS !== '1') return false;
+  const action = env.TURNSTILE_ACTION || 'contact';
   return d.success === true &&
     hosts.includes(d.hostname) &&
-    d.action === (env.TURNSTILE_ACTION || 'contact');
+    (d.action === action || (testKey && d.action === undefined));
 }
 
 async function sendMail(v, lang, env) {

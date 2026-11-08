@@ -169,6 +169,24 @@ test('Turnstile token for another action: refused', async () => {
   const r = await call(body());
   assert.equal(r.status, 403); assert.equal(r.json.error, 'captcha');
 });
+test('answer to a Cloudflare test key: refused by default (production safety)', async () => {
+  state.turnstile = 'testkey';
+  const r = await call(body(), {}, env({ TURNSTILE_HOSTNAMES: 'example.com' }));
+  assert.equal(r.status, 403); assert.equal(r.json.error, 'captcha');
+  assert.equal(net.calls.resend.length, 0);
+});
+test('answer to a test key: accepted only with TURNSTILE_ALLOW_TEST_KEYS=1 and a listed hostname', async () => {
+  state.turnstile = 'testkey';
+  const ok = await call(body(), {}, env({ TURNSTILE_ALLOW_TEST_KEYS: '1', TURNSTILE_HOSTNAMES: 'example.com', DRY_RUN: '1' }));
+  assert.equal(ok.status, 200); assert.equal(ok.json.dryRun, true);
+  const host = await call(body(), {}, env({ TURNSTILE_ALLOW_TEST_KEYS: '1', TURNSTILE_HOSTNAMES: 'localhost', DRY_RUN: '1' }));
+  assert.equal(host.status, 403, 'hostname is still checked');
+});
+test('TURNSTILE_ALLOW_TEST_KEYS does not relax the action for real answers', async () => {
+  state.turnstile = 'wrong-action';
+  const r = await call(body(), {}, env({ TURNSTILE_ALLOW_TEST_KEYS: '1' }));
+  assert.equal(r.status, 403); assert.equal(r.json.error, 'captcha');
+});
 test('missing token: refused without calling siteverify', async () => {
   const r = await call(body({ token: '' }));
   assert.equal(r.status, 403); assert.equal(r.json.error, 'captcha');
