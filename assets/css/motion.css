@@ -92,6 +92,7 @@
   margin-top: 18px;
   padding-left: 19px;
 }
+.oc-held[hidden] { display: none; }   /* display:flex above would otherwise override [hidden] */
 .oc-held:not([hidden]) { animation: ocHeldIn 0.55s var(--oc-ease) both; }
 @keyframes ocHeldIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .oc-held-btn {
