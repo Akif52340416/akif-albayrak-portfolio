@@ -52,8 +52,43 @@ jobs:
             echo "External resource found in CSS"; exit 1
           fi
 
+      - name: Scripts only talk to allowlisted hosts
+        # Cloudflare Turnstile (loaded by contact.js on /contact only) and the
+        # local test Worker; the contact Worker's own URL is set in index.html
+        run: |
+          cd _site
+          bad=$(grep -ohE 'https?://[A-Za-z0-9.-]+' assets/js/*.js | sort -u | grep -vxE 'https://challenges\.cloudflare\.com|http://localhost' || true)
+          if [ -n "$bad" ]; then echo "Unexpected host in scripts: $bad"; exit 1; fi
+
       - name: Scan for secrets
         run: |
           if grep -rInE '(api[_-]?key|secret|password|wachtwoord|bearer)\s*[:=]|re_[A-Za-z0-9]{16,}|-----BEGIN' _site; then
             echo "Possible secret found"; exit 1
           fi
+
+  # The contact Worker: unit tests with Turnstile and Resend mocked (no
+  # network, no e-mail) and a secret scan. Nothing is deployed from here.
+  contact-worker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: contact-worker
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Unit tests (mocked, no network)
+        run: npm test
+
+      - name: No real keys in the Worker folder
+        # Resend keys start with re_, real Turnstile secrets with 0x4AAAA;
+        # only Cloudflare's public test keys (1x…, 2x…, 3x…) may appear
+        run: |
+          if grep -rInE 're_[A-Za-z0-9]{16,}|0x4AAAA[A-Za-z0-9_-]{10,}|-----BEGIN' --exclude-dir=node_modules .; then
+            echo "Possible real key found"; exit 1
+          fi
+          if git ls-files --error-unmatch .dev.vars 2>/dev/null; then echo ".dev.vars must never be committed"; exit 1; fi
