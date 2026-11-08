@@ -123,17 +123,25 @@ Before launch, check:
   (<https://www.linkedin.com/post-inspector/>) with the URL to make LinkedIn fetch the
   preview. Social previews cannot work before the site is reachable over HTTPS.
 
-## Contact form (later)
+## Contact form
 
-The backend will live in its own folder or repository, `contact-worker/` (Cloudflare Worker
-with Resend), and will be published separately. Ground rules:
+The backend lives in `contact-worker/` (Cloudflare Worker + Turnstile + Resend); see
+[contact-worker/README.md](contact-worker/README.md) for what it checks, its configuration
+and local testing. It is **not deployed**: `data-endpoint` and `data-sitekey` on `#ocForm`
+in `index.html` are empty, so the form keeps its old behaviour (validation, then mailto or
+copy). Once both are filled in, `contact.js` sends through the Worker, says "sent" only when
+the Worker confirms it, and on any failure keeps the text and offers mailto and copy.
+The Turnstile script is only loaded once `#/contact` is opened. Ground rules:
 
 - The Resend API key is stored **only** as a Worker secret (`wrangler secret put`), never in
   code, never in a committed `.dev.vars`, and never in this repository. `.gitignore` already
   excludes `.env*`, `.dev.vars*` and `.wrangler/`.
-- The site only gets the Worker's public URL.
+- The site only gets the Worker's public URL and Turnstile's public site key.
 - The Worker only accepts requests from the site's own domain (CORS) and has rate limiting
   and basic spam protection.
+- `DRY_RUN` stays `"1"` until real sending has been approved.
+- Local test: `cd contact-worker && npm test && npm run dev`, then
+  <http://localhost:8000/?contact=local#/contact>. No account, no deploy, no e-mail.
 
 ## Testing locally
 

@@ -70,9 +70,10 @@ and go to <http://localhost:8000/>.
 
 ## Contact form
 
-The form validates its fields but does not send anything yet. After a valid submit the
-visitor can copy the message or send it with their own e-mail client. A small backend
-(Cloudflare Worker with Resend) is planned as a separate project.
+The form validates its fields in the browser. The backend, a Cloudflare Worker with
+Turnstile (spam check) and Resend (e-mail), is in [`contact-worker/`](contact-worker/README.md):
+built and tested locally, not deployed yet. Until it is, a valid submit sends nothing and
+the visitor can copy the message or open it in their own e-mail client.
 
 ## Development history
 
