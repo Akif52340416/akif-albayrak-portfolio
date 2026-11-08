@@ -85,11 +85,19 @@ request and require the `Check / check` status to pass.
 
 ## CI check (publishes nothing)
 
-`.github/workflows/check.yml` runs on every push to `main`, `develop` and `feature/**`, and on
-pull requests to `main`. In the runner it assembles a temporary `_site/` from **only**
-`index.html`, `assets/` and `about-sequence/`, checks that every referenced file exists and
-scans for anything that looks like a secret. It has read-only permissions, no Pages artifact
-and no deploy step.
+`.github/workflows/check.yml` runs on every push to `main`, `develop` and `feature/**`, on
+pull requests to `main`, and manually (`workflow_dispatch`, available from the Actions tab
+once the file is on the default branch). In the runner it assembles a temporary `_site/` from
+**only** `index.html`, `assets/` and `about-sequence/`, then:
+
+- checks that every referenced file exists, including the fonts referenced from the CSS;
+- fails if `index.html` or the CSS loads a stylesheet, script or font from another domain;
+- scans for anything that looks like a secret.
+
+It has read-only permissions, a 5-minute time limit, no Pages artifact and no deploy step.
+
+The workflow only runs if Actions is enabled for the repository (Settings → Actions →
+General → *Actions permissions*).
 
 ## Publishing the website (not yet: only after an explicit decision)
 

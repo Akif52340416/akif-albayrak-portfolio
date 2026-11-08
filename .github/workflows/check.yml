@@ -8,6 +8,7 @@ on:
     branches: [main, develop, 'feature/**']
   pull_request:
     branches: [main]
+  workflow_dispatch: # "Run workflow" button on the Actions tab (once this file is on the default branch)
 
 permissions:
   contents: read
@@ -15,6 +16,7 @@ permissions:
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
 
@@ -31,10 +33,24 @@ jobs:
           for ref in $(grep -ohE '(assets/(css|js|img|icons)/[A-Za-z0-9._/-]+)' index.html assets/css/*.css assets/js/*.js | sort -u); do
             [ -f "$ref" ] || { echo "MISSING: $ref"; missing=1; }
           done
+          # url(../fonts/...) in the stylesheets, relative to assets/css/
+          for f in $(grep -ohE 'url\(\.\./fonts/[A-Za-z0-9._-]+\)' assets/css/*.css | sed -E 's/url\(\.\.\/(.*)\)/\1/' | sort -u); do
+            [ -f "assets/$f" ] || { echo "MISSING: assets/$f"; missing=1; }
+          done
           for w in 960 1200; do for i in $(seq -w 1 24); do
             [ -f "about-sequence/$w/frame-$i.webp" ] || { echo "MISSING: about-sequence/$w/frame-$i.webp"; missing=1; }
           done; done
           exit $missing
+
+      - name: No third-party stylesheets, scripts or fonts
+        run: |
+          cd _site
+          if grep -nE '<(script|link)[^>]+(src|href)="(https?:)?//' index.html | grep -vE 'rel="canonical"'; then
+            echo "External resource found in index.html"; exit 1
+          fi
+          if grep -nE '@import|url\((["'"'"'])?(https?:)?//' assets/css/*.css; then
+            echo "External resource found in CSS"; exit 1
+          fi
 
       - name: Scan for secrets
         run: |
