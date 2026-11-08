@@ -140,8 +140,10 @@ The Turnstile script is only loaded once `#/contact` is opened. Ground rules:
 - The Worker only accepts requests from the site's own domain (CORS) and has rate limiting
   and basic spam protection.
 - `DRY_RUN` stays `"1"` until real sending has been approved.
-- Local test: `cd contact-worker && npm test && npm run dev`, then
-  <http://localhost:8000/?contact=local#/contact>. No account, no deploy, no e-mail.
+- Local test, no deploy and no e-mail (details in `contact-worker/README.md`):
+  `cd contact-worker && npm ci && npm test`, then either `npm run dev` (mocked) or
+  `npm run dev:wrangler` + `npm run dev:site` (the real Workers runtime via `wrangler dev
+  --local`), and open <http://localhost:8000/?contact=local#/contact>.
 
 ## Testing locally
 
