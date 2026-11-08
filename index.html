@@ -1536,10 +1536,13 @@
                  letter while typing (aria-hidden: it only mirrors the
                  fields), with the progress (three segments + the active
                  question). On phones it sits compact above the send button.
-       send      validates in the browser but is NOT connected to any
-                 sending service: a valid submit says plainly that nothing
-                 was sent and offers the e-mail address. The note sits next
-                 to the button, so it's known before clicking.
+       send      without a configured Worker (data-endpoint/data-sitekey
+                 empty, as now): validates in the browser and sends nothing;
+                 a valid submit says so plainly and offers mailto + copy.
+                 With a Worker: sends through contact-worker/ (Turnstile +
+                 Resend), and only says "sent" when the Worker confirms it;
+                 any failure keeps the text and offers mailto + copy.
+                 The note next to the button says which of the two it is.
      Dutch in the markup, English in the contact script below (same
      remembered "akif-lang" choice). -->
 <div id="contactView" class="page-view subpage" hidden>
@@ -1594,7 +1597,9 @@
 
       <h2 class="ab-sr" id="ocFormTitle" data-i18n="ocFormTitle">Stel je bericht op</h2>
 
-      <form class="oc-form" id="ocForm" novalidate aria-labelledby="ocFormTitle">
+      <!-- data-endpoint (the Worker's https URL) and data-sitekey (Turnstile's
+           public site key) stay empty until the Worker is deployed -->
+      <form class="oc-form" id="ocForm" novalidate aria-labelledby="ocFormTitle" data-endpoint="" data-sitekey="">
 
         <div class="oc-step" data-step="1">
           <span class="oc-num" aria-hidden="true">01</span>
@@ -1627,6 +1632,13 @@
           </div>
         </div>
 
+        <!-- honeypot: invisible and unreachable for people (also for screen
+             readers and the keyboard); only bots fill it in -->
+        <div class="oc-hp" aria-hidden="true">
+          <label for="ocNick">Laat dit veld leeg</label>
+          <input id="ocNick" name="website" type="text" tabindex="-1" autocomplete="off">
+        </div>
+
         <!-- MESSAGE COMPOSITION: the message as a letter, while typing.
              It only mirrors the fields above, so screen readers skip it. -->
         <aside class="oc-comp" id="ocComp" aria-hidden="true">
@@ -1651,6 +1663,9 @@
         </aside>
 
         <div class="oc-actions">
+          <!-- Cloudflare Turnstile (only with a Worker): usually invisible,
+               it only shows itself when it needs the visitor -->
+          <div class="oc-ts" id="ocTurnstile"></div>
           <button type="submit" class="oc-send"><span data-i18n="ocSend">Bericht klaarzetten</span><span class="oc-send-arrow" aria-hidden="true">&rarr;</span></button>
           <p class="oc-pending" id="ocPending"><span class="oc-pending-dot" aria-hidden="true"></span><span data-i18n="ocPending">Dit formulier verstuurt zelf niets. Daarna open je je bericht in je eigen e-mailprogramma, of kopieer je het.</span></p>
           <div class="oc-status-msg" id="ocStatusMsg" role="status" aria-live="polite" tabindex="-1" hidden></div>

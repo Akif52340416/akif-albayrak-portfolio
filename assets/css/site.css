@@ -4830,6 +4830,14 @@
   .oc-status-msg:focus { outline: none; }
   .oc-status-msg strong { color: var(--cream); font-weight: 600; }
   .oc-status-msg a { color: var(--cream); text-decoration-color: var(--signal); text-underline-offset: 4px; overflow-wrap: anywhere; }
+  /* with a Worker: the honeypot (off-screen for everyone), Turnstile (it
+     only shows when it needs the visitor) and the button while sending */
+  .oc-hp { position: absolute; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden; }
+  .oc-ts { max-width: 100%; }
+  .oc-ts iframe { margin-bottom: 22px; }
+  .oc-send.is-sending { cursor: progress; opacity: 0.62; }
+  .oc-send.is-sending .oc-send-arrow { animation: ocSending 1.1s ease-in-out infinite; }
+  @keyframes ocSending { 50% { opacity: 0.25; } }
 
 
   /* ================= responsive ================= */
@@ -4866,6 +4874,7 @@
   @media (prefers-reduced-motion: reduce) {
     .oc-fade, .oc-rise, .oc-direct-row::after, .oc-direct-link, .oc-ext, .oc-copy, .oc-num, .oc-q,
     .oc-input, .oc-textarea, .oc-comp-bar i, .oc-send, .oc-send-arrow { transition: none; }
+    .oc-send.is-sending .oc-send-arrow { animation: none; }
     .oc-status-dot::after { animation: none; opacity: 0; }
     .oc-comp .is-fresh { animation: none; }
   }

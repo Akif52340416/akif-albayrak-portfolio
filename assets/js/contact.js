@@ -5,15 +5,36 @@
   // three questions (active / done states, validation, the honest "not
   // connected yet" state), the message composition that mirrors them, the
   // channel line, copying the e-mail address, the local time and the
-  // reveals. The form is NOT sent anywhere: a valid submit only explains
-  // that, and offers two things that really happen: the message opened in
-  // the visitor's own mail program (a filled-in mailto:) or copied. A tick
-  // only ever marks a copy the clipboard confirmed.
+  // reveals.
+  // Sending: only when the form has a Worker endpoint and a Turnstile site
+  // key (data-endpoint / data-sitekey). Without them (the default) the form
+  // is NOT sent anywhere: a valid submit only explains that, and offers two
+  // things that really happen: the message opened in the visitor's own mail
+  // program (a filled-in mailto:) or copied. With them, "sent" is only said
+  // when the Worker confirms it; any failure keeps the text and offers the
+  // same two ways. A tick only ever marks a copy the clipboard confirmed.
   var view = document.getElementById('contactView');
   if (!view) return;
   var form = document.getElementById('ocForm');
   var status = document.getElementById('ocStatusMsg');
   var MAIL = 'Akif.Albayrak12@hotmail.com';
+
+  // ---- where to send. Local testing (contact-worker/dev/server.mjs):
+  // http://localhost:8000/?contact=local#/contact, with Cloudflare's public
+  // Turnstile test keys (&ts=fail: always blocked, &ts=interactive: shows
+  // the widget). Never anything secret here: the site key is public ----
+  var LIVE = (function () {
+    var ep = form.getAttribute('data-endpoint') || '';
+    var key = form.getAttribute('data-sitekey') || '';
+    var h = window.location.hostname, q = window.location.search;
+    if ((h === 'localhost' || h === '127.0.0.1') && /[?&]contact=local\b/.test(q)) {
+      ep = 'http://localhost:8787/contact';
+      key = /[?&]ts=fail\b/.test(q) ? '2x00000000000000000000AB' : /[?&]ts=interactive\b/.test(q) ? '3x00000000000000000000FF' : '1x00000000000000000000AA';
+    }
+    if (!/^https:\/\//.test(ep) && ep !== 'http://localhost:8787/contact') return null;
+    if (!key || !window.fetch || !window.Promise || !window.AbortController) return null;
+    return { endpoint: ep, sitekey: key };
+  })();
 
   var EN = {
     ocTag: 'Open channel',
@@ -43,7 +64,18 @@
     ocPending: "This form doesn't send anything itself. Afterwards you open your message in your own email app, or copy it.",
     ocEnd: 'The channel stays open',
     ocMailIt: 'Open in your mail app',
-    ocCopyMsg: 'Copy your message'
+    ocCopyMsg: 'Copy your message',
+    // with a Worker
+    ocStatusBLive: 'Your message, straight to my inbox',
+    ocDraftLive: 'Draft · sent through this form',
+    ocSendLive: 'Send message',
+    ocPendingLive: 'Your message goes straight to my inbox. I only use your details to reply; this website stores nothing. Cloudflare Turnstile checks for spam.'
+  };
+  var NL_LIVE = {
+    ocStatusB: 'Je bericht rechtstreeks in mijn inbox',
+    ocDraft: 'Concept · wordt verstuurd via dit formulier',
+    ocSend: 'Verstuur bericht',
+    ocPending: 'Je bericht komt rechtstreeks in mijn inbox. Ik gebruik je gegevens alleen om te antwoorden; deze website bewaart niets. Cloudflare Turnstile controleert op spam.'
   };
   var Q = {
     nl: ['Wie ben je?', 'Waar kan ik je bereiken?', 'Wat wil je kwijt?'],
@@ -65,7 +97,19 @@
       msgCopied: 'Bericht gekopieerd',
       msgCopiedSr: 'Je bericht is gekopieerd.',
       msgCopyFail: 'Kopiëren lukte niet. Selecteer je tekst in het berichtveld en kopieer hem zelf.',
-      subject: 'Bericht via je portfolio'
+      subject: 'Bericht via je portfolio',
+      // with a Worker
+      nameInvalid: 'Controleer je naam: maximaal 100 tekens, zonder regelafbreking.',
+      msgInvalid: 'Controleer je bericht: 10 tot 2000 tekens.',
+      sendingBtn: 'Versturen…',
+      sending: 'Je bericht wordt verstuurd…',
+      sent: '<strong>Bedankt, je bericht is verstuurd.</strong> Ik lees het zelf en reageer zo snel mogelijk op het e-mailadres dat je hebt opgegeven.',
+      dryRun: '<strong>Testmodus: je bericht is niet verstuurd.</strong> Alles is gecontroleerd, maar deze testomgeving verstuurt nooit e-mail.',
+      errInvalid: '<strong>Je bericht is niet verstuurd.</strong> Controleer de gemarkeerde velden en probeer het opnieuw.',
+      errCaptcha: '<strong>Je bericht is niet verstuurd.</strong> De spamcontrole is niet gelukt. Probeer het opnieuw, of open of kopieer je bericht hieronder.',
+      errCaptchaLoad: '<strong>Je bericht is niet verstuurd.</strong> De spamcontrole kon niet laden (bijvoorbeeld door een adblocker). Open of kopieer je bericht hieronder, of mail naar <a href="mailto:' + MAIL + '">' + MAIL + '</a>.',
+      errRate: '<strong>Je bericht is niet verstuurd.</strong> Er zijn net al een paar berichten verstuurd. Wacht een minuut en probeer het opnieuw, of open of kopieer je bericht hieronder.',
+      errServer: '<strong>Je bericht is niet verstuurd.</strong> Er ging iets mis bij het versturen, of er is geen verbinding. Je tekst staat er nog: probeer het later opnieuw, of open of kopieer je bericht hieronder.'
     },
     en: {
       empty: 'Your message appears here as you type.',
@@ -82,9 +126,31 @@
       msgCopied: 'Message copied',
       msgCopiedSr: 'Your message has been copied.',
       msgCopyFail: "Copying didn't work. Please select your text in the message field and copy it yourself.",
-      subject: 'Message via your portfolio'
+      subject: 'Message via your portfolio',
+      // with a Worker
+      nameInvalid: 'Please check your name: at most 100 characters, no line breaks.',
+      msgInvalid: 'Please check your message: 10 to 2000 characters.',
+      sendingBtn: 'Sending…',
+      sending: 'Sending your message…',
+      sent: '<strong>Thank you, your message has been sent.</strong> I read it myself and will reply as soon as I can to the email address you gave.',
+      dryRun: '<strong>Test mode: your message was not sent.</strong> Everything was checked, but this test environment never sends email.',
+      errInvalid: '<strong>Your message was not sent.</strong> Please check the highlighted fields and try again.',
+      errCaptcha: '<strong>Your message was not sent.</strong> The spam check did not pass. Please try again, or open or copy your message below.',
+      errCaptchaLoad: "<strong>Your message was not sent.</strong> The spam check couldn't load (for example because of an ad blocker). Open or copy your message below, or email <a href=\"mailto:" + MAIL + '">' + MAIL + '</a>.',
+      errRate: '<strong>Your message was not sent.</strong> A few messages were sent just now. Please wait a minute and try again, or open or copy your message below.',
+      errServer: "<strong>Your message was not sent.</strong> Something went wrong while sending, or there's no connection. Your text is still here: please try again later, or open or copy your message below."
     }
   };
+
+  // with a Worker, the notes that say "nothing is sent" say what does happen
+  if (LIVE) {
+    Object.keys(NL_LIVE).forEach(function (k) {
+      [].forEach.call(view.querySelectorAll('[data-i18n="' + k + '"]'), function (el) {
+        el.innerHTML = NL_LIVE[k];
+        el.setAttribute('data-i18n', k + 'Live');
+      });
+    });
+  }
 
   var KEY = 'akif-lang';
   var nodes = [].slice.call(view.querySelectorAll('[data-i18n]'));
@@ -184,25 +250,163 @@
     mailIt.href = 'mailto:' + MAIL + '?subject=' + encodeURIComponent(MSG[lang].subject + ' — ' + fields[0].input.value.trim()) +
       '&body=' + encodeURIComponent(letter());
   }
-  function showHeld(on) {
-    status.hidden = !on;
-    held.hidden = !on;
-    sendBtn.classList.toggle('is-held', on);
-    if (on) setMailto();
+  // the status line under the button: one message (by key, so it follows
+  // the language), with or without the two ways on (mailto / copy)
+  var statusKey = null;
+  function setStatus(key, withWays) {
+    statusKey = key;
+    status.innerHTML = key ? MSG[lang][key] : '';
+    status.hidden = !key;
+    held.hidden = !(key && withWays);
+    sendBtn.classList.toggle('is-held', !!(key && withWays));
+    if (key && withWays) setMailto();
+  }
+  function showHeld(on) { setStatus(on ? 'notSent' : null, on); }
+
+  // ---- sending (only with a Worker) ----
+  var sending = false;
+  var shownAt = Date.now();   // when /contact was opened
+  var touchedAt = 0;          // the first time a field was used
+  var honeypot = document.getElementById('ocNick');
+  var sendLabel = sendBtn.querySelector('[data-i18n]');
+
+  function setBusy(on) {
+    sending = on;
+    form.setAttribute('aria-busy', on ? 'true' : 'false');
+    // aria-disabled, not disabled: the button keeps its focus
+    if (on) sendBtn.setAttribute('aria-disabled', 'true'); else sendBtn.removeAttribute('aria-disabled');
+    sendBtn.classList.toggle('is-sending', on);
+    fields.forEach(function (f) { f.input.readOnly = on; });
+    sendLabel.textContent = on ? MSG[lang].sendingBtn : (lang === 'en' ? EN[sendLabel.getAttribute('data-i18n')] : sendLabel.getAttribute('data-nl'));
+  }
+
+  // Cloudflare Turnstile: its script only loads once /contact is open, and
+  // the widget is re-made when the language changes
+  var tsBox = document.getElementById('ocTurnstile');
+  var ts = { id: null, lang: null, token: null, failed: false, loading: false, waiters: [] };
+  function tsFlush() {
+    var w = ts.waiters; ts.waiters = [];
+    w.forEach(function (fn) { fn(ts.token); });
+  }
+  function tsRender() {
+    if (!window.turnstile || !tsBox) { ts.failed = true; tsFlush(); return; }
+    if (ts.id !== null) { try { window.turnstile.remove(ts.id); } catch (e) {} ts.id = null; }
+    ts.token = null; ts.lang = lang;
+    try {
+      ts.id = window.turnstile.render(tsBox, {
+        sitekey: LIVE.sitekey,
+        action: 'contact',
+        theme: 'dark',
+        appearance: 'interaction-only',
+        language: lang === 'en' ? 'en' : 'nl',
+        'response-field': false,
+        callback: function (t) { ts.token = t; ts.failed = false; tsFlush(); },
+        'expired-callback': function () { ts.token = null; },
+        'timeout-callback': function () { ts.token = null; },
+        'error-callback': function () { ts.token = null; tsFlush(); }
+      });
+    } catch (e) { ts.failed = true; tsFlush(); }
+  }
+  function tsLoad() {
+    if (!LIVE || ts.loading) return;
+    ts.loading = true;
+    window.ocTurnstileReady = tsRender;
+    var s = document.createElement('script');
+    s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=ocTurnstileReady';
+    s.async = true;
+    s.onerror = function () { ts.failed = true; tsFlush(); };
+    document.head.appendChild(s);
+  }
+  function tsToken(ms) {
+    if (ts.token) return Promise.resolve(ts.token);
+    if (ts.failed) return Promise.resolve(null);
+    tsLoad();
+    return new Promise(function (resolve) {
+      var done = false;
+      function finish(v) { if (!done) { done = true; resolve(v); } }
+      ts.waiters.push(finish);
+      setTimeout(function () { finish(null); }, ms);
+    });
+  }
+  function tsReset() {
+    ts.token = null;   // a token is single-use
+    if (ts.id !== null && window.turnstile) { try { window.turnstile.reset(ts.id); } catch (e) {} }
+  }
+
+  function post(token) {
+    var ctrl = new AbortController();
+    var timer = setTimeout(function () { ctrl.abort(); }, 20000);
+    return window.fetch(LIVE.endpoint, {
+      method: 'POST',
+      mode: 'cors',
+      credentials: 'omit',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: fields[0].input.value.trim(),
+        email: fields[1].input.value.trim(),
+        message: fields[2].input.value.trim(),
+        token: token,
+        website: honeypot ? honeypot.value : '',
+        lang: lang,
+        elapsed: Date.now() - (touchedAt || shownAt)
+      }),
+      signal: ctrl.signal
+    }).then(function (r) {
+      clearTimeout(timer);
+      return r.json().catch(function () { return {}; }).then(function (d) {
+        // "sent" only on an explicit yes from the Worker
+        if (r.ok && d && d.ok === true) return { ok: true, dryRun: d.dryRun === true };
+        return { ok: false, error: (d && d.error) || 'server', fields: d && d.fields };
+      });
+    }, function () { clearTimeout(timer); return { ok: false, error: 'server' }; });
+  }
+
+  var ERR = { invalid: 'errInvalid', captcha: 'errCaptcha', captchaLoad: 'errCaptchaLoad', rate: 'errRate' };
+  var FIELD_ERR = { name: 'nameInvalid', email: 'emailInvalid', message: 'msgInvalid' };
+  function send() {
+    setBusy(true);
+    setStatus('sending', false);
+    tsToken(15000).then(function (token) {
+      if (!token) return { ok: false, error: ts.failed ? 'captchaLoad' : 'captcha' };
+      return post(token);
+    }).then(function (res) {
+      setBusy(false);
+      tsReset();
+      if (res.ok && res.dryRun) {
+        setStatus('dryRun', false);           // nothing sent: the text stays
+      } else if (res.ok) {
+        fields.forEach(function (f) { f.input.value = ''; setError(f, ''); });
+        touchedAt = 0;
+        render();
+        setStatus('sent', false);
+      } else {
+        if (res.error === 'invalid' && res.fields) {
+          fields.forEach(function (f) {
+            var k = f.input.name;
+            if (res.fields.indexOf(k) !== -1) setError(f, FIELD_ERR[k]);
+          });
+          render();
+        }
+        setStatus(ERR[res.error] || 'errServer', true);   // the text stays, the two ways on are offered
+      }
+      status.focus();
+    });
   }
 
   fields.forEach(function (f, i) {
     f.input.addEventListener('input', function () {
+      if (!touchedAt) touchedAt = Date.now();
       if (f.input.getAttribute('aria-invalid') === 'true') setError(f, f.check(f.input.value, f.input));
-      if (!status.hidden) showHeld(false);
+      if (!status.hidden && !sending) setStatus(null);
       render();
     });
-    f.input.addEventListener('focus', function () { focused = true; active = i; render(); });
+    f.input.addEventListener('focus', function () { if (!touchedAt) touchedAt = Date.now(); focused = true; active = i; render(); });
     f.input.addEventListener('blur', function () { focused = false; render(); });
   });
 
   form.addEventListener('submit', function (e) {
     e.preventDefault();
+    if (sending) return;   // one message at a time
     var firstBad = null;
     fields.forEach(function (f) {
       var key = f.check(f.input.value, f.input);
@@ -210,9 +414,9 @@
       if (key && !firstBad) firstBad = f.input;
     });
     render();
-    if (firstBad) { showHeld(false); firstBad.focus(); return; }
-    // valid, but there is no sending yet: say so plainly, keep what was typed
-    status.innerHTML = MSG[lang].notSent;
+    if (firstBad) { setStatus(null); firstBad.focus(); return; }
+    if (LIVE) { send(); return; }
+    // valid, but there is no sending: say so plainly, keep what was typed
     showHeld(true);
     status.focus();
   });
@@ -369,7 +573,13 @@
     });
     // messages already on screen follow the language too
     fields.forEach(function (f) { if (f.err.dataset.key) f.err.textContent = MSG[lang][f.err.dataset.key]; });
-    if (!status.hidden) { status.innerHTML = MSG[lang].notSent; setMailto(); }
+    if (statusKey) { status.innerHTML = MSG[lang][statusKey]; if (!held.hidden) setMailto(); }
+    if (sending) sendLabel.textContent = MSG[lang].sendingBtn;
+    if (LIVE && onPage()) {
+      tsLoad();
+      // the widget speaks the page language (not while a message is on its way)
+      if (ts.id !== null && ts.lang !== lang && !sending) tsRender();
+    }
     if (onPage()) document.documentElement.lang = lang;
     render();
     place();
@@ -397,7 +607,7 @@
     if (l !== lang) { lang = l; }
     apply();
     syncClock();
-    if (onPage()) { document.documentElement.lang = lang; place(); requestUpdate(); replay(); }
+    if (onPage()) { shownAt = Date.now(); document.documentElement.lang = lang; place(); requestUpdate(); replay(); }
   });
   apply();
   syncClock();
